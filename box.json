@@ -1,0 +1,5 @@
+{
+  "main": "bin/easyaudit",
+  "output": "easyaudit.phar",
+  "directories": ["src"]
+}
