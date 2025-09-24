@@ -3,7 +3,7 @@ namespace EasyAudit\Console\Command;
 
 use EasyAudit\Support\Env;
 
-final class CreditsCommand
+final class Credits implements \EasyAudit\Console\CommandInterface
 {
     public function run(array $argv): int
     {

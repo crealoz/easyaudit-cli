@@ -4,7 +4,7 @@ namespace EasyAudit\Console\Command;
 use EasyAudit\Console\Util\Confirm;
 use EasyAudit\Support\Env;
 
-final class AuthLoginCommand
+final class Auth implements \EasyAudit\Console\CommandInterface
 {
     private function askSecret(): string
     {

@@ -4,7 +4,7 @@ namespace EasyAudit\Console\Command;
 use EasyAudit\Console\Util\Args;
 use EasyAudit\Support\Env;
 
-final class FixPlanCommand
+final class FixPlan implements \EasyAudit\Console\CommandInterface
 {
     public function run(array $argv): int
     {

@@ -13,7 +13,7 @@ final class Args
     public static function parse(array $argv): array
     {
         $opts = [];
-        $rest = [];
+        $rest = '';
         foreach ($argv as $a) {
             if (str_starts_with($a, '--')) {
                 $eq = strpos($a, '=');
@@ -30,7 +30,7 @@ final class Args
                     $opts[substr($a, 2)] = true;
                 }
             } else {
-                $rest[] = $a;
+                $rest = $a;
             }
         }
         return [$opts, $rest];

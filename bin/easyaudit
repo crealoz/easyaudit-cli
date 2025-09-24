@@ -1,4 +1,9 @@
 <?php
+if (version_compare(PHP_VERSION, '8.1', '<')) {
+    fwrite(STDERR, "EasyAudit requires PHP >= 8.1\n");
+    exit(64);
+}
+
 spl_autoload_register(function ($class) {
     $prefix = 'EasyAudit\\';
     $baseDir = __DIR__ . '/../src/';
@@ -11,3 +16,25 @@ spl_autoload_register(function ($class) {
         }
     }
 });
+
+switch ($argv[1] ?? null) {
+    case 'scan': $command = new \EasyAudit\Console\Command\Scan(); break;
+    case 'auth': $command = new \EasyAudit\Console\Command\Auth(); break;
+    case 'credits': $command = new \EasyAudit\Console\Command\Credits(); break;
+    case 'fix-plan': $command = new \EasyAudit\Console\Command\FixPlan(); break;
+    case 'fix-apply': $command = new \EasyAudit\Console\Command\FixApply(); break;
+    default:
+        fwrite(STDOUT, "EasyAudit - Security auditing tool for PHP applications\n");
+        fwrite(STDOUT, "Usage: php easyaudit <command> [options]\n");
+        fwrite(STDOUT, "Commands:\n");
+        fwrite(STDOUT, "  scan         Perform a security scan\n");
+        fwrite(STDOUT, "  auth         Authenticate with the EasyAudit service\n");
+        fwrite(STDOUT, "  credits      Display your remaining credits\n");
+        fwrite(STDOUT, "  fix-plan     Show a plan of fixes for detected issues\n");
+        fwrite(STDOUT, "  fix-apply    Apply fixes for detected issues\n");
+        exit(64);
+}
+
+if (isset($command)) {
+    $command->run(array_slice($argv, 2));
+}
