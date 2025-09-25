@@ -14,31 +14,29 @@ class SarifReporter implements ReporterInterface
         $root = rtrim(realpath($scanRoot) ?: $scanRoot, '/\\') . '/';
 
         foreach ($findings as $finding) {
-            $locations = [];
-            foreach ($finding['files'] ?? [] as $location) {
-                $abs  = str_replace('\\', '/', $location['file'] ?? '');
-                $rel  = ltrim(str_replace($root, '', $abs), '/');
-                $uri  = $rel !== '' ? $rel : basename($abs); // fallback propre
-                $locations[] = [
-                    'physicalLocation' => [
-                        'artifactLocation' => [
-                            'uri' => $uri ?? '',
-                            "uriBaseId" => "SRCROOT"
-                        ],
-                        'region' => [
-                            'startLine' => $location['line'] ?? 1
+            if (empty($finding['files']) || !is_array($finding['files'])) {
+                continue;
+            }
+            foreach ($finding['files'] as $location) {
+                $abs = str_replace('\\', '/', $location['file'] ?? '');
+                $rel = ltrim(str_replace($root, '', $abs), '/');
+                $uri = $rel !== '' ? $rel : basename($abs); // fallback propre
+                $results[] = [
+                    'ruleId' => $finding['ruleId'] ?? 'EASYAUDIT',
+                    'message' => ['text' => $finding['message'] ?? ''],
+                    'locations' => [
+                        'physicalLocation' => [
+                            'artifactLocation' => [
+                                'uri' => $uri ?? '',
+                                "uriBaseId" => "SRCROOT"
+                            ],
+                            'region' => [
+                                'startLine' => $location['line'] ?? 1
+                            ]
                         ]
                     ]
                 ];
             }
-            if (empty($locations)) {
-                continue;
-            }
-            $results[] = [
-                'ruleId'   => $finding['ruleId'] ?? 'EASYAUDIT',
-                'message'  => ['text' => $finding['message'] ?? ''],
-                'locations'=> $locations
-            ];
         }
 
         $sarif = [
