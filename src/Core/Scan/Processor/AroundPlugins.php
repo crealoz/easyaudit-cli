@@ -127,16 +127,16 @@ class AroundPlugins extends AbstractProcessor
                     $lines = explode("\n", $functionInnerContent);
                     if ($this->isAfterPlugin($lines, $callableName)) {
                         // If the callable is called on the last line, it is an after plugin
-                        $this->afterPlugins[] = Formater::formatError($file, $lineNumber);
+                        $this->afterPlugins[] = Formater::formatError($file, $lineNumber, "Plugin callable $callableName is invoked before other code in the function. So $functionName is an after plugin.");
                         $this->foundCount++;
                     }  elseif ($this->isBeforePlugin($lines, $callableName)) {
                         // If the callable is called on the first line, it is a before plugin
-                        $this->beforePlugins[] = Formater::formatError($file, $lineNumber);
+                        $this->beforePlugins[] = Formater::formatError($file, $lineNumber, "Plugin callable $callableName is invoked after other code in the function. So $functionName is a before plugin.");
                         $this->foundCount++;
                     }
                 } else {
                     // If the callable is not called, it is an override, not a plugin
-                    $this->overrides[] = Formater::formatError($file, $lineNumber);
+                    $this->overrides[] = Formater::formatError($file, $lineNumber, "No callable found in parameters or invocation. So $functionName is an override, not a plugin.", 'error');
                     $this->foundCount++;
                 }
             }

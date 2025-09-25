@@ -65,7 +65,11 @@ class NoProxyInCommands extends AbstractProcessor
             foreach ($consolidatedParameters as $paramName => $parameterClassName) {
                 if (!str_contains($parameterClassName, 'Factory') && !in_array($parameterClassName . '\Proxy', $proxies)) {
                     $this->foundCount++;
-                    $this->results[] = Formater::formatError($filePath, Content::getLineNumber($fileContent, $paramName));
+                    $this->results[] = Formater::formatError(
+                        $filePath,
+                        Content::getLineNumber($fileContent, $paramName),
+                        "Command $commandClassName should use a Proxy for $parameterClassName (parameter $paramName in constructor)."
+                    );
                 }
             }
         }

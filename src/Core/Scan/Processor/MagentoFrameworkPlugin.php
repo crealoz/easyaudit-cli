@@ -38,7 +38,11 @@ class MagentoFrameworkPlugin extends AbstractProcessor
                     if (empty($fileContent)) {
                         $fileContent = file_get_contents($file);
                     }
-                    $this->results[] = Formater::formatError($file, Content::getLineNumber($fileContent, $pluggedClassName));
+                    $this->results[] = Formater::formatError(
+                        $file,
+                        Content::getLineNumber($fileContent, $pluggedClassName),
+                        'Plugin for Magento core class ' . $pluggedClassName . ' is discouraged.',
+                    );
                 }
             }
         }

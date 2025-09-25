@@ -20,18 +20,21 @@ class SarifReporter implements ReporterInterface
             foreach ($finding['files'] as $location) {
                 $abs = str_replace('\\', '/', $location['file'] ?? '');
                 $rel = ltrim(str_replace($root, '', $abs), '/');
-                $uri = $rel !== '' ? $rel : basename($abs); // fallback propre
+                $uri = $rel !== '' ? $rel : basename($abs);
                 $results[] = [
                     'ruleId' => $finding['ruleId'] ?? 'EASYAUDIT',
-                    'message' => ['text' => $finding['message'] ?? ''],
+                    'level' => $location['severity'] ?? 'warning',
+                    'message' => ['text' => $location['message'] ?? $finding['message'] ?? ''],
                     'locations' => [
-                        'physicalLocation' => [
-                            'artifactLocation' => [
-                                'uri' => $uri ?? '',
-                                "uriBaseId" => "SRCROOT"
-                            ],
-                            'region' => [
-                                'startLine' => $location['line'] ?? 1
+                        [
+                            'physicalLocation' => [
+                                'artifactLocation' => [
+                                    'uri' => $uri ?? '',
+                                    "uriBaseId" => "SRCROOT"
+                                ],
+                                'region' => [
+                                    'startLine' => $location['line'] ?? 1
+                                ]
                             ]
                         ]
                     ]
