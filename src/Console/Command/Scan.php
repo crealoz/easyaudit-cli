@@ -11,6 +11,18 @@ final class Scan implements CommandInterface
 {
     public function run(array $argv): int
     {
+        // if option is help, show help
+        if (Args::optBool(Args::parse($argv)[0], 'help')) {
+            fwrite(STDOUT, "Usage: easyaudit scan [options] [path]\n\n");
+            fwrite(STDOUT, "Options:\n");
+            fwrite(STDOUT, "  --format=<format>       Output format (json, sarif). Default: json\n");
+            fwrite(STDOUT, "  --exclude=<patterns>    Comma-separated list of glob patterns to exclude\n");
+            fwrite(STDOUT, "  --exclude-ext=<exts>    Comma-separated list of file extensions to exclude (e.g. .log,.tmp)\n");
+            fwrite(STDOUT, "  --output=<file>         Output file path. Default: report/easyaudit-report.<format>\n");
+            fwrite(STDOUT, "  --help                  Show this help message\n");
+            return 0;
+        }
+
         [$opts, $rest] = Args::parse($argv);
         $format   = strtolower(Args::optStr($opts, 'format', 'json')) ?? 'json';
         $exclude  = Args::optStr($opts, 'exclude', '');
