@@ -103,7 +103,19 @@ class NoProxyInCommands extends AbstractProcessor
 
     public function getMessage(): string
     {
+        return 'Commands should use proxies for their injections. Doing so improves performances especially for crons.';
+    }
+
+    public function getLongDescription(): string
+    {
         return 'Commands should use proxies for their injections. Doing so improves performances especially for crons.
-        This parameter is not a proxied in di.xml.';
+        When a command is executed, not all dependencies are always needed. Using proxies allows to delay the 
+        instantiation of these dependencies until they are actually used, which can significantly reduce memory
+         usage and execution time.';
+    }
+
+    public function getName(): string
+    {
+        return 'No Proxy in Commands';
     }
 }

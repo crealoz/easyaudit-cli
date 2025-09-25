@@ -13,10 +13,18 @@ class SarifReporter implements ReporterInterface
         $scanRoot = getenv('GITHUB_WORKSPACE') ?: (defined('EA_SCAN_PATH') ? EA_SCAN_PATH : getcwd());
         $root = rtrim(realpath($scanRoot) ?: $scanRoot, '/\\') . '/';
 
+        $rules = [];
         foreach ($findings as $finding) {
             if (empty($finding['files']) || !is_array($finding['files'])) {
                 continue;
             }
+            $rules[] = [
+                'id' => $finding['ruleId'] ?? 'EASYAUDIT',
+                'name' => $finding['name'] ?? 'EasyAudit Finding',
+                'shortDescription' => ['text' => $finding['shortDescription'] ?? ''],
+                'fullDescription' => ['text' => $finding['longDescription'] ?? ''],
+                'help' => ['text' => $finding['longDescription'] ?? ''],
+            ];
             foreach ($finding['files'] as $location) {
                 $abs = str_replace('\\', '/', $location['file'] ?? '');
                 $rel = ltrim(str_replace($root, '', $abs), '/');
@@ -50,7 +58,7 @@ class SarifReporter implements ReporterInterface
                     'driver' => [
                         'name' => 'EasyAudit CLI',
                         'informationUri' => 'https://github.com/crealoz/easyaudit-cli',
-                        'version' => '1.0.0'
+                        'rules' => $rules
                     ]
                 ],
                 'originalUriBaseIds' => ['SRCROOT' => ['uri' => 'file:///']],

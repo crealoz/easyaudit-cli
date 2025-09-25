@@ -17,10 +17,12 @@ abstract class AbstractProcessor implements ProcessorInterface
 
     public function getReport(): array
     {
-        return [
+        return [[
             'ruleId' => $this->getIdentifier(),
-            'message' => $this->getMessage(),
+            'name' => $this->getName(),
+            'shortDescription' => ['text' => $this->getMessage()],
+            'longDescription' => ['text' => $this->getLongDescription()],
             'files' => $this->results,
-        ];
+        ]];
     }
 }

@@ -57,4 +57,14 @@ class MagentoFrameworkPlugin extends AbstractProcessor
     {
         return 'Detects plugins that target Magento core classes, which is discouraged.';
     }
+
+    public function getLongDescription(): string
+    {
+        return 'Plugins that target Magento core classes (those in the Magento\Framework namespace) are discouraged because they can lead to unexpected behavior and maintenance challenges. It is recommended to use other extension mechanisms, such as preferences or observers, when possible. On widely called classes, plugins can introduce performance overhead and complicate debugging.';
+    }
+
+    public function getName(): string
+    {
+        return 'Magento Core Class Plugins';
+    }
 }

@@ -22,6 +22,10 @@ interface ProcessorInterface
      */
     public function getFoundCount(): int;
 
+    public function getName(): string;
+
+    public function getLongDescription(): string;
+
     public function getFileType(): string;
 
     /**

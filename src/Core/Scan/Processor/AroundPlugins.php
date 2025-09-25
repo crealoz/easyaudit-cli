@@ -37,23 +37,32 @@ class AroundPlugins extends AbstractProcessor
     {
         $report = [];
         if (!empty($this->beforePlugins)) {
+            echo 'Before plugins found: ' . count($this->beforePlugins) . PHP_EOL;
             $report[] = [
                 'ruleId' => 'before-plugin',
-                'message' => ["text" => 'This is a before plugin. The callable is invoked after other code in the function.'],
+                'name' => 'Before Plugin',
+                'shortDescription' => ["text" => 'This is a before plugin. The callable is invoked after other code in the function.'],
+                'longDescription' => ["text" => 'Around plugins are costly in terms of performance. If the callable is invoked after any other code in the function, it is a befor plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.'],
                 'files' => $this->beforePlugins,
             ];
         }
         if (!empty($this->afterPlugins)) {
+            echo 'After plugins found: ' . count($this->afterPlugins) . PHP_EOL;
             $report[] = [
                 'ruleId' => 'after-plugin',
-                'message' => ["text" => 'This is an after plugin. The callable is invoked before other code in the function.'],
+                'name' => 'After Plugin',
+                'shortDescription' => ["text" => 'This is an after plugin. The callable is invoked before other code in the function.'],
+                'longDescription' => ["text" => 'Around plugins are costly in terms of performance. If the callable is invoked before any other code in the function, it is a after plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.'],
                 'files' => $this->afterPlugins
             ];
         }
         if (!empty($this->overrides)) {
+            echo 'Overrides found: ' . count($this->overrides) . PHP_EOL;
             $report[] = [
                 'ruleId' => 'override-not-plugin',
-                'message' => ["text" => 'This is not a plugin, but an override. The callable is never invoked.'],
+                'name' => 'Override, not a plugin',
+                'shortDescription' => ["text" => 'This is not a plugin, but an override. The callable is never invoked.'],
+                'longDescription' => ["text" => 'Around plugins are costly in terms of performance. If the callable is never invoked, it is not a plugin, but an override. Consider using a preference instead.'],
                 'files' => $this->overrides,
             ];
         }
@@ -182,5 +191,15 @@ class AroundPlugins extends AbstractProcessor
             }
             return false;
         }
+    }
+
+    public function getName(): string
+    {
+        return 'Around Plugins';
+    }
+
+    public function getLongDescription(): string
+    {
+        return 'Detects around plugins and classifies them as before or after plugins based on the position of the callable invocation. Around plugins are costly in terms of performance. If the callable is invoked before any other code in the function, it is an after plugin. If the callable is invoked after any other code in the function, it is a before plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain. If the callable is never invoked, it is not a plugin, but an override. Consider using a preference instead.';
     }
 }

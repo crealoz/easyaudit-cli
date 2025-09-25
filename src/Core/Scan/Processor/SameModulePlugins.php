@@ -63,4 +63,14 @@ class SameModulePlugins extends AbstractProcessor
     {
         return 'Plugins should not be used to modify the behavior of classes within the same module. This can lead to maintenance challenges and unexpected behaviors. Consider using preferences or direct class modifications instead.';
     }
+
+    public function getLongDescription(): string
+    {
+        return 'Plugins are designed to modify the behavior of classes in other modules, promoting modularity and separation of concerns. Using plugins within the same module can create tight coupling between classes, making the codebase harder to maintain and understand. It is recommended to use preferences or direct class modifications for altering behavior within the same module, as these approaches are more straightforward and easier to manage.';
+    }
+
+    public function getName(): string
+    {
+        return 'Same Module Plugins';
+    }
 }

@@ -80,7 +80,9 @@ class Scanner
                 echo "Running processor: " . $processor->getIdentifier() . "\n";
                 $processor->process($files);
                 if ($processor->getFoundCount() > 0) {
-                    $errors[] = $processor->getReport();
+                    foreach ($processor->getReport() as $report) {
+                        $errors[] = $report;
+                    }
                 }
             }
         }
