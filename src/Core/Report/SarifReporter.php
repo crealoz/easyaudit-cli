@@ -24,6 +24,9 @@ class SarifReporter implements ReporterInterface
                     ]
                 ];
             }
+            if (empty($locations)) {
+                continue;
+            }
             $results[] = [
                 'ruleId'   => $finding['ruleId'] ?? 'EASYAUDIT',
                 'message'  => ['text' => $finding['message'] ?? ''],

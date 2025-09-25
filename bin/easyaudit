@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 if (version_compare(PHP_VERSION, '8.1', '<')) {
     fwrite(STDERR, "EasyAudit requires PHP >= 8.1\n");
