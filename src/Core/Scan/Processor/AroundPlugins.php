@@ -41,8 +41,8 @@ class AroundPlugins extends AbstractProcessor
             $report[] = [
                 'ruleId' => 'before-plugin',
                 'name' => 'Before Plugin',
-                'shortDescription' => ["text" => 'This is a before plugin. The callable is invoked after other code in the function.'],
-                'longDescription' => ["text" => 'Around plugins are costly in terms of performance. If the callable is invoked after any other code in the function, it is a befor plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.'],
+                'shortDescription' => 'This is a before plugin. The callable is invoked after other code in the function.',
+                'longDescription' => 'Around plugins are costly in terms of performance. If the callable is invoked after any other code in the function, it is a befor plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.',
                 'files' => $this->beforePlugins,
             ];
         }
@@ -51,8 +51,8 @@ class AroundPlugins extends AbstractProcessor
             $report[] = [
                 'ruleId' => 'after-plugin',
                 'name' => 'After Plugin',
-                'shortDescription' => ["text" => 'This is an after plugin. The callable is invoked before other code in the function.'],
-                'longDescription' => ["text" => 'Around plugins are costly in terms of performance. If the callable is invoked before any other code in the function, it is a after plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.'],
+                'shortDescription' => 'This is an after plugin. The callable is invoked before other code in the function.',
+                'longDescription' => 'Around plugins are costly in terms of performance. If the callable is invoked before any other code in the function, it is a after plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.',
                 'files' => $this->afterPlugins
             ];
         }
@@ -61,8 +61,8 @@ class AroundPlugins extends AbstractProcessor
             $report[] = [
                 'ruleId' => 'override-not-plugin',
                 'name' => 'Override, not a plugin',
-                'shortDescription' => ["text" => 'This is not a plugin, but an override. The callable is never invoked.'],
-                'longDescription' => ["text" => 'Around plugins are costly in terms of performance. If the callable is never invoked, it is not a plugin, but an override. Consider using a preference instead.'],
+                'shortDescription' => 'This is not a plugin, but an override. The callable is never invoked.',
+                'longDescription' => 'Around plugins are costly in terms of performance. If the callable is never invoked, it is not a plugin, but an override. Consider using a preference instead.',
                 'files' => $this->overrides,
             ];
         }

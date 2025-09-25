@@ -20,8 +20,8 @@ abstract class AbstractProcessor implements ProcessorInterface
         return [[
             'ruleId' => $this->getIdentifier(),
             'name' => $this->getName(),
-            'shortDescription' => ['text' => $this->getMessage()],
-            'longDescription' => ['text' => $this->getLongDescription()],
+            'shortDescription' => $this->getMessage(),
+            'longDescription' => $this->getLongDescription(),
             'files' => $this->results,
         ]];
     }
