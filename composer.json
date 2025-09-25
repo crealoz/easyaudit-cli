@@ -1,0 +1,15 @@
+{
+  "name": "crealoz/easyaudit-cli",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "christophe",
+      "email": "email@example.com"
+    }
+  ],
+  "require": {
+    "ext-simplexml": "*"
+  }
+}

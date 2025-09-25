@@ -1,0 +1,52 @@
+name: Release Docker image
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag
+        id: vars
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "major=$(echo $VERSION | cut -d. -f1)" >> $GITHUB_OUTPUT
+          echo "minor=$(echo $VERSION | cut -d. -f1,2)" >> $GITHUB_OUTPUT
+
+      - name: Build image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/easyaudit
+          VERSION=${{ steps.vars.outputs.version }}
+          MINOR=${{ steps.vars.outputs.minor }}
+          MAJOR=${{ steps.vars.outputs.major }}
+
+          docker build -t $IMAGE:$VERSION .
+
+          # Tags mobiles
+          docker tag $IMAGE:$VERSION $IMAGE:$MINOR
+          docker tag $IMAGE:$VERSION $IMAGE:$MAJOR
+          docker tag $IMAGE:$VERSION $IMAGE:latest
+
+          docker push $IMAGE:$VERSION
+          docker push $IMAGE:$MINOR
+          docker push $IMAGE:$MAJOR
+          docker push $IMAGE:latest

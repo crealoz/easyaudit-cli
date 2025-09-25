@@ -3,6 +3,7 @@
 namespace EasyAudit\Core\Scan\Processor;
 
 use EasyAudit\Core\Scan\ProcessorInterface;
+use EasyAudit\Core\Scan\Util\Formater;
 use EasyAudit\Core\Scan\Util\Functions;
 
 /**
@@ -15,18 +16,16 @@ use EasyAudit\Core\Scan\Util\Functions;
  *
  * @package EasyAudit\Core\Scan\Processor
  */
-class AroundPlugins implements ProcessorInterface
+class AroundPlugins extends AbstractProcessor
 {
-    private int $foundCount = 0;
+
+    private array $beforePlugins = [];
+    private array $afterPlugins = [];
+    private array $overrides = [];
 
     public function getIdentifier(): string
     {
         return 'around_plugins';
-    }
-
-    public function getFoundCount(): int
-    {
-        return $this->foundCount;
     }
 
     public function getFileType(): string
@@ -34,29 +33,57 @@ class AroundPlugins implements ProcessorInterface
         return 'php';
     }
 
-    public function process(array $files): array
+    public function getReport(): array
     {
-        if (!isset($files['php']) || empty($files['php'])) {
-            return [];
+        $report = [];
+        if (!empty($this->beforePlugins)) {
+            $report[] = [
+                'ruleId' => 'before-plugin',
+                'message' => ["text" => 'This is a before plugin. The callable is invoked after other code in the function.'],
+                'files' => $this->beforePlugins,
+            ];
         }
-        $results = [];
+        if (!empty($this->afterPlugins)) {
+            $report[] = [
+                'ruleId' => 'after-plugin',
+                'message' => ["text" => 'This is an after plugin. The callable is invoked before other code in the function.'],
+                'files' => $this->afterPlugins
+            ];
+        }
+        if (!empty($this->overrides)) {
+            $report[] = [
+                'ruleId' => 'override-not-plugin',
+                'message' => ["text" => 'This is not a plugin, but an override. The callable is never invoked.'],
+                'files' => $this->overrides,
+            ];
+        }
+
+        return $report;
+    }
+
+    public function getMessage(): string
+    {
+        return 'Detects around plugins and classifies them as before or after plugins based on the position of the callable invocation.';
+    }
+
+    public function process(array $files): void
+    {
+        if (empty($files['php'])) {
+            return;
+        }
         foreach ($files['php'] as $file) {
             $code = file_get_contents($file);
-            $resultsInFile = $this->isAroundPlugin($code);
-            if (!empty($resultsInFile)) {
-                $results[$file] = $resultsInFile;
-            }
+            $this->isAroundPlugin($code, $file);
         }
-        return $results;
     }
 
     /**
      * Fore each function in the code, check if it is an around plugin with a regex "function around".
      *
      * @param string $code
-     * @return array with name of the function, line number, and whether it is before or after plugin
+     * @param string $file
      */
-    private function isAroundPlugin(string $code): array
+    private function isAroundPlugin(string $code, string $file): void
     {
         $results = [];
         if (preg_match_all(
@@ -100,33 +127,20 @@ class AroundPlugins implements ProcessorInterface
                     $lines = explode("\n", $functionInnerContent);
                     if ($this->isAfterPlugin($lines, $callableName)) {
                         // If the callable is called on the last line, it is an after plugin
-                        $results[] = [
-                            'function' => $functionName,
-                            'line' => $lineNumber,
-                            'type' => 'after-plugin',
-                        ];
+                        $this->afterPlugins[] = Formater::formatError($file, $lineNumber);
                         $this->foundCount++;
                     }  elseif ($this->isBeforePlugin($lines, $callableName)) {
                         // If the callable is called on the first line, it is a before plugin
-                        $results[] = [
-                            'function' => $functionName,
-                            'line' => $lineNumber,
-                            'type' => 'before',
-                        ];
+                        $this->beforePlugins[] = Formater::formatError($file, $lineNumber);
                         $this->foundCount++;
                     }
                 } else {
                     // If the callable is not called, it is an override, not a plugin
-                    $results[] = [
-                        'function' => $functionName,
-                        'line' => $lineNumber,
-                        'type' => 'override-not-plugin',
-                    ];
+                    $this->overrides[] = Formater::formatError($file, $lineNumber);
                     $this->foundCount++;
                 }
             }
         }
-        return $results;
     }
 
     /**

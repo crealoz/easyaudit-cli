@@ -78,7 +78,10 @@ class Scanner
                     continue;
                 }
                 echo "Running processor: " . $processor->getIdentifier() . "\n";
-                $errors[$processor->getIdentifier()] = $processor->process($files);
+                $processor->process($files);
+                if ($processor->getFoundCount() > 0) {
+                    $errors[] = $processor->getReport();
+                }
             }
         }
 
@@ -158,9 +161,14 @@ class Scanner
             if (str_ends_with($file, '.php')) {
                 $className = 'EasyAudit\\Core\\Scan\\Processor\\' . pathinfo($file, PATHINFO_FILENAME);
                 if (class_exists($className)) {
-                    $processor = new $className();
-                    if ($processor instanceof ProcessorInterface) {
-                        $processors[] = $processor;
+                    try {
+                        $processor = new $className();
+                        if ($processor instanceof ProcessorInterface) {
+                            $processors[] = $processor;
+                        }
+                    } catch (\Error | \Exception $e) {
+                        // Skip classes that cannot be instantiated
+                        continue;
                     }
                 }
             }

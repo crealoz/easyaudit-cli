@@ -2,29 +2,27 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
-class SameModulePlugins implements \EasyAudit\Core\Scan\ProcessorInterface
+use EasyAudit\Core\Scan\Util\Content;
+use EasyAudit\Core\Scan\Util\Formater;
+
+class SameModulePlugins extends AbstractProcessor
 {
     public function getIdentifier(): string
     {
         return 'same-module-plugins';
     }
 
-    public function getFoundCount(): int
+    public function process(array $files): void
     {
-        return 0;
-    }
-
-    public function process(array $files): array
-    {
-        $errors = [];
         if (!isset($files['di']) || empty($files['di'])) {
-            return $errors;
+            return ;
         }
         foreach ($files['di'] as $file) {
             $xml = simplexml_load_file($file);
             if ($xml === false) {
                 continue;
             }
+            $fileContent = '';
             $typeNodes = $xml->xpath('//type[plugin]');
             foreach ($typeNodes as $typeNode) {
                 $pluginNodes = $typeNode->xpath('plugin');
@@ -45,20 +43,24 @@ class SameModulePlugins implements \EasyAudit\Core\Scan\ProcessorInterface
                         $pluggingClassParts[0] === $pluggedInClassParts[0] &&
                         $pluggingClassParts[1] === $pluggedInClassParts[1]
                     ) {
-                        $errors[] = [
-                            'file' => $file,
-                            'message' => "Class '$pluggingClassName' is plugging $pluggedClassName that is in the same module.",
-                        ];
+                        $this->foundCount++;
+                        if (empty($fileContent)) {
+                            $fileContent = file_get_contents($file);
+                        }
+                        $this->results[] = Formater::formatError($file, Content::getLineNumber($fileContent, $pluggingClassName));
                     }
                 }
             }
         }
-
-        return $errors;
     }
 
     public function getFileType(): string
     {
         return 'di';
+    }
+
+    public function getMessage(): string
+    {
+        return 'Plugins should not be used to modify the behavior of classes within the same module. This can lead to maintenance challenges and unexpected behaviors. Consider using preferences or direct class modifications instead.';
     }
 }

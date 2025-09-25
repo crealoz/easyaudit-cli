@@ -2,12 +2,12 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
-use EasyAudit\Core\Scan\ProcessorInterface;
 use EasyAudit\Core\Scan\Util\Classes;
+use EasyAudit\Core\Scan\Util\Content;
+use EasyAudit\Core\Scan\Util\Formater;
 
-class NoProxyInCommands implements ProcessorInterface
+class NoProxyInCommands extends AbstractProcessor
 {
-    private int $foundCount = 0;
 
     public function getIdentifier(): string
     {
@@ -17,24 +17,21 @@ class NoProxyInCommands implements ProcessorInterface
     /**
      * @throws \ReflectionException
      */
-    public function process(array $files): array
+    public function process(array $files): void
     {
-        $findings = [];
         foreach ($files['di'] as $file) {
             $content = simplexml_load_file($file);
             $commandsListNode = $content->xpath('//type[@name=\'Magento\Framework\Console\CommandList\']//item');
             foreach ($commandsListNode as $commandNode) {
-                $findings[] = $this->manageCommandNode($commandNode, $content);
+                $this->manageCommandNode($commandNode, $content);
             }
         }
-        return $findings;
     }
 
     private function getFilePath(string $className): ?string
     {
         $classPath = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
         $fullPath = EA_SCAN_PATH . DIRECTORY_SEPARATOR . $classPath;
-        echo "Looking for file: $fullPath\n";
         if (file_exists($fullPath)) {
             return $fullPath;
         }
@@ -49,15 +46,13 @@ class NoProxyInCommands implements ProcessorInterface
      * @return array
      * @throws \ReflectionException
      */
-    private function manageCommandNode(\SimpleXMLElement $commandNode, \SimpleXMLElement $input): array
+    private function manageCommandNode(\SimpleXMLElement $commandNode, \SimpleXMLElement $input): void
     {
         $commandClassName = (string)$commandNode;
-        echo "Checking command: $commandClassName\n";
         $filePath = $this->getFilePath($commandClassName);
         if ($filePath === null) {
-            return [];
+            return ;
         }
-        $foundings = [];
         $proxies = $this->getCommandProxies($input, $commandClassName);
         $fileContent = file_get_contents($filePath);
         $constructorParameters = Classes::parseConstructorParameters($fileContent);
@@ -66,22 +61,14 @@ class NoProxyInCommands implements ProcessorInterface
          * Once we have constructor parameters and imported classes, we can get the full class names of the parameters.
          */
         $consolidatedParameters = Classes::consolidateParameters($constructorParameters, $importedClasses);
-        print_r($proxies);
-        print_r($consolidatedParameters);
         if (empty($proxies) || count($proxies) < count($constructorParameters) - 1) {
-            foreach ($consolidatedParameters as $parameterClassName) {
-                echo $parameterClassName . '\Proxy' . "\n";
+            foreach ($consolidatedParameters as $paramName => $parameterClassName) {
                 if (!str_contains($parameterClassName, 'Factory') && !in_array($parameterClassName . '\Proxy', $proxies)) {
                     $this->foundCount++;
-                    if (isset($foundings[$commandClassName])) {
-                        $foundings[$commandClassName][] = $parameterClassName;
-                    } else {
-                        $foundings[$commandClassName] = [$parameterClassName];
-                    }
+                    $this->results[] = Formater::formatError($filePath, Content::getLineNumber($fileContent, $paramName));
                 }
             }
         }
-        return $foundings;
     }
 
     /**
@@ -105,13 +92,14 @@ class NoProxyInCommands implements ProcessorInterface
         return $proxies;
     }
 
-    public function getFoundCount(): int
-    {
-        return $this->foundCount;
-    }
-
     public function getFileType(): string
     {
         return 'di';
+    }
+
+    public function getMessage(): string
+    {
+        return 'Commands should use proxies for their injections. Doing so improves performances especially for crons.
+        This parameter is not a proxied in di.xml.';
     }
 }
