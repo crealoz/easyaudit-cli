@@ -36,10 +36,12 @@ class Scanner
         'di',
     ];
 
-    public function run(string $path, string $exclude = '', array $excludedExtensions = []): array
+    public function run(string $exclude = '', array $excludedExtensions = []): array
     {
-        if (empty($path)) {
+        if (empty(EA_SCAN_PATH)) {
             $path = getcwd();
+        } else {
+            $path = $this->getAbsolutePath(EA_SCAN_PATH);
         }
 
         if (!empty($excludedExtensions)) {
@@ -55,12 +57,10 @@ class Scanner
         foreach ($this->allowedExtensions as $ext) {
             $files[$ext] = [];
         }
-        $path = $this->getAbsolutePath($path);
-        echo "Scanning path: $path\n";
+        echo "Scanning path: EA_SCAN_PATH\n";
         if (!is_dir($path) && !is_file($path)) {
             $errors[] = "Path '$path' is not a valid directory or file.";
         }
-        define('EA_SCAN_PATH', $path);
         $files = $this->scanPaths($path, $files);
 
         if (empty($files)) {
@@ -137,15 +137,24 @@ class Scanner
      */
     private function getAbsolutePath(string $path): string
     {
-        // check if path is already absolute
-        if (strpos($path, '/') === 0 || preg_match('/^[A-Za-z]:\\\\/', $path)) {
+        if ($path === '' || $path === '.' || $path === './') {
+            return getcwd() ?: '/';
+        }
+
+        if ($path[0] === '/') {
             return $path;
         }
-        // if path contains ../ or ./, resolve it
-        if (strpos($path, '../') !== false || strpos($path, './') !== false) {
-            return realpath($path) ?: $path;
+
+        // tente realpath, sinon compose avec CWD
+        $rp = realpath($path);
+        if ($rp !== false) {
+            return $rp;
         }
+
+        $cwd = getcwd() ?: '/';
+        return rtrim($cwd, '/').'/'.ltrim($path, './');
     }
+
 
     /**
      * Get the list of processors to run on the files. Processors implement ProcessorInterface and are located in the

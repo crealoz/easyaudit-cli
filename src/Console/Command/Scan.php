@@ -17,9 +17,10 @@ final class Scan implements CommandInterface
         $output   = Args::optStr($opts, 'output');
         $excludedExt = Args::optArr($opts, 'exclude-ext');
         $path    = $rest ?: '.';
+        define('EA_SCAN_PATH', $path);
 
         $scanner  = new Scanner();
-        $result   = $scanner->run($path, $exclude, $excludedExt);
+        $result   = $scanner->run($exclude, $excludedExt);
 
         $payload = match ($format) {
             'sarif' => (new SarifReporter())->generate($result),

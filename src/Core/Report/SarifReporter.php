@@ -10,13 +10,20 @@ class SarifReporter implements ReporterInterface
     {
         $results = [];
 
+        $scanRoot = getenv('GITHUB_WORKSPACE') ?: (defined('EA_SCAN_PATH') ? EA_SCAN_PATH : getcwd());
+        $root = rtrim(realpath($scanRoot) ?: $scanRoot, '/\\') . '/';
+
         foreach ($findings as $finding) {
             $locations = [];
             foreach ($finding['files'] ?? [] as $location) {
+                $abs  = str_replace('\\', '/', $location['file'] ?? '');
+                $rel  = ltrim(str_replace($root, '', $abs), '/');
+                $uri  = $rel !== '' ? $rel : basename($abs); // fallback propre
                 $locations[] = [
                     'physicalLocation' => [
                         'artifactLocation' => [
-                            'uri' => $location['file'] ?? ''
+                            'uri' => $uri ?? '',
+                            "uriBaseId" => "SRCROOT"
                         ],
                         'region' => [
                             'startLine' => $location['line'] ?? 1
@@ -45,6 +52,7 @@ class SarifReporter implements ReporterInterface
                         'version' => '1.0.0'
                     ]
                 ],
+                'originalUriBaseIds' => ['SRCROOT' => ['uri' => 'file:///']],
                 'results' => $results
             ]]
         ];
