@@ -9,7 +9,6 @@ WORKDIR /app
 #Copy the application files
 COPY bin/easyaudit /usr/local/bin/easyaudit
 COPY src /app/src
-COPY composer.json composer.lock /app/
 
 # Make file executable
 RUN chmod +x /usr/local/bin/easyaudit
