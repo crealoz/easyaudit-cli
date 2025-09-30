@@ -45,6 +45,8 @@ final class Scan implements CommandInterface
             @mkdir('report', 0775, true);
             file_put_contents('report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json'), $payload);
         }
+        echo "report was written\n";
+        echo "it can be found at " . ($output ?: 'report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json')) . "\n";
 
         $errors   = (int)($result['summary']['errors']   ?? 0);
         $warnings = (int)($result['summary']['warnings'] ?? 0);

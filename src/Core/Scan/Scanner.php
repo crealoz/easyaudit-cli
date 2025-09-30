@@ -1,6 +1,10 @@
 <?php
 namespace EasyAudit\Core\Scan;
 
+use EasyAudit\Service\Api;
+use EasyAudit\Support\Env;
+use EasyAudit\Support\Paths;
+
 class Scanner
 {
     private array $excludePatterns = [];
@@ -36,12 +40,12 @@ class Scanner
         'di',
     ];
 
-    public function run(string $exclude = '', array $excludedExtensions = []): array
+    public function run(string $exclude = '', array $excludedExtensions = [], $onlyFixable = false): array
     {
         if (empty(EA_SCAN_PATH)) {
             $path = getcwd();
         } else {
-            $path = $this->getAbsolutePath(EA_SCAN_PATH);
+            $path = Paths::getAbsolutePath(EA_SCAN_PATH);
         }
 
         if (!empty($excludedExtensions)) {
@@ -57,11 +61,17 @@ class Scanner
         foreach ($this->allowedExtensions as $ext) {
             $files[$ext] = [];
         }
-        echo "Scanning path: EA_SCAN_PATH\n";
+        echo "Scanning path: $path\n";
         if (!is_dir($path) && !is_file($path)) {
             $errors[] = "Path '$path' is not a valid directory or file.";
         }
         $files = $this->scanPaths($path, $files);
+
+        $fixableTypes = [];
+        if ($onlyFixable) {
+            $api = new Api(Env::isSelfSigned());
+            $fixableTypes = $api->getAllowedType();
+        }
 
         if (empty($files)) {
             $errors[] = "No files found to scan.";
@@ -69,6 +79,11 @@ class Scanner
             $processors = $this->getProcessors();
             /** @var ProcessorInterface $processor */
             foreach ($processors as $processor) {
+                if ($onlyFixable && !in_array($processor, $fixableTypes)) {
+                    echo "Skipping processor: " . $processor->getIdentifier() . " (not fixable)\n";
+                    continue;
+                }
+
                 if (!isset($files[$processor->getFileType()])) {
                     echo "Skipping processor: " . $processor->getIdentifier() . " (file type " . $processor->getFileType() . " is excluded)\n";
                     continue;
@@ -129,34 +144,6 @@ class Scanner
         }
         return $files;
     }
-
-    /**
-     * Convert a relative path to an absolute path.
-     * If the path is already absolute, return it as is.
-     * If the path contains ../ or ./, resolve it.
-     * @param string $path
-     * @return string
-     */
-    private function getAbsolutePath(string $path): string
-    {
-        if ($path === '' || $path === '.' || $path === './') {
-            return getcwd() ?: '/';
-        }
-
-        if ($path[0] === '/') {
-            return $path;
-        }
-
-        // tente realpath, sinon compose avec CWD
-        $rp = realpath($path);
-        if ($rp !== false) {
-            return $rp;
-        }
-
-        $cwd = getcwd() ?: '/';
-        return rtrim($cwd, '/').'/'.ltrim($path, './');
-    }
-
 
     /**
      * Get the list of processors to run on the files. Processors implement ProcessorInterface and are located in the

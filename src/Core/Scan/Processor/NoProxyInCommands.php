@@ -8,10 +8,11 @@ use EasyAudit\Core\Scan\Util\Formater;
 
 class NoProxyInCommands extends AbstractProcessor
 {
+    protected string $diFile = '';
 
     public function getIdentifier(): string
     {
-        return 'no-proxy-in-commands';
+        return 'noProxyUsedInCommands';
     }
 
     /**
@@ -21,6 +22,10 @@ class NoProxyInCommands extends AbstractProcessor
     {
         foreach ($files['di'] as $file) {
             $content = simplexml_load_file($file);
+            if ($content === false) {
+                continue;
+            }
+            $this->diFile = $file;
             $commandsListNode = $content->xpath('//type[@name=\'Magento\Framework\Console\CommandList\']//item');
             foreach ($commandsListNode as $commandNode) {
                 $this->manageCommandNode($commandNode, $content);
@@ -68,7 +73,7 @@ class NoProxyInCommands extends AbstractProcessor
                     $this->results[] = Formater::formatError(
                         $filePath,
                         Content::getLineNumber($fileContent, $paramName),
-                        "Command $commandClassName should use a Proxy for $parameterClassName (parameter $paramName in constructor)."
+                        "Command $commandClassName should use a Proxy for $parameterClassName (parameter $paramName in constructor). Change it in " . $this->diFile,
                     );
                 }
             }

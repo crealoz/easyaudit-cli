@@ -39,7 +39,7 @@ class AroundPlugins extends AbstractProcessor
         if (!empty($this->beforePlugins)) {
             echo 'Before plugins found: ' . count($this->beforePlugins) . PHP_EOL;
             $report[] = [
-                'ruleId' => 'before-plugin',
+                'ruleId' => 'aroundToBeforePlugin',
                 'name' => 'Before Plugin',
                 'shortDescription' => 'This is a before plugin. The callable is invoked after other code in the function.',
                 'longDescription' => 'Around plugins are costly in terms of performance. If the callable is invoked after any other code in the function, it is a befor plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.',
@@ -49,7 +49,7 @@ class AroundPlugins extends AbstractProcessor
         if (!empty($this->afterPlugins)) {
             echo 'After plugins found: ' . count($this->afterPlugins) . PHP_EOL;
             $report[] = [
-                'ruleId' => 'after-plugin',
+                'ruleId' => 'aroundToAfterPlugin',
                 'name' => 'After Plugin',
                 'shortDescription' => 'This is an after plugin. The callable is invoked before other code in the function.',
                 'longDescription' => 'Around plugins are costly in terms of performance. If the callable is invoked before any other code in the function, it is a after plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.',
@@ -59,7 +59,7 @@ class AroundPlugins extends AbstractProcessor
         if (!empty($this->overrides)) {
             echo 'Overrides found: ' . count($this->overrides) . PHP_EOL;
             $report[] = [
-                'ruleId' => 'override-not-plugin',
+                'ruleId' => 'overrideNotPlugin',
                 'name' => 'Override, not a plugin',
                 'shortDescription' => 'This is not a plugin, but an override. The callable is never invoked.',
                 'longDescription' => 'Around plugins are costly in terms of performance. If the callable is never invoked, it is not a plugin, but an override. Consider using a preference instead.',
@@ -94,7 +94,6 @@ class AroundPlugins extends AbstractProcessor
      */
     private function isAroundPlugin(string $code, string $file): void
     {
-        $results = [];
         if (preg_match_all(
             '/\bfunction\s+(around\w+)\s*\(([^)]*)\)/',
             $code,
@@ -123,7 +122,7 @@ class AroundPlugins extends AbstractProcessor
                         break;
                     }
                     foreach ($paramNames as $paramName) {
-                        $callableLine = Functions::getOccuringLineInFunction($functionContent, $paramName . '();');
+                        $callableLine = Functions::getOccuringLineInFunction($functionContent['content'], $paramName . '();');
                         if ($callableLine !== null) {
                             $callableName = $paramName;
                             break 2;
@@ -132,20 +131,20 @@ class AroundPlugins extends AbstractProcessor
                 }
 
                 if (isset($callableName)) {
-                    $functionInnerContent = Functions::getFunctionInnerContent($functionContent);
+                    $functionInnerContent = Functions::getFunctionInnerContent($functionContent['content']);
                     $lines = explode("\n", $functionInnerContent);
                     if ($this->isAfterPlugin($lines, $callableName)) {
                         // If the callable is called on the last line, it is an after plugin
-                        $this->afterPlugins[] = Formater::formatError($file, $lineNumber, "Plugin callable $callableName is invoked before other code in the function. So $functionName is an after plugin.");
+                        $this->afterPlugins[] = Formater::formatError($file, $lineNumber, "Plugin callable $callableName is invoked before other code in the function. So $functionName is an after plugin.", 'warning', $functionContent['endLine']);
                         $this->foundCount++;
                     }  elseif ($this->isBeforePlugin($lines, $callableName)) {
                         // If the callable is called on the first line, it is a before plugin
-                        $this->beforePlugins[] = Formater::formatError($file, $lineNumber, "Plugin callable $callableName is invoked after other code in the function. So $functionName is a before plugin.");
+                        $this->beforePlugins[] = Formater::formatError($file, $lineNumber, "Plugin callable $callableName is invoked after other code in the function. So $functionName is a before plugin.", 'warning', $functionContent['endLine']);
                         $this->foundCount++;
                     }
                 } else {
                     // If the callable is not called, it is an override, not a plugin
-                    $this->overrides[] = Formater::formatError($file, $lineNumber, "No callable found in parameters or invocation. So $functionName is an override, not a plugin.", 'error');
+                    $this->overrides[] = Formater::formatError($file, $lineNumber, "No callable found in parameters or invocation. So $functionName is an override, not a plugin.", 'error', $functionContent['endLine']);
                     $this->foundCount++;
                 }
             }

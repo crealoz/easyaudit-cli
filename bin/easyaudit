@@ -24,6 +24,7 @@ switch ($argv[1] ?? null) {
     case 'credits': $command = new \EasyAudit\Console\Command\Credits(); break;
     case 'fix-plan': $command = new \EasyAudit\Console\Command\FixPlan(); break;
     case 'fix-apply': $command = new \EasyAudit\Console\Command\FixApply(); break;
+    case 'activate-self-signed': $command = new \EasyAudit\Console\Command\ActivateSelfSigned(); break;
     default:
         fwrite(STDOUT, "EasyAudit - Security auditing tool for PHP applications\n");
         fwrite(STDOUT, "Usage: php easyaudit <command> [options]\n");

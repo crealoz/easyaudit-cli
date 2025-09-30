@@ -7,7 +7,7 @@ final class Credits implements \EasyAudit\Console\CommandInterface
 {
     public function run(array $argv): int
     {
-        $token = Env::getToken();
+        $token = Env::getAuthHeader();
         if (!$token) {
             fwrite(STDERR, "No token found. Run `auth:login` or set EASYAUDIT_TOKEN.\n");
             return 64;

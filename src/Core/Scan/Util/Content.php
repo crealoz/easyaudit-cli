@@ -14,4 +14,11 @@ class Content
         }
         return -1; // Not found
     }
+
+    public static function extractContent(string $fileContent, int $startLine, int $endLine): string
+    {
+        $lines = explode("\n", $fileContent);
+        $extractedLines = array_slice($lines, $startLine - 1, $endLine - $startLine + 1);
+        return implode("\n", $extractedLines);
+    }
 }

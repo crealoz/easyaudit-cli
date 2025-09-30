@@ -18,7 +18,7 @@ final class FixPlan implements \EasyAudit\Console\CommandInterface
             return 66; // EX_NOINPUT
         }
 
-        $token = Env::getToken();
+        $token = Env::getAuthHeader();
         if (!$token) {
             fwrite(STDERR, "Missing token. Run `auth:login` or set EASYAUDIT_TOKEN.\n");
             return 64;

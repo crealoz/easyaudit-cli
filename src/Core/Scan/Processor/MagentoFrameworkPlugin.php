@@ -9,7 +9,7 @@ class MagentoFrameworkPlugin extends AbstractProcessor
 {
     public function getIdentifier(): string
     {
-        return 'magento-framework-plugins';
+        return 'magentoFrameworkPlugin';
     }
 
     public function getFoundCount(): int

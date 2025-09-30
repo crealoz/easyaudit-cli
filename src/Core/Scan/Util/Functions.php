@@ -6,11 +6,13 @@ class Functions
 {
     /**
      * Returns the content of the function from the given code that starts at the specified line.
+     * @todo Maybe too greedy, needs more testing
      *
      * @param string $code
-     * @return string
+     * @param int $startLine
+     * @return array
      */
-    public static function getFunctionContent(string $code, int $startLine): string
+    public static function getFunctionContent(string $code, int $startLine): array
     {
         $lines = explode("\n", $code);
         $functionLines = [];
@@ -41,7 +43,14 @@ class Functions
             }
         }
 
-        return implode("\n", $functionLines);
+        if (!isset($lineNumber)) {
+            throw new \RuntimeException("Function starting at line $startLine not found.");
+        }
+
+        return [
+            'content' => implode("\n", $functionLines),
+            'endLine' => $lineNumber + 1
+        ];
     }
 
     public static function getFunctionInnerContent(string $functionContent): string

@@ -9,7 +9,7 @@ class SameModulePlugins extends AbstractProcessor
 {
     public function getIdentifier(): string
     {
-        return 'same-module-plugins';
+        return 'sameModulePlugin';
     }
 
     public function process(array $files): void
