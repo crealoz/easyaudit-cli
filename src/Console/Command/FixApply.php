@@ -9,13 +9,16 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
 {
 
     /**
-     * Command to apply fixes from a report. It accepts a JSON report file or reads from stdin.
+     * Command to apply fixes from a JSON report file.
+     * Uses EasyAudit API to generate patches.
+     * Usage: easyaudit fix-apply [options] <path|>
      * Options:
-     * --confirm         : skip confirmation prompt
-     * --patch-out=DIR   : directory to save patch files (default: .easyaudit/patches)
-     * --git-branch=NAME : (optional) create and switch to a git branch before applying patches
-     * The command checks for authentication and prompts for confirmation unless --confirm is used.
-     * It saves patch files to the specified directory and can optionally create a git branch.
+     *   --confirm           Skip confirmation prompt
+     *   --patch-out=DIR     Directory to save patch files (default: patches)
+     *  --format=FORMAT     Output format (git, patch). Default: git
+     *  --patch-name=NAME   Filename of the created file
+     * <path>              Path to JSON report file. If omitted, reads from stdin
+     * --help              Show this help message
      * @param array $argv
      * @return int
      */
@@ -29,11 +32,15 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
             fwrite(STDOUT, "  --confirm           Skip confirmation prompt\n");
             fwrite(STDOUT, "  --patch-out=DIR     Directory to save patch files (default: patches)\n");
             fwrite(STDOUT, "  --format=FORMAT     Output format (git, patch). Default: git\n");
+            fwrite(STDOUT, "  --patch-name=NAME   Filename of the created file\n");
+            fwrite(STDOUT, "  <path>              Path to JSON report file. If omitted, reads from stdin\n");
+            fwrite(STDOUT, "  --help              Show this help message\n");
             return 0;
         }
         $confirm   = Args::optBool($opts, 'confirm');
         $patchOut  = Args::optStr($opts, 'patch-out', 'patches');
         $format    = Args::optStr($opts, 'format', 'json');
+        $patchName = Args::optStr($opts, 'patch-name', time());
 
         $source = $rest ?? '';
         $json   = $source === '' ? stream_get_contents(STDIN) : @file_get_contents($source);
@@ -90,7 +97,7 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
             echo RED . "Error: " . $e->getMessage() . RESET . "\n";
             return 1;
         }
-        file_put_contents(rtrim($patchOut, '/').'/' . time() . '.patch', $patch);
+        file_put_contents(rtrim($patchOut, '/').'/' . $patchName . '.patch', $patch);
 
         fwrite(STDOUT, "Patches saved to $patchOut.\n");
         return 0;
