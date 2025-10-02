@@ -51,7 +51,10 @@ final class Paths
             }
             return $result;
         }
-        return (string)$data[$entry];
+        if (!isset($data[$entry])) {
+            return '';
+        }
+        return (string)$data[$entry] ?? '';
     }
 
     /**

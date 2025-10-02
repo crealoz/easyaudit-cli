@@ -43,14 +43,17 @@ final class Env
     {
         $f = Paths::configFile();
         if (!is_file($f) || !is_readable($f)) {
+            echo "Config file not found or not readable: $f\n";
             return null;
         }
         $content = file_get_contents($f);
         if ($content === false) {
+            echo "Failed to read config file: $f\n";
             return null;
         }
         $data = json_decode($content, true);
         if (!is_array($data) || !isset($data['key']) || !isset($data['hash'])) {
+            echo "Config file is malformed: $f\n";
             return null;
         }
         return $data['key'] . ':' . $data['hash'];
@@ -79,6 +82,6 @@ final class Env
         if ($customUrl !== false && $customUrl !== '') {
             return rtrim($customUrl, '/') . '/';
         }
-        return 'https://api.crealoz.fr/';
+        return 'https://api.crealoz.fr:8443/';
     }
 }

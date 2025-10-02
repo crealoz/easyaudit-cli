@@ -63,8 +63,6 @@ class Api
 
         $data = $this->manageResponse($ch);
 
-        print_r($data);
-
         return $data['diff'];
     }
 
@@ -97,7 +95,6 @@ class Api
 
         $data = $this->manageResponse($ch);
         $types = $data['types'] ?? null;
-        print_r($data['message']);
         if (!is_array($types)) {
             throw new RuntimeException('Invalid response structure from API.');
         }

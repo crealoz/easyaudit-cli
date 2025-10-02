@@ -37,7 +37,7 @@ class Functions
                 $braceCount -= substr_count($line, '}');
 
                 // If brace count is zero, we've reached the end of the function
-                if ($braceCount === 0 && str_contains($line, '{')) {
+                if ($braceCount === 0 && str_contains($line, '}')) {
                     break;
                 }
             }

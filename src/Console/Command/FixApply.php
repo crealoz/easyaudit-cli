@@ -29,13 +29,13 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
             fwrite(STDOUT, "Usage: easyaudit fix-apply [options] <path|>\n");
             fwrite(STDOUT, "Options:\n");
             fwrite(STDOUT, "  --confirm           Skip confirmation prompt\n");
-            fwrite(STDOUT, "  --patch-out=DIR     Directory to save patch files (default: .easyaudit/patches)\n");
+            fwrite(STDOUT, "  --patch-out=DIR     Directory to save patch files (default: patches)\n");
             fwrite(STDOUT, "  --format=FORMAT     Output format (git, patch). Default: git\n");
             fwrite(STDOUT, "  --git-branch=NAME   (Optional) Create and switch to a git branch before applying patches\n");
             return 0;
         }
         $confirm   = Args::optBool($opts, 'confirm');
-        $patchOut  = Args::optStr($opts, 'patch-out', '.easyaudit/patches');
+        $patchOut  = Args::optStr($opts, 'patch-out', 'patches');
         $gitBranch = Args::optStr($opts, 'git-branch');
         $format    = Args::optStr($opts, 'format', 'json');
 
@@ -61,14 +61,15 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
 
         $fixables = $api->getAllowedType();
         $cost = 0;
+        $payloadFiles = [];
         foreach ($errors as $finding) {
             if (!in_array($finding['ruleId'], $fixables, true)) {
-                fwrite(STDOUT, "Skipping non-fixable issue type: {$finding['ruleId']}\n");
                 continue;
             }
+            $payloadFiles[$finding['ruleId']] = [];
             foreach ($finding['files'] as $file) {
                 $cost++;
-                $payloadFiles[] = $this->addContentToFix($file);
+                $payloadFiles[$finding['ruleId']][] = $this->addContentToFix($file);
             }
         }
 
@@ -84,10 +85,7 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
         }
 
         $patch = $api->requestPR($payloadFiles, $format);
-
-        // TODO: real API call. Demo patch:
-        $demoPatch = "--- a/file.php\n+++ b/file.php\n@@\n- old\n+ new\n";
-        file_put_contents(rtrim($patchOut, '/').'/demo.patch', $demoPatch);
+        file_put_contents(rtrim($patchOut, '/').'/' . time() . '.patch', $patch);
 
         if ($gitBranch) {
             // optional: integrate git branch creation
@@ -104,15 +102,10 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
         if ($fileContent === false) {
             throw new \RuntimeException("Failed to read file: $filePath");
         }
-        echo "Processing file: $filePath\n";
-        echo "Lines: {$file['startLine']} to {$file['endLine']}\n";
-        $content = Content::extractContent($fileContent, $file['startLine'], $file['endLine']);
 
         return [
-            'filepath'  => $filePath,
-            'startLine' => $file['startLine'],
-            'endLine'   => $file['endLine'],
-            'content'   => $content
+            'path'  => $filePath,
+            'content'   => $fileContent
         ];
 
     }
