@@ -3,8 +3,6 @@ namespace EasyAudit\Console\Command;
 
 use EasyAudit\Console\Util\Args;
 use EasyAudit\Console\Util\Confirm;
-use EasyAudit\Core\Scan\Util\Content;
-use EasyAudit\Support\Env;
 use EasyAudit\Support\Paths;
 
 final class FixApply implements \EasyAudit\Console\CommandInterface

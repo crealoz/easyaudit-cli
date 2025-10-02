@@ -2,6 +2,7 @@ FROM php:8.2-alpine
 
 # Install dependencies
 RUN apk add --no-cache \
+      git \
       libxml2-dev \
       curl-dev \
       oniguruma-dev \
