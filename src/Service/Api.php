@@ -4,7 +4,6 @@ namespace EasyAudit\Service;
 
 use EasyAudit\Exception\GitHubAuthException;
 use EasyAudit\Support\Env;
-use EasyAudit\Support\Paths;
 use RuntimeException;
 
 /**
@@ -21,7 +20,15 @@ class Api
         $this->selfSigned = Env::isSelfSigned();
     }
 
-    public function requestPR(array $files, string $type)
+    /**
+     * Request a pull request from the API.
+     * @param array $files
+     * @param string $type
+     * @return string The diff as a string.
+     * @throws RuntimeException
+     * @throws GitHubAuthException
+     */
+    public function requestPR(array $files, string $type): string
     {
         $this->authHeader = Env::getAuthHeader();
 
@@ -61,18 +68,31 @@ class Api
             CURLOPT_SSL_VERIFYHOST  => $this->selfSigned ? 0 : 2,
         ]);
 
+        echo BLUE . "calling API at " . Env::getApiUrl().$entryPoint . RESET . "\n";
+
         $data = $this->manageResponse($ch);
+
+        if (!isset($data['diff']) || !is_string($data['diff'])) {
+            echo RED . "The response from the API did not contain a valid 'diff' field." . RESET . "\n";
+            echo "Response data: " . print_r($data, true) . "\n";
+
+            throw new RuntimeException('Invalid response structure from API.');
+        }
 
         return $data['diff'];
     }
 
+    /**
+     * Fetch the allowed types from the API.
+     * @return array
+     * @throws RuntimeException
+     * @throws GitHubAuthException
+     */
     public function getAllowedType(): array
     {
         $this->authHeader = Env::getAuthHeader();
 
         $entryPoint = 'api/allowed-types';
-
-        echo "calling API at " . Env::getApiUrl().$entryPoint . "\n";
 
         $ch = curl_init(Env::getApiUrl().$entryPoint);
         if ($ch === false) {
@@ -93,11 +113,14 @@ class Api
             CURLOPT_SSL_VERIFYHOST  => $this->selfSigned ? 0 : 2,
         ]);
 
+        echo BLUE . "calling API at " . Env::getApiUrl().$entryPoint . RESET . "\n";
+
         $data = $this->manageResponse($ch);
         $types = $data['types'] ?? null;
         if (!is_array($types)) {
             throw new RuntimeException('Invalid response structure from API.');
         }
+        echo "EasyAudit will try to fix this types : " . implode(', ', $types) . "\n";
 
         return $data['types'];
     }

@@ -31,12 +31,10 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
             fwrite(STDOUT, "  --confirm           Skip confirmation prompt\n");
             fwrite(STDOUT, "  --patch-out=DIR     Directory to save patch files (default: patches)\n");
             fwrite(STDOUT, "  --format=FORMAT     Output format (git, patch). Default: git\n");
-            fwrite(STDOUT, "  --git-branch=NAME   (Optional) Create and switch to a git branch before applying patches\n");
             return 0;
         }
         $confirm   = Args::optBool($opts, 'confirm');
         $patchOut  = Args::optStr($opts, 'patch-out', 'patches');
-        $gitBranch = Args::optStr($opts, 'git-branch');
         $format    = Args::optStr($opts, 'format', 'json');
 
         $source = $rest ?? '';
@@ -70,6 +68,7 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
             foreach ($finding['files'] as $file) {
                 $cost++;
                 $payloadFiles[$finding['ruleId']][] = $this->addContentToFix($file);
+                echo "Prepared fix for " .BLUE.$file['file'].RESET. " (rule: {$finding['ruleId']})\n";
             }
         }
 
@@ -84,14 +83,18 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
             return 0;
         }
 
-        $patch = $api->requestPR($payloadFiles, $format);
+        echo "Requesting patches from EasyAudit API...\n";
+        echo "This will consume " .GREEN.$cost.RESET. " credits.\n";
+
+        try {
+            $patch = $api->requestPR($payloadFiles, $format);
+        } catch (\Exception $e) {
+            echo RED . "Error: " . $e->getMessage() . RESET . "\n";
+            return 1;
+        }
         file_put_contents(rtrim($patchOut, '/').'/' . time() . '.patch', $patch);
 
-        if ($gitBranch) {
-            // optional: integrate git branch creation
-        }
-
-        fwrite(STDOUT, "Patches saved to $patchOut (demo).\n");
+        fwrite(STDOUT, "Patches saved to $patchOut.\n");
         return 0;
     }
 

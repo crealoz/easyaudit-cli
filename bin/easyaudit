@@ -4,6 +4,24 @@ if (version_compare(PHP_VERSION, '8.1', '<')) {
     fwrite(STDERR, "EasyAudit requires PHP >= 8.1\n");
     exit(64);
 }
+define('RESET', "\033[0m");
+define('GREEN', "\033[32m");
+define('RED', "\033[31m");
+define('YELLOW', "\033[33m");
+define('BLUE', "\033[34m");
+define('BOLD', "\033[1m");
+
+set_exception_handler(function (Throwable $e) {
+    fwrite(STDERR, RED . "Error: " . $e->getMessage() . RESET . "\n");
+    exit(1);
+});
+
+set_error_handler(function ($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) {
+        return;
+    }
+    throw new ErrorException($message, 0, $severity, $file, $line);
+});
 
 spl_autoload_register(function ($class) {
     $prefix = 'EasyAudit\\';
@@ -37,6 +55,5 @@ switch ($argv[1] ?? null) {
         exit(64);
 }
 
-if (isset($command)) {
-    $command->run(array_slice($argv, 2));
-}
+$exitCode = $command->run(array_slice($argv, 2));
+exit($exitCode);

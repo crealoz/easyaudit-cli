@@ -6,6 +6,15 @@ use EasyAudit\Exception\GitHubAuthException;
 
 final class Env
 {
+    /**
+     * Get the authorization header for API requests.
+     * If running in GitHub Actions, use the EASYAUDIT_AUTH environment variable.
+     * Otherwise, use stored credentials from the config file.
+     *
+     * @return string|null The authorization header or null if not found.
+     * @throws GitHubAuthException If the EASYAUDIT_AUTH variable is missing or malformed in GitHub Actions.
+     * @throws EnvAuthException If no stored credentials are found when not in GitHub Actions.
+     */
     public static function getAuthHeader(): ?string
     {
         $authHeader = null;
@@ -31,6 +40,12 @@ final class Env
         return $authHeader;
     }
 
+    /**
+     * Store API credentials in the config file.
+     *
+     * @param string $key  The API key.
+     * @param string $hash The API hash.
+     */
     public static function storeCredentials(string $key, string $hash): void
     {
         Paths::updateConfigFile([
@@ -39,21 +54,26 @@ final class Env
         ]);
     }
 
+    /**
+     * Retrieve stored API credentials from the config file.
+     *
+     * @return string|null The credentials in "key:hash" format or null if not found or malformed.
+     */
     public static function getStoredCredentials(): ?string
     {
         $f = Paths::configFile();
         if (!is_file($f) || !is_readable($f)) {
-            echo "Config file not found or not readable: $f\n";
+            echo RED . "Config file not found or not readable: $f ". RESET ." \n";
             return null;
         }
         $content = file_get_contents($f);
         if ($content === false) {
-            echo "Failed to read config file: $f\n";
+            echo RED . "Failed to read config file: $f". RESET ."\n";
             return null;
         }
         $data = json_decode($content, true);
         if (!is_array($data) || !isset($data['key']) || !isset($data['hash'])) {
-            echo "Config file is malformed: $f\n";
+            echo RED . "Config file is malformed: $f". RESET ."\n";
             return null;
         }
         return $data['key'] . ':' . $data['hash'];
@@ -71,11 +91,22 @@ final class Env
         return filter_var(Paths::getConfig('use-self-signed'), FILTER_VALIDATE_BOOLEAN);
     }
 
+    /**
+     * Check if the code is running in a GitHub Actions environment.
+     * This is determined by the presence of the GITHUB_ACTIONS environment variable set to true.
+     *
+     * @return bool True if running in GitHub Actions, false otherwise.
+     */
     public static function isGithubActions(): bool
     {
         return filter_var(getenv('GITHUB_ACTIONS') ?: 'false', FILTER_VALIDATE_BOOLEAN);
     }
 
+    /**
+     * Get the API URL from the configuration file or return the default URL.
+     *
+     * @return string The API URL.
+     */
     public static function getApiUrl(): string
     {
         $customUrl = Paths::getConfig('api-url');
