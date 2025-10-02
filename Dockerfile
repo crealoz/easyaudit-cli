@@ -6,6 +6,7 @@ RUN apk add --no-cache \
       libxml2-dev \
       curl-dev \
       oniguruma-dev \
+      bash \
     && docker-php-ext-install xml mbstring curl
 
 
