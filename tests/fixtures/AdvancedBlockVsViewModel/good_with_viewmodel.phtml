@@ -1,0 +1,26 @@
+<?php
+/**
+ * Good example: Using ViewModel for data retrieval
+ * @var $block \Magento\Framework\View\Element\Template
+ * @var $viewModel \Vendor\Module\ViewModel\ProductDetails
+ */
+$viewModel = $block->getViewModel();
+?>
+<div class="product-details">
+    <h2><?= $block->escapeHtml($viewModel->getProductName()) ?></h2>
+    <div class="sku"><?= $viewModel->getProductSku() ?></div>
+    <div class="price"><?= $viewModel->getFormattedPrice() ?></div>
+
+    <?php if ($viewModel->hasSpecialPrice()): ?>
+        <div class="special-price"><?= $viewModel->getFormattedSpecialPrice() ?></div>
+    <?php endif; ?>
+
+    <div class="stock"><?= $viewModel->getStockStatusLabel() ?></div>
+
+    <?php if ($viewModel->isAvailable()): ?>
+        <button><?= __('Add to Cart') ?></button>
+    <?php endif; ?>
+
+    <!-- Only using $block for child rendering -->
+    <?= $block->getChildHtml('product.additional.info') ?>
+</div>

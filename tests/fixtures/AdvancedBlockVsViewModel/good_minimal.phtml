@@ -1,0 +1,31 @@
+<?php
+/**
+ * Good example: Minimal usage of block methods (only allowed methods)
+ * @var $block \Magento\Framework\View\Element\Template
+ */
+?>
+<div class="simple-block">
+    <h2><?= $block->escapeHtml(__('Product List')) ?></h2>
+
+    <!-- Only using allowed block methods -->
+    <div class="content">
+        <?= $block->getChildHtml('product.list') ?>
+    </div>
+
+    <div class="additional">
+        <?= $block->getChildHtml('product.additional') ?>
+    </div>
+
+    <!-- Using escaping methods - these are fine -->
+    <a href="<?= $block->escapeUrl($block->getUrl('catalog/product/view')) ?>">
+        <?= $block->escapeHtml(__('View Product')) ?>
+    </a>
+
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "Magento_Ui/js/core/app": <?= $block->getJsLayout() ?>
+            }
+        }
+    </script>
+</div>

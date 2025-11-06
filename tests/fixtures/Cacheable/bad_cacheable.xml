@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- Block with cacheable="false" that should be flagged -->
+        <referenceContainer name="content">
+            <block class="Vendor\Module\Block\ProductList" name="product.list.block" template="Vendor_Module::product/list.phtml" cacheable="false"/>
+        </referenceContainer>
+
+        <!-- Another problematic block -->
+        <referenceContainer name="sidebar">
+            <block class="Vendor\Module\Block\CustomWidget" name="custom.widget" template="Vendor_Module::widget/custom.phtml" cacheable="false"/>
+        </referenceContainer>
+
+        <!-- Customer-related block - should be allowed -->
+        <referenceContainer name="header">
+            <block class="Vendor\Module\Block\CustomerInfo" name="customer.info.block" template="Vendor_Module::customer/info.phtml" cacheable="false"/>
+        </referenceContainer>
+
+        <!-- Sales-related block - should be allowed -->
+        <referenceContainer name="main">
+            <block class="Vendor\Module\Block\SalesData" name="sales.data.block" template="Vendor_Module::sales/data.phtml" cacheable="false"/>
+        </referenceContainer>
+    </body>
+</page>

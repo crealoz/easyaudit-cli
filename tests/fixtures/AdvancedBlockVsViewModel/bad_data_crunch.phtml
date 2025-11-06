@@ -1,0 +1,25 @@
+<?php
+/**
+ * Bad example: Too much data retrieval through block
+ * Should use ViewModel instead
+ */
+?>
+<div class="product-details">
+    <h2><?= $block->escapeHtml($block->getProductName()) ?></h2>
+    <div class="sku"><?= $block->getProductSku() ?></div>
+    <div class="price"><?= $block->getProductPrice() ?></div>
+    <div class="special-price"><?= $block->getSpecialPrice() ?></div>
+    <div class="stock"><?= $block->getStockStatus() ?></div>
+    <div class="manufacturer"><?= $block->getManufacturer() ?></div>
+    <div class="category"><?= $block->getCategoryName() ?></div>
+    <div class="rating"><?= $block->getProductRating() ?></div>
+    <div class="reviews"><?= $block->getReviewCount() ?></div>
+
+    <?php if ($block->isInStock()): ?>
+        <button><?= __('Add to Cart') ?></button>
+    <?php endif; ?>
+
+    <?php if ($block->hasDiscount()): ?>
+        <span class="discount"><?= $block->getDiscountAmount() ?></span>
+    <?php endif; ?>
+</div>

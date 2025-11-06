@@ -32,21 +32,56 @@ bin/easyaudit scan --help
 
 Reports are usually written to the `report/` folder.
 
+## Available Processors
+
+EasyAudit includes **16 static analysis processors** for Magento 2 codebases:
+
+### Dependency Injection (DI) Analysis
+
+- **SameModulePlugins** – Detects plugins targeting classes in the same module (anti-pattern)
+- **MagentoFrameworkPlugin** – Detects plugins on Magento Framework classes (performance issue)
+- **AroundPlugins** – Classifies around plugins as before/after or override
+- **NoProxyInCommands** – Detects console commands without proxy usage
+- **Preferences** – Detects multiple preferences for the same interface/class
+- **ProxyForHeavyClasses** – Detects heavy classes (Session, Collection, ResourceModel) without proxies
+
+### Code Quality
+
+- **HardWrittenSQL** – Detects raw SQL queries (security risk)
+- **UseOfRegistry** – Detects deprecated Registry usage
+- **UseOfObjectManager** – Detects direct ObjectManager usage (anti-pattern)
+- **SpecificClassInjection** – Detects injection of specific classes instead of interfaces
+- **PaymentInterfaceUseAudit** – Detects deprecated payment method implementations
+
+### Template/View Layer
+
+- **Cacheable** – Detects blocks with `cacheable="false"` (performance impact)
+- **AdvancedBlockVsViewModel** – Detects `$this` usage and data crunch in templates
+- **Helpers** – Detects deprecated Helper patterns (AbstractHelper, helpers in templates)
+
+### Architecture & Best Practices
+
+- **BlockViewModelRatio** – Analyzes ratio of Blocks vs ViewModels per module
+- **UnusedModules** – Detects modules present in codebase but disabled in config.php
+
+Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
+
 ## Output Formats
 
 - **JSON** – structured output for tooling and scripting.
 - **SARIF** – standardized format for GitHub Code Scanning integration.
+- **Text** – human-readable console output (default).
 
 ### SARIF Severity Levels
 
-EasyAudit uses SARIF’s standard levels:
+EasyAudit uses SARIF's standard levels:
 
 - `error` – critical violation, should block merges.
 - `warning` – important issues, but non-blocking.
 - `note` – informational findings.
 - `none` – explicitly no severity.
 
-Each finding is mapped to a SARIF `ruleId`. Rules are declared in the SARIF output under `tool.driver.rules` (e.g., `no-proxy-in-commands`, `same-module-plugins`).
+Each finding is mapped to a SARIF `ruleId`. Rules are declared in the SARIF output under `tool.driver.rules`.
 
 ## Docker Image
 

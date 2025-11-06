@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- All blocks are cacheable (default behavior) -->
+        <referenceContainer name="content">
+            <block class="Vendor\Module\Block\ProductList" name="product.list.block" template="Vendor_Module::product/list.phtml"/>
+        </referenceContainer>
+
+        <!-- Explicitly cacheable -->
+        <referenceContainer name="sidebar">
+            <block class="Vendor\Module\Block\CustomWidget" name="custom.widget" template="Vendor_Module::widget/custom.phtml" cacheable="true"/>
+        </referenceContainer>
+
+        <!-- Using ViewModel for dynamic content instead of cacheable="false" -->
+        <referenceContainer name="header">
+            <block class="Magento\Framework\View\Element\Template" name="dynamic.content.block" template="Vendor_Module::dynamic/content.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Vendor\Module\ViewModel\DynamicContent</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

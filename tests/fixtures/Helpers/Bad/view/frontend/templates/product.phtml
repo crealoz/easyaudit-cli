@@ -1,0 +1,24 @@
+<?php
+/**
+ * Bad example: Using helper in template
+ * @var $block \Magento\Framework\View\Element\Template
+ */
+?>
+<div class="product-info">
+    <h1>Product Details</h1>
+
+    <!-- Bad: Using helper for presentation logic -->
+    <div class="price">
+        <?= $this->helper('Vendor\Module\Helper\Data')->getFormattedPrice(99.99) ?>
+    </div>
+
+    <?php if ($this->helper('Vendor\Module\Helper\Data')->isFeatureEnabled()): ?>
+        <div class="feature">
+            Special feature enabled!
+        </div>
+    <?php endif; ?>
+
+    <div class="customer">
+        Customer: <?= $this->helper('Vendor\Module\Helper\Data')->getCustomerName() ?>
+    </div>
+</div>

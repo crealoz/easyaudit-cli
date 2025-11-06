@@ -1,0 +1,17 @@
+<?php
+/**
+ * Bad example: Using $this instead of $block
+ */
+?>
+<div class="product-info">
+    <h1><?= $this->escapeHtml($this->getProductName()) ?></h1>
+    <div class="price">
+        <?= $this->getProductPrice() ?>
+    </div>
+    <div class="description">
+        <?= $this->getProductDescription() ?>
+    </div>
+    <?php if ($this->isProductAvailable()): ?>
+        <button type="button"><?= __('Add to Cart') ?></button>
+    <?php endif; ?>
+</div>

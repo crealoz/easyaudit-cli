@@ -1,0 +1,26 @@
+<?php
+/**
+ * Good example: Using ViewModel instead of helper
+ * @var $block \Magento\Framework\View\Element\Template
+ * @var $viewModel \Vendor\Module\ViewModel\ProductDetails
+ */
+$viewModel = $block->getViewModel();
+?>
+<div class="product-info">
+    <h1>Product Details</h1>
+
+    <!-- Good: Using ViewModel for presentation logic -->
+    <div class="price">
+        <?= $viewModel->getFormattedPrice(99.99) ?>
+    </div>
+
+    <?php if ($viewModel->isFeatureEnabled()): ?>
+        <div class="feature">
+            Special feature enabled!
+        </div>
+    <?php endif; ?>
+
+    <div class="customer">
+        Customer: <?= $viewModel->getCustomerName() ?>
+    </div>
+</div>
