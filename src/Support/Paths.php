@@ -15,6 +15,10 @@ final class Paths
 
     public static function configFile(): string
     {
+        $localConfig = self::configDir() . '/config.json.local';
+        if (file_exists($localConfig)) {
+            return $localConfig;
+        }
         return self::configDir() . '/config.json';
     }
 

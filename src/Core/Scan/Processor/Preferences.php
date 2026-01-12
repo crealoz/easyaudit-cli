@@ -20,7 +20,7 @@ class Preferences extends AbstractProcessor
 
     public function getIdentifier(): string
     {
-        return 'multiplePreferences';
+        return 'duplicatePreferences';
     }
 
     public function getFileType(): string
@@ -32,10 +32,10 @@ class Preferences extends AbstractProcessor
     {
         $report = [];
         if (!empty($this->results)) {
-            echo 'Multiple preferences found: ' . count($this->results) . PHP_EOL;
+            echo "  \033[31m✗\033[0m Duplicate preferences: \033[1;31m" . count($this->results) . "\033[0m\n";
             $report[] = [
-                'ruleId' => 'multiplePreferences',
-                'name' => 'Multiple Preferences',
+                'ruleId' => 'duplicatePreferences',
+                'name' => 'Duplicate Preferences',
                 'shortDescription' => 'Multiple preferences found for the same interface/class.',
                 'longDescription' => 'Multiple preferences found for the same interface/class. This can lead to unexpected behavior as only the last one will be applied, depending on module load sequence. Please remove duplicate preferences or check that sequence is done correctly in module declaration.',
                 'files' => $this->results,
@@ -60,7 +60,11 @@ class Preferences extends AbstractProcessor
 
         // First pass: collect all preferences
         foreach ($files['di'] as $file) {
+            $previousUseErrors = libxml_use_internal_errors(true);
             $xml = simplexml_load_file($file);
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousUseErrors);
+
             if ($xml === false) {
                 continue;
             }
@@ -104,8 +108,13 @@ class Preferences extends AbstractProcessor
                             $file,
                             $lineNumber,
                             "Multiple preferences found for '$interface'. This preference uses '$type'. Total preferences: " . count($preferences),
-                            'error'
+                            'error',
+                            0,
+                            [
+                                'interface' => $interface,
+                            ]
                         );
+                        $fileList[$file] = true;
                     }
                 }
             }

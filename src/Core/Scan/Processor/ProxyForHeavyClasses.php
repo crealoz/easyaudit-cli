@@ -42,7 +42,7 @@ class ProxyForHeavyClasses extends AbstractProcessor
         $report = [];
 
         if (!empty($this->results)) {
-            echo 'Classes without proxy for heavy dependencies found: ' . count($this->results) . PHP_EOL;
+            echo "  \033[33m!\033[0m Classes without proxy for heavy dependencies: \033[1;33m" . count($this->results) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'noProxyUsedForHeavyClasses',
                 'name' => 'No Proxy for Heavy Classes',
@@ -115,12 +115,20 @@ class ProxyForHeavyClasses extends AbstractProcessor
                 if (!$this->hasProxyInDiXml($className, $paramName, $paramClassName, $diXmlFiles)) {
                     $this->foundCount++;
                     $lineNumber = Content::getLineNumber($fileContent, $paramName);
+                    $diFile = $this->findDiXmlForFile($file);
 
                     $this->results[] = Formater::formatError(
                         $file,
                         $lineNumber,
                         "Class '$className' injects heavy class '$paramClassName' (parameter \$$paramName) without a proxy. Consider configuring a proxy in di.xml to improve performance.",
-                        'error'
+                        'error',
+                        0,
+                        [
+                            'diFile' => $diFile,
+                            'type' => $className,
+                            'argument' => ltrim($paramName, '$'),
+                            'proxy' => $paramClassName . '\Proxy',
+                        ]
                     );
                 }
             }
@@ -160,6 +168,44 @@ class ProxyForHeavyClasses extends AbstractProcessor
         }
 
         return false;
+    }
+
+    /**
+     * Find the di.xml file for a given PHP file path.
+     * Looks for etc/di.xml in the module root directory.
+     *
+     * @param string $phpFile Path to PHP file
+     * @return string|null Path to di.xml or null if not found
+     */
+    private function findDiXmlForFile(string $phpFile): ?string
+    {
+        // Extract module root from path like /path/to/app/code/Vendor/Module/Model/Class.php
+        // Module root would be /path/to/app/code/Vendor/Module/
+
+        // Look for app/code/Vendor/Module pattern
+        if (preg_match('#(.*?/app/code/[^/]+/[^/]+)/#', $phpFile, $matches)) {
+            $moduleRoot = $matches[1];
+            $diFile = $moduleRoot . '/etc/di.xml';
+            if (file_exists($diFile)) {
+                return $diFile;
+            }
+        }
+
+        // Fallback: walk up directories looking for etc/di.xml
+        $dir = dirname($phpFile);
+        while ($dir !== '/' && $dir !== '.') {
+            $diFile = $dir . '/etc/di.xml';
+            if (file_exists($diFile)) {
+                return $diFile;
+            }
+            // Stop if we hit app/code level
+            if (str_ends_with($dir, '/app/code')) {
+                break;
+            }
+            $dir = dirname($dir);
+        }
+
+        return null;
     }
 
     /**

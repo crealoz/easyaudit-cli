@@ -32,7 +32,7 @@ class BlockViewModelRatio extends AbstractProcessor
         $report = [];
 
         if (!empty($this->moduleRatios)) {
-            echo 'Modules with high Block ratio found: ' . count($this->moduleRatios) . PHP_EOL;
+            echo "  \033[33m!\033[0m Modules with high Block ratio: \033[1;33m" . count($this->moduleRatios) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'blockViewModelRatio',
                 'name' => 'Block vs ViewModel Ratio',

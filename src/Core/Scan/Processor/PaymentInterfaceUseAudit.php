@@ -33,7 +33,7 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
         $report = [];
 
         if (!empty($this->results)) {
-            echo 'Deprecated payment method implementations found: ' . count($this->results) . PHP_EOL;
+            echo "  \033[33m!\033[0m Deprecated payment method implementations: \033[1;33m" . count($this->results) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'extensionOfAbstractMethod',
                 'name' => 'Extension of Deprecated Payment AbstractMethod',

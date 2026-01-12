@@ -1,6 +1,7 @@
 <?php
 namespace EasyAudit\Core\Scan;
 
+use EasyAudit\Core\Scan\ExternalToolMapping;
 use EasyAudit\Service\Api;
 use EasyAudit\Support\Env;
 use EasyAudit\Support\Paths;
@@ -56,53 +57,68 @@ class Scanner
             $this->excludePatterns = array_map('trim', explode(',', $exclude));
         }
 
-        $errors = [];
+        $findings = [];
+        $toolSuggestions = [];
         $files = [];
         foreach ($this->allowedExtensions as $ext) {
             $files[$ext] = [];
         }
-        echo "Scanning path: $path\n";
+        echo "\n\033[1;35m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n";
+        echo "\033[1;35m  EasyAudit Scan\033[0m\n";
+        echo "\033[1;35m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n";
+        echo "  Path: \033[1;37m$path\033[0m\n";
         if (!is_dir($path) && !is_file($path)) {
-            $errors[] = "Path '$path' is not a valid directory or file.";
+            $findings[] = "Path '$path' is not a valid directory or file.";
         }
         $files = $this->scanPaths($path, $files);
 
         $fixableTypes = [];
         if ($onlyFixable) {
-            $api = new Api(Env::isSelfSigned());
+            $api = new Api();
             $fixableTypes = $api->getAllowedType();
         }
 
         if (empty($files)) {
-            $errors[] = "No files found to scan.";
+            $findings[] = "No files found to scan.";
         } else {
             $processors = $this->getProcessors();
             /** @var ProcessorInterface $processor */
             foreach ($processors as $processor) {
                 if ($onlyFixable && !in_array($processor, $fixableTypes)) {
-                    echo "Skipping processor: " . $processor->getIdentifier() . " (not fixable)\n";
+                    echo "\033[2m  ○ Skipping " . $processor->getName() . " (not fixable)\033[0m\n";
                     continue;
                 }
 
                 if (!isset($files[$processor->getFileType()])) {
-                    echo "Skipping processor: " . $processor->getIdentifier() . " (file type " . $processor->getFileType() . " is excluded)\n";
+                    echo "\033[2m  ○ Skipping " . $processor->getName() . " (file type " . $processor->getFileType() . " excluded)\033[0m\n";
                     continue;
                 }
                 if (empty($files[$processor->getFileType()])) {
-                    echo "Skipping processor: " . $processor->getIdentifier() . " (no files of type " . $processor->getFileType() . " found)\n";
+                    echo "\033[2m  ○ Skipping " . $processor->getName() . " (no " . $processor->getFileType() . " files)\033[0m\n";
                     continue;
                 }
-                echo "Running processor: " . $processor->getIdentifier() . "\n";
+                echo "\n\033[1;36m▶ " . $processor->getName() . "\033[0m\n";
                 $processor->process($files);
                 if ($processor->getFoundCount() > 0) {
                     foreach ($processor->getReport() as $report) {
-                        $errors[] = $report;
+                        $ruleId = $report['ruleId'] ?? '';
+
+                        // Check if this issue can be fixed by an external tool
+                        if (ExternalToolMapping::isExternallyFixable($ruleId)) {
+                            $fileCount = count($report['files'] ?? []);
+                            $toolSuggestions[$ruleId] = ($toolSuggestions[$ruleId] ?? 0) + $fileCount;
+                        } else {
+                            $findings[] = $report;
+                        }
                     }
                 }
             }
         }
 
-        return $errors;
+        return [
+            'findings' => $findings,
+            'toolSuggestions' => $toolSuggestions,
+        ];
     }
 
     /**

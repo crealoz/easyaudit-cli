@@ -59,9 +59,9 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
         $report = [];
 
         if (!empty($this->useOfThisErrors)) {
-            echo 'Use of $this instead of $block found: ' . count($this->useOfThisErrors) . PHP_EOL;
+            echo "  \033[31m✗\033[0m Use of \$this instead of \$block: \033[1;31m" . count($this->useOfThisErrors) . "\033[0m\n";
             $report[] = [
-                'ruleId' => 'useOfThisInsteadOfBlock',
+                'ruleId' => 'thisToBlock',
                 'name' => 'Use of $this instead of $block',
                 'shortDescription' => 'Template uses $this instead of $block variable.',
                 'longDescription' => 'Using $this in phtml templates is not recommended as it may not be compatible with alternative templating systems. Using $block ensures broader compatibility and supports a more adaptable templating structure. This is especially important when considering future upgrades or alternative rendering engines.',
@@ -70,7 +70,7 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
         }
 
         if (!empty($this->dataCrunchWarnings)) {
-            echo 'Potential data crunch in phtml found: ' . count($this->dataCrunchWarnings) . PHP_EOL;
+            echo "  \033[33m!\033[0m Potential data crunch in phtml: \033[1;33m" . count($this->dataCrunchWarnings) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'dataCrunchInPhtml',
                 'name' => 'Potential Data Crunch in Template',

@@ -21,33 +21,37 @@ class Api
     }
 
     /**
-     * Request a pull request from the API.
-     * @param array $files
-     * @param string $type
-     * @return string The diff as a string.
+     * Request a fix for a single file from the API.
+     *
+     * @param string $filePath Path to the file being fixed
+     * @param string $content File content
+     * @param array $rules Object of {ruleId: metadata}
+     * @return array Response including 'diff' (string), 'status', 'credits_remaining'
      * @throws RuntimeException
      * @throws GitHubAuthException
      */
-    public function requestPR(array $files, string $type): string
+    public function requestFilefix(string $filePath, string $content, array $rules): array
     {
         $this->authHeader = Env::getAuthHeader();
 
         $entryPoint = 'api/instant-pr';
-        if ($type === '' || empty($files)) {
-            throw new RuntimeException('Invalid input: "type" must be non-empty and "files" must not be empty.');
-        }
 
+        // API expects files as object keyed by path, even for single file
         $body = [
-            'type'       => $type,
-            'patch_type' => 'git',
-            'files'      => $files,
+            'files'  => [
+                $filePath => [
+                    'content' => $content,
+                    'rules'   => $rules,
+                ],
+            ],
+            'format' => 'git',
         ];
         $json = json_encode($body, JSON_UNESCAPED_SLASHES);
         if ($json === false) {
             throw new RuntimeException('Failed to encode request body.');
         }
 
-        $ch = curl_init(Env::getApiUrl().$entryPoint);
+        $ch = curl_init(Env::getApiUrl() . $entryPoint);
         if ($ch === false) {
             throw new RuntimeException('Failed to initialize cURL.');
         }
@@ -59,27 +63,127 @@ class Api
         ];
 
         curl_setopt_array($ch, [
-            CURLOPT_POST            => true,
-            CURLOPT_HTTPHEADER      => $headers,
-            CURLOPT_POSTFIELDS      => $json,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_TIMEOUT         => 60,
-            CURLOPT_SSL_VERIFYPEER  => !$this->selfSigned,
-            CURLOPT_SSL_VERIFYHOST  => $this->selfSigned ? 0 : 2,
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_POSTFIELDS     => $json,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_SSL_VERIFYPEER => !$this->selfSigned,
+            CURLOPT_SSL_VERIFYHOST => $this->selfSigned ? 0 : 2,
         ]);
 
-        echo BLUE . "calling API at " . Env::getApiUrl().$entryPoint . RESET . "\n";
+        $data = $this->manageResponse($ch, allowPartial: true);
+
+        // API returns diffs as object keyed by file path
+        if (!isset($data['diffs']) || !is_array($data['diffs'])) {
+            throw new RuntimeException('Invalid response structure from API: missing diffs field.');
+        }
+
+        // Extract the diff for the single file we sent
+        $diff = $data['diffs'][$filePath] ?? '';
+
+        return [
+            'diff' => $diff,
+            'status' => $data['status'] ?? 'success',
+            'credits_remaining' => $data['credits_remaining'] ?? null,
+        ];
+    }
+
+    /**
+     * Request a di.xml fix to add proxy configurations.
+     *
+     * @param string $diFilePath Path to the di.xml file
+     * @param string $content Current di.xml content
+     * @param array $proxies Proxies grouped by type: [type => [['argument' => x, 'proxy' => y], ...]]
+     * @return array Response including 'diff' (string), 'status', 'credits_remaining'
+     * @throws RuntimeException
+     * @throws GitHubAuthException
+     */
+    public function requestDiFix(string $diFilePath, string $content, array $proxies): array
+    {
+        $this->authHeader = Env::getAuthHeader();
+
+        $entryPoint = 'api/di-proxy-fix';
+
+        $body = [
+            'diFile'  => $diFilePath,
+            'content' => $content,
+            'proxies' => $proxies,
+            'format'  => 'git',
+        ];
+        $json = json_encode($body, JSON_UNESCAPED_SLASHES);
+        if ($json === false) {
+            throw new RuntimeException('Failed to encode request body.');
+        }
+
+        $ch = curl_init(Env::getApiUrl() . $entryPoint);
+        if ($ch === false) {
+            throw new RuntimeException('Failed to initialize cURL.');
+        }
+
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: ' . $this->authHeader,
+            'User-Agent: easyaudit-cli-api-client/1.0',
+        ];
+
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_POSTFIELDS     => $json,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_SSL_VERIFYPEER => !$this->selfSigned,
+            CURLOPT_SSL_VERIFYHOST => $this->selfSigned ? 0 : 2,
+        ]);
+
+        $data = $this->manageResponse($ch, allowPartial: true);
+
+        return [
+            'diff' => $data['diff'] ?? '',
+            'status' => $data['status'] ?? 'success',
+            'credits_remaining' => $data['credits_remaining'] ?? null,
+        ];
+    }
+
+    /**
+     * Get remaining credits from the API.
+     * @return array {credits: int, credit_expiration_date: string, licence_expiration_date: string}
+     * @throws RuntimeException
+     * @throws GitHubAuthException
+     */
+    public function getRemainingCredits(): array
+    {
+        $this->authHeader = Env::getAuthHeader();
+
+        $entryPoint = 'api/get-remaining-credit';
+
+        $ch = curl_init(Env::getApiUrl() . $entryPoint);
+        if ($ch === false) {
+            throw new RuntimeException('Failed to initialize cURL.');
+        }
+
+        $headers = [
+            'Authorization: ' . $this->authHeader,
+            'User-Agent: easyaudit-cli-api-client/1.0',
+        ];
+
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_SSL_VERIFYPEER => !$this->selfSigned,
+            CURLOPT_SSL_VERIFYHOST => $this->selfSigned ? 0 : 2,
+        ]);
 
         $data = $this->manageResponse($ch);
 
-        if (!isset($data['diff']) || !is_string($data['diff'])) {
-            echo RED . "The response from the API did not contain a valid 'diff' field." . RESET . "\n";
-            echo "Response data: " . print_r($data, true) . "\n";
-
-            throw new RuntimeException('Invalid response structure from API.');
-        }
-
-        return $data['diff'];
+        return [
+            'credits' => $data['credits'] ?? 0,
+            'credit_expiration_date' => $data['credit_expiration_date'] ?? null,
+            'licence_expiration_date' => $data['licence_expiration_date'] ?? null,
+        ];
     }
 
     /**
@@ -120,12 +224,24 @@ class Api
         if (!is_array($types)) {
             throw new RuntimeException('Invalid response structure from API.');
         }
-        echo "EasyAudit will try to fix this types : " . implode(', ', $types) . "\n";
 
-        return $data['types'];
+        echo "EasyAudit can fix these types:\n";
+        foreach ($types as $type => $cost) {
+            echo "  - $type ($cost credit" . ($cost > 1 ? 's' : '') . ")\n";
+        }
+
+        return $types;
     }
 
-    private function manageResponse($ch): array
+    /**
+     * Handle cURL response and validate status.
+     *
+     * @param \CurlHandle $ch cURL handle
+     * @param bool $allowPartial When true, accepts "partial" status (insufficient credits)
+     * @return array Decoded response data
+     * @throws RuntimeException
+     */
+    private function manageResponse($ch, bool $allowPartial = false): array
     {
         $responseBody = curl_exec($ch);
         $httpCode     = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -153,10 +269,15 @@ class Api
         if (!is_array($data)) {
             throw new RuntimeException('Invalid JSON from API.');
         }
-        if (($data['status'] ?? '') !== 'success') {
+
+        $status = $data['status'] ?? '';
+        $validStatuses = $allowPartial ? ['success', 'partial'] : ['success'];
+
+        if (!in_array($status, $validStatuses, true)) {
             $msg = (string) ($data['message'] ?? 'API error');
             throw new RuntimeException($msg);
         }
+
         return $data;
     }
 }

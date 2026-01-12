@@ -36,7 +36,7 @@ class Cacheable extends AbstractProcessor
     {
         $report = [];
         if (!empty($this->results)) {
-            echo 'Cacheable="false" blocks found: ' . count($this->results) . PHP_EOL;
+            echo "  \033[31m✗\033[0m Cacheable=\"false\" blocks: \033[1;31m" . count($this->results) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'useCacheable',
                 'name' => 'Use of cacheable="false"',
@@ -65,7 +65,13 @@ class Cacheable extends AbstractProcessor
             if (str_ends_with(basename($file), 'di.xml')) {
                 continue;
             }
+
+            // Suppress XML parsing errors (malformed files will be skipped)
+            $previousUseErrors = libxml_use_internal_errors(true);
             $xml = simplexml_load_file($file);
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousUseErrors);
+
             if ($xml === false) {
                 continue;
             }

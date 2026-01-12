@@ -37,7 +37,7 @@ class AroundPlugins extends AbstractProcessor
     {
         $report = [];
         if (!empty($this->beforePlugins)) {
-            echo 'Before plugins found: ' . count($this->beforePlugins) . PHP_EOL;
+            echo "  \033[33m!\033[0m Around plugins (should be before): \033[1;33m" . count($this->beforePlugins) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'aroundToBeforePlugin',
                 'name' => 'Before Plugin',
@@ -47,7 +47,7 @@ class AroundPlugins extends AbstractProcessor
             ];
         }
         if (!empty($this->afterPlugins)) {
-            echo 'After plugins found: ' . count($this->afterPlugins) . PHP_EOL;
+            echo "  \033[33m!\033[0m Around plugins (should be after): \033[1;33m" . count($this->afterPlugins) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'aroundToAfterPlugin',
                 'name' => 'After Plugin',
@@ -57,7 +57,7 @@ class AroundPlugins extends AbstractProcessor
             ];
         }
         if (!empty($this->overrides)) {
-            echo 'Overrides found: ' . count($this->overrides) . PHP_EOL;
+            echo "  \033[31m✗\033[0m Overrides (should be preference): \033[1;31m" . count($this->overrides) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'overrideNotPlugin',
                 'name' => 'Override, not a plugin',

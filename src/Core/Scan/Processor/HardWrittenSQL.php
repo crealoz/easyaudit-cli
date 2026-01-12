@@ -131,6 +131,23 @@ class HardWrittenSQL extends AbstractProcessor
             // Check for each SQL pattern
             $this->detectSQL($cleanedContent, $file, $fileContent);
         }
+
+        // Output counts for each SQL type
+        if (!empty($this->selectResults)) {
+            echo "  \033[31m✗\033[0m Hard-written SELECT queries: \033[1;31m" . count($this->selectResults) . "\033[0m\n";
+        }
+        if (!empty($this->deleteResults)) {
+            echo "  \033[31m✗\033[0m Hard-written DELETE queries: \033[1;31m" . count($this->deleteResults) . "\033[0m\n";
+        }
+        if (!empty($this->insertResults)) {
+            echo "  \033[33m!\033[0m Hard-written INSERT queries: \033[1;33m" . count($this->insertResults) . "\033[0m\n";
+        }
+        if (!empty($this->updateResults)) {
+            echo "  \033[33m!\033[0m Hard-written UPDATE queries: \033[1;33m" . count($this->updateResults) . "\033[0m\n";
+        }
+        if (!empty($this->joinResults)) {
+            echo "  \033[34mi\033[0m Hard-written JOIN queries: \033[1;34m" . count($this->joinResults) . "\033[0m\n";
+        }
     }
 
     /**

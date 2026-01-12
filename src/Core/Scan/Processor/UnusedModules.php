@@ -33,7 +33,7 @@ class UnusedModules extends AbstractProcessor
         $report = [];
 
         if (!empty($this->disabledModules)) {
-            echo 'Disabled modules found: ' . count($this->disabledModules) . PHP_EOL;
+            echo "  \033[34mi\033[0m Disabled modules: \033[1;34m" . count($this->disabledModules) . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'unusedModules',
                 'name' => 'Unused Modules',

@@ -21,7 +21,11 @@ class NoProxyInCommands extends AbstractProcessor
     public function process(array $files): void
     {
         foreach ($files['di'] as $file) {
+            $previousUseErrors = libxml_use_internal_errors(true);
             $content = simplexml_load_file($file);
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousUseErrors);
+
             if ($content === false) {
                 continue;
             }
@@ -30,6 +34,10 @@ class NoProxyInCommands extends AbstractProcessor
             foreach ($commandsListNode as $commandNode) {
                 $this->manageCommandNode($commandNode, $content);
             }
+        }
+
+        if (!empty($this->results)) {
+            echo "  \033[33m!\033[0m Commands without proxy: \033[1;33m" . count($this->results) . "\033[0m\n";
         }
     }
 
@@ -74,6 +82,14 @@ class NoProxyInCommands extends AbstractProcessor
                         $filePath,
                         Content::getLineNumber($fileContent, $paramName),
                         "Command $commandClassName should use a Proxy for $parameterClassName (parameter $paramName in constructor). Change it in " . $this->diFile,
+                        'warning',
+                        0,
+                        [
+                            'diFile' => $this->diFile,
+                            'type' => $commandClassName,
+                            'argument' => ltrim($paramName, '$'),
+                            'proxy' => $parameterClassName . '\Proxy',
+                        ]
                     );
                 }
             }

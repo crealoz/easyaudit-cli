@@ -3,6 +3,7 @@ namespace EasyAudit\Console\Command;
 
 use EasyAudit\Console\CommandInterface;
 use EasyAudit\Console\Util\Args;
+use EasyAudit\Core\Scan\ExternalToolMapping;
 use EasyAudit\Core\Scan\Scanner;
 use EasyAudit\Core\Report\JsonReporter;
 use EasyAudit\Core\Report\SarifReporter;
@@ -34,9 +35,12 @@ final class Scan implements CommandInterface
         $scanner  = new Scanner();
         $result   = $scanner->run($exclude, $excludedExt);
 
+        $findings = $result['findings'];
+        $toolSuggestions = $result['toolSuggestions'];
+
         $payload = match ($format) {
-            'sarif' => (new SarifReporter())->generate($result),
-            'json' => (new JsonReporter())->generate($result),
+            'sarif' => (new SarifReporter())->generate($findings),
+            'json' => (new JsonReporter())->generate($findings),
         };
 
         if ($output) {
@@ -45,11 +49,20 @@ final class Scan implements CommandInterface
             @mkdir('report', 0775, true);
             file_put_contents('report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json'), $payload);
         }
-        echo "report was written\n";
-        echo "it can be found at " . ($output ?: 'report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json')) . "\n";
+        echo "Report was written to " . ($output ?: 'report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json')) . "\n";
 
-        $errors   = (int)($result['summary']['errors']   ?? 0);
-        $warnings = (int)($result['summary']['warnings'] ?? 0);
+        // Print tool suggestions for issues that can be fixed by external tools
+        if (!empty($toolSuggestions)) {
+            echo "\n" . YELLOW . "External tool suggestions:" . RESET . "\n";
+            foreach ($toolSuggestions as $ruleId => $count) {
+                $description = ExternalToolMapping::getDescription($ruleId) ?? $ruleId;
+                $command = ExternalToolMapping::getCommand($ruleId);
+                echo "  $count $description found - run: " . GREEN . "$command" . RESET . "\n";
+            }
+        }
+
+        $errors   = (int)($findings['summary']['errors']   ?? 0);
+        $warnings = (int)($findings['summary']['warnings'] ?? 0);
         return $errors ? 2 : ($warnings ? 1 : 0);
     }
 }

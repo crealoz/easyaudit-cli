@@ -86,6 +86,10 @@ class UseOfRegistry extends AbstractProcessor
 
             $this->analyzeFile($file, $fileContent);
         }
+
+        if (!empty($this->registryUsages)) {
+            echo "  \033[31m✗\033[0m Registry usages: \033[1;31m" . count($this->registryUsages) . "\033[0m\n";
+        }
     }
 
     /**

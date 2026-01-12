@@ -46,7 +46,6 @@ class Helpers extends AbstractProcessor
         $report = [];
 
         if (!empty($this->extensionOfAbstractHelper)) {
-            echo 'Helper classes extending AbstractHelper found: ' . count($this->extensionOfAbstractHelper) . PHP_EOL;
             $report[] = [
                 'ruleId' => 'extensionOfAbstractHelper',
                 'name' => 'Extension of AbstractHelper',
@@ -57,7 +56,6 @@ class Helpers extends AbstractProcessor
         }
 
         if (!empty($this->helpersInsteadOfViewModels)) {
-            echo 'Helpers used in templates (should use ViewModels): ' . count($this->helpersInsteadOfViewModels) . PHP_EOL;
             $report[] = [
                 'ruleId' => 'helpersInsteadOfViewModels',
                 'name' => 'Helpers Instead of ViewModels',
@@ -94,6 +92,14 @@ class Helpers extends AbstractProcessor
 
                 $this->checkPhpFileForHelper($phpFile);
             }
+        }
+
+        // Output counts for each rule type
+        if (!empty($this->extensionOfAbstractHelper)) {
+            echo "  \033[33m!\033[0m Helper classes extending AbstractHelper: \033[1;33m" . count($this->extensionOfAbstractHelper) . "\033[0m\n";
+        }
+        if (!empty($this->helpersInsteadOfViewModels)) {
+            echo "  \033[31m✗\033[0m Helpers used in templates (use ViewModels): \033[1;31m" . count($this->helpersInsteadOfViewModels) . "\033[0m\n";
         }
     }
 

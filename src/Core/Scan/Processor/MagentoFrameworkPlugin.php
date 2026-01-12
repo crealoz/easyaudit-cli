@@ -24,7 +24,11 @@ class MagentoFrameworkPlugin extends AbstractProcessor
             return ;
         }
         foreach ($files['di'] as $file) {
+            $previousUseErrors = libxml_use_internal_errors(true);
             $xml = simplexml_load_file($file);
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousUseErrors);
+
             if ($xml === false) {
                 continue;
             }
@@ -45,6 +49,10 @@ class MagentoFrameworkPlugin extends AbstractProcessor
                     );
                 }
             }
+        }
+
+        if (!empty($this->results)) {
+            echo "  \033[33m!\033[0m Plugins on Magento Framework classes: \033[1;33m" . count($this->results) . "\033[0m\n";
         }
     }
 
