@@ -24,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `PreparerInterface` with `GeneralPreparer` and `DiPreparer` for payload preparation
 - Dedicated `Logger` service for error and debug logging
 - `Filenames` utility class for path sanitization
-- Multi-file fix support via `Api::requestMultiFilefix()` for cross-file issues
 
 ### Changed
 - Scanner output now displays processor names instead of identifiers

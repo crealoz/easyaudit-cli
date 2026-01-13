@@ -223,3 +223,7 @@ Set `EASYAUDIT_SELF_SIGNED=false` to force reject self-signed certs.
 If unset, the auto-detection above applies.
 
 Recommendation: only allow self-signed certificates for local testing; keep strict verification on CI/GitHub Actions.
+
+---
+
+[Back to README](../README.md)
