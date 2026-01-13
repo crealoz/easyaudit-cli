@@ -90,6 +90,65 @@ class Api
     }
 
     /**
+     * Request fixes for multiple files at once.
+     * Used for cross-file issues like duplicate preferences.
+     *
+     * @param array $files Pre-built files array: [path => ['content' => ..., 'rules' => ...], ...]
+     * @return array Response including 'diffs' (array), 'status', 'credits_remaining'
+     * @throws RuntimeException
+     * @throws GitHubAuthException
+     */
+    public function requestMultiFilefix(array $files): array
+    {
+        $this->authHeader = Env::getAuthHeader();
+
+        $entryPoint = 'api/instant-pr';
+
+        $body = [
+            'files'  => $files,
+            'format' => 'git',
+        ];
+        $json = json_encode($body, JSON_UNESCAPED_SLASHES);
+        if ($json === false) {
+            throw new RuntimeException('Failed to encode request body.');
+        }
+
+        $ch = curl_init(Env::getApiUrl() . $entryPoint);
+        if ($ch === false) {
+            throw new RuntimeException('Failed to initialize cURL.');
+        }
+
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: ' . $this->authHeader,
+            'User-Agent: easyaudit-cli-api-client/1.0',
+        ];
+
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_POSTFIELDS     => $json,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_SSL_VERIFYPEER => !$this->selfSigned,
+            CURLOPT_SSL_VERIFYHOST => $this->selfSigned ? 0 : 2,
+        ]);
+
+        $data = $this->manageResponse($ch, allowPartial: true);
+
+        // API returns diffs as object keyed by file path
+        if (!isset($data['diffs']) || !is_array($data['diffs'])) {
+            throw new RuntimeException('Invalid response structure from API: missing diffs field.');
+        }
+
+        return [
+            'diffs' => $data['diffs'],
+            'status' => $data['status'] ?? 'success',
+            'credits_remaining' => $data['credits_remaining'] ?? null,
+        ];
+    }
+
+    /**
      * Request a di.xml fix to add proxy configurations.
      *
      * @param string $diFilePath Path to the di.xml file
