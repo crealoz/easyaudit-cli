@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.0.8] - 2025-01-13
+
 ### Added
 - Colorful scan output with severity indicators (red for errors, yellow for warnings, blue for info)
 - Visual header with processor names in cyan for better readability
@@ -34,11 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2025-01-06
+## [0.0.7] - 2024-11-06
 
 ### Added
-- Initial release of EasyAudit CLI
-- 16 static analysis processors:
+- 12 new processors for code quality analysis:
   - AroundPlugins
   - MagentoFrameworkPlugin
   - NoProxyInCommands
@@ -49,15 +52,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - UseOfObjectManager
   - Preferences
   - Cacheable
-  - AdvancedBlockVsViewModel
   - BlockViewModelRatio
   - UnusedModules
-  - ProxyForHeavyClasses
-  - PaymentInterfaceUseAudit
-  - Helpers
 - Output formats: JSON, SARIF, Text
 - Docker support (ghcr.io/crealoz/easyaudit:latest)
-- PHAR distribution (~165KB)
-- Zero external dependencies (custom PSR-0 autoloader)
+- PHAR distribution
 - GitHub Code Scanning integration via SARIF output
-- Fix generation via EasyAudit API
+
+---
+
+## [0.0.6] - 2024-10-02
+
+## [0.0.5] - 2024-10-02
+
+## [0.0.4] - 2024-09-25
+
+## [0.0.3] - 2024-09-25
+
+## [0.0.2] - 2024-09-25
+
+### Added
+- Initial release of EasyAudit CLI
