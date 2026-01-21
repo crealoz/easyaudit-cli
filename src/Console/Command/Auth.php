@@ -1,11 +1,40 @@
 <?php
 namespace EasyAudit\Console\Command;
 
+use EasyAudit\Console\Util\Args;
 use EasyAudit\Console\Util\Confirm;
 use EasyAudit\Support\Env;
 
 final class Auth implements \EasyAudit\Console\CommandInterface
 {
+    public function getDescription(): string
+    {
+        return 'Authenticate with the EasyAudit service';
+    }
+
+    public function getSynopsis(): string
+    {
+        return 'auth [--key=<key> --hash=<hash>]';
+    }
+
+    public function getHelp(): string
+    {
+        return <<<HELP
+Usage: easyaudit auth [options]
+
+Authenticate with the EasyAudit service. Credentials are stored in ~/.config/easyaudit/config.json.
+
+Options:
+  --key=<key>              API key (non-interactive mode)
+  --hash=<hash>            API hash (non-interactive mode)
+  -h, --help               Show this help message
+
+Examples:
+  easyaudit auth                           # Interactive mode
+  easyaudit auth --key=abc123 --hash=xyz   # Non-interactive mode
+HELP;
+    }
+
     private function askSecret(): array
     {
         fwrite(STDOUT, 'Enter your EasyAudit key');
@@ -26,6 +55,12 @@ final class Auth implements \EasyAudit\Console\CommandInterface
 
     public function run(array $argv): int
     {
+        [$opts, ] = Args::parse($argv);
+        if (Args::optBool($opts, 'help')) {
+            fwrite(STDOUT, $this->getHelp() . "\n");
+            return 0;
+        }
+
         // non-interactive mode: --key=... --hash=...
         $key = null;
         $hash = null;

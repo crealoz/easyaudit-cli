@@ -33,6 +33,41 @@ class SpecificClassInjection extends AbstractProcessor
         'Magento\Framework\Data\Collection\AbstractDb',
         'Magento\Framework\App\State',
         'Magento\Eav\Model\Validator\Attribute\Backend',
+        'Magento\Cms\Model\Page',
+        'Magento\Checkout\Model\Session',
+        'Magento\Customer\Model\Session',
+        'Magento\Theme\Block\Html\Header\Logo',
+        'Magento\Framework\Filesystem'
+    ];
+
+    /**
+     * Known non-Magento PHP library vendor prefixes.
+     * These libraries don't have Magento-style factories and should not
+     * be flagged by the generic "use Factory" suggestion.
+     */
+    private const NON_MAGENTO_VENDORS = [
+        'GuzzleHttp\\',
+        'Monolog\\',
+        'Psr\\',
+        'Symfony\\',
+        'Laminas\\',
+        'League\\',
+        'Composer\\',
+        'Doctrine\\',
+        'phpDocumentor\\',
+        'PHPUnit\\',
+        'Webmozart\\',
+        'Ramsey\\',
+        'Firebase\\',
+        'Google\\',
+        'Aws\\',
+        'Carbon\\',
+        'Brick\\',
+        'Sabberworm\\',
+        'Pelago\\',
+        'Colinodell\\',
+        'Fig\\',
+        'Zend\\',
     ];
 
     /**
@@ -397,7 +432,10 @@ class SpecificClassInjection extends AbstractProcessor
         }
 
         // Generic specific class injection (suggestion only)
-        $this->addGenericClassWarning($file, $lineNumber, $paramName, $paramClass);
+        // Skip non-Magento PHP libraries - they don't have Magento-style factories
+        if (!$this->isNonMagentoLibrary($paramClass)) {
+            $this->addGenericClassWarning($file, $lineNumber, $paramName, $paramClass);
+        }
     }
 
     /**
@@ -506,6 +544,24 @@ class SpecificClassInjection extends AbstractProcessor
     private function isGenerator(string $className): bool
     {
         return str_contains($className, 'Generator');
+    }
+
+    /**
+     * Check if a class is from a known non-Magento PHP library.
+     * These libraries don't have Magento-style factories and should not
+     * be flagged by the generic "use Factory" suggestion.
+     *
+     * @param string $className The fully qualified class name
+     * @return bool True if the class is from a known non-Magento library
+     */
+    private function isNonMagentoLibrary(string $className): bool
+    {
+        foreach (self::NON_MAGENTO_VENDORS as $vendor) {
+            if (str_starts_with($className, $vendor)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

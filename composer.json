@@ -1,0 +1,27 @@
+{
+  "name": "crealoz/easyaudit-cli",
+  "description": "Standalone static analysis tool for Magento 2 codebases",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5",
+    "mockery/mockery": "^1.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "EasyAudit\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "EasyAudit\\Tests\\": "tests/Unit/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test-coverage": "phpunit --coverage-html coverage"
+  }
+}

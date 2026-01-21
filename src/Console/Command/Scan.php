@@ -7,29 +7,60 @@ use EasyAudit\Core\Scan\ExternalToolMapping;
 use EasyAudit\Core\Scan\Scanner;
 use EasyAudit\Core\Report\JsonReporter;
 use EasyAudit\Core\Report\SarifReporter;
+use EasyAudit\Support\ProjectIdentifier;
 
 final class Scan implements CommandInterface
 {
+    public function getDescription(): string
+    {
+        return 'Perform a security scan on Magento 2 codebase';
+    }
+
+    public function getSynopsis(): string
+    {
+        return 'scan [options] <path>';
+    }
+
+    public function getHelp(): string
+    {
+        return <<<HELP
+Usage: easyaudit scan [options] <path>
+
+Scan a Magento 2 codebase for anti-patterns, code quality issues, and security problems.
+
+Arguments:
+  <path>                       Path to scan (default: current directory)
+
+Options:
+  --format=<format>            Output format (json, sarif). Default: json
+  --exclude=<patterns>         Comma-separated list of glob patterns to exclude
+  --exclude-ext=<exts>         Comma-separated list of file extensions to exclude (e.g. .log,.tmp)
+  --output=<file>              Output file path. Default: report/easyaudit-report.<format>
+  --project-name=<name>        Explicit project identifier (slug)
+  -h, --help                   Show this help message
+
+Examples:
+  easyaudit scan /path/to/magento
+  easyaudit scan --format=sarif --output=report.sarif .
+  easyaudit scan --exclude="vendor,generated" /path/to/magento
+HELP;
+    }
+
     public function run(array $argv): int
     {
         // if option is help, show help
         if (Args::optBool(Args::parse($argv)[0], 'help')) {
-            fwrite(STDOUT, "Usage: easyaudit scan [options] [path]\n\n");
-            fwrite(STDOUT, "Options:\n");
-            fwrite(STDOUT, "  --format=<format>       Output format (json, sarif). Default: json\n");
-            fwrite(STDOUT, "  --exclude=<patterns>    Comma-separated list of glob patterns to exclude\n");
-            fwrite(STDOUT, "  --exclude-ext=<exts>    Comma-separated list of file extensions to exclude (e.g. .log,.tmp)\n");
-            fwrite(STDOUT, "  --output=<file>         Output file path. Default: report/easyaudit-report.<format>\n");
-            fwrite(STDOUT, "  --help                  Show this help message\n");
+            fwrite(STDOUT, $this->getHelp() . "\n");
             return 0;
         }
 
         [$opts, $rest] = Args::parse($argv);
-        $format   = strtolower(Args::optStr($opts, 'format', 'json')) ?? 'json';
-        $exclude  = Args::optStr($opts, 'exclude', '');
-        $output   = Args::optStr($opts, 'output');
+        $format      = strtolower(Args::optStr($opts, 'format', 'json')) ?? 'json';
+        $exclude     = Args::optStr($opts, 'exclude', '');
+        $output      = Args::optStr($opts, 'output');
         $excludedExt = Args::optArr($opts, 'exclude-ext');
-        $path    = $rest ?: '.';
+        $projectName = Args::optStr($opts, 'project-name');
+        $path        = $rest ?: '.';
         define('EA_SCAN_PATH', $path);
 
         $scanner  = new Scanner();
@@ -37,6 +68,15 @@ final class Scan implements CommandInterface
 
         $findings = $result['findings'];
         $toolSuggestions = $result['toolSuggestions'];
+
+        // Add metadata for fix-apply to use
+        $scanPathResolved = realpath($path) ?: $path;
+        $findings['metadata'] = [
+            'scan_path' => $scanPathResolved,
+        ];
+        if ($projectName !== null && $projectName !== '') {
+            $findings['metadata']['project_id'] = ProjectIdentifier::resolve($projectName, $scanPathResolved);
+        }
 
         $payload = match ($format) {
             'sarif' => (new SarifReporter())->generate($findings),

@@ -26,11 +26,12 @@ class Api
      * @param string $filePath Path to the file being fixed
      * @param string $content File content
      * @param array $rules Object of {ruleId: metadata}
+     * @param string $projectId Project identifier for grouping requests
      * @return array Response including 'diff' (string), 'status', 'credits_remaining'
      * @throws RuntimeException
      * @throws GitHubAuthException
      */
-    public function requestFilefix(string $filePath, string $content, array $rules): array
+    public function requestFilefix(string $filePath, string $content, array $rules, string $projectId): array
     {
         $this->authHeader = Env::getAuthHeader();
 
@@ -38,6 +39,7 @@ class Api
 
         // API expects files as object keyed by path, even for single file
         $body = [
+            'project_id' => $projectId,
             'files'  => [
                 $filePath => [
                     'content' => $content,
@@ -91,15 +93,21 @@ class Api
 
     /**
      * Get remaining credits from the API.
-     * @return array {credits: int, credit_expiration_date: string, licence_expiration_date: string}
+     * Also validates the project_id with middleware.
+     *
+     * @param string $projectId Project identifier for validation
+     * @return array {credits: int, credit_expiration_date: string, licence_expiration_date: string, project_id: string}
      * @throws RuntimeException
      * @throws GitHubAuthException
      */
-    public function getRemainingCredits(): array
+    public function getRemainingCredits(string $projectId): array
     {
         $this->authHeader = Env::getAuthHeader();
 
         $entryPoint = 'api/get-remaining-credit';
+
+        $body = ['project_id' => $projectId];
+        $json = json_encode($body, JSON_UNESCAPED_SLASHES);
 
         $ch = curl_init(Env::getApiUrl() . $entryPoint);
         if ($ch === false) {
@@ -107,6 +115,7 @@ class Api
         }
 
         $headers = [
+            'Content-Type: application/json',
             'Authorization: ' . $this->authHeader,
             'User-Agent: easyaudit-cli-api-client/1.0',
         ];
@@ -114,6 +123,7 @@ class Api
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
             CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_POSTFIELDS     => $json,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT        => 30,
             CURLOPT_SSL_VERIFYPEER => !$this->selfSigned,
@@ -126,6 +136,7 @@ class Api
             'credits' => $data['credits'] ?? 0,
             'credit_expiration_date' => $data['credit_expiration_date'] ?? null,
             'licence_expiration_date' => $data['licence_expiration_date'] ?? null,
+            'project_id' => $data['project_id'] ?? $projectId,
         ];
     }
 

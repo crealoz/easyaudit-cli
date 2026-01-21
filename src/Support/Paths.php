@@ -62,14 +62,42 @@ final class Paths
     }
 
     /**
+     * Expand tilde (~) to user's home directory.
+     * @param string $path
+     * @return string
+     */
+    public static function expandTilde(string $path): string
+    {
+        if ($path === '' || $path[0] !== '~') {
+            return $path;
+        }
+
+        $home = getenv('HOME') ?: (getenv('USERPROFILE') ?: '');
+        if ($home === '') {
+            return $path;
+        }
+
+        // Handle ~/path and ~
+        if ($path === '~' || str_starts_with($path, '~/')) {
+            return $home . substr($path, 1);
+        }
+
+        return $path;
+    }
+
+    /**
      * Convert a relative path to an absolute path.
      * If the path is already absolute, return it as is.
      * If the path contains ../ or ./, resolve it.
+     * Expands ~ to home directory.
      * @param string $path
      * @return string
      */
     public static function getAbsolutePath(string $path): string
     {
+        // First expand tilde
+        $path = self::expandTilde($path);
+
         if ($path === '' || $path === '.' || $path === './') {
             return getcwd() ?: '/';
         }

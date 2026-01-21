@@ -36,24 +36,47 @@ spl_autoload_register(function ($class) {
     }
 });
 
-switch ($argv[1] ?? null) {
-    case 'scan': $command = new \EasyAudit\Console\Command\Scan(); break;
-    case 'auth': $command = new \EasyAudit\Console\Command\Auth(); break;
-    case 'credits': $command = new \EasyAudit\Console\Command\Credits(); break;
-    case 'fix-plan': $command = new \EasyAudit\Console\Command\FixPlan(); break;
-    case 'fix-apply': $command = new \EasyAudit\Console\Command\FixApply(); break;
-    case 'activate-self-signed': $command = new \EasyAudit\Console\Command\ActivateSelfSigned(); break;
-    default:
-        fwrite(STDOUT, "EasyAudit - Security auditing tool for PHP applications\n");
-        fwrite(STDOUT, "Usage: php easyaudit <command> [options]\n");
-        fwrite(STDOUT, "Commands:\n");
-        fwrite(STDOUT, "  scan         Perform a security scan\n");
-        fwrite(STDOUT, "  auth         Authenticate with the EasyAudit service\n");
-        fwrite(STDOUT, "  credits      Display your remaining credits\n");
-        fwrite(STDOUT, "  fix-plan     Show a plan of fixes for detected issues\n");
-        fwrite(STDOUT, "  fix-apply    Apply fixes for detected issues\n");
-        exit(64);
+// Command registry
+$commands = [
+    'scan' => fn() => new \EasyAudit\Console\Command\Scan(),
+    'auth' => fn() => new \EasyAudit\Console\Command\Auth(),
+    'credits' => fn() => new \EasyAudit\Console\Command\Credits(),
+    'fix-plan' => fn() => new \EasyAudit\Console\Command\FixPlan(),
+    'fix-apply' => fn() => new \EasyAudit\Console\Command\FixApply(),
+    'activate-self-signed' => fn() => new \EasyAudit\Console\Command\ActivateSelfSigned(),
+];
+
+$cmdName = $argv[1] ?? null;
+
+// Handle -h or --help at top level
+if ($cmdName === '-h' || $cmdName === '--help' || $cmdName === null) {
+    fwrite(STDOUT, BOLD . "EasyAudit" . RESET . " - Static analysis tool for Magento 2 codebases\n\n");
+    fwrite(STDOUT, YELLOW . "Usage:" . RESET . " easyaudit <command> [options]\n\n");
+    fwrite(STDOUT, YELLOW . "Commands:" . RESET . "\n");
+
+    // Get descriptions from each command
+    foreach ($commands as $name => $factory) {
+        $cmd = $factory();
+        $synopsis = $cmd->getSynopsis();
+        $desc = $cmd->getDescription();
+        fwrite(STDOUT, "  " . GREEN . str_pad($synopsis, 36) . RESET . " $desc\n");
+    }
+
+    fwrite(STDOUT, "\n" . YELLOW . "Global options:" . RESET . "\n");
+    fwrite(STDOUT, "  " . GREEN . "-h, --help" . RESET . "                         Show help for a command\n");
+    fwrite(STDOUT, "\n" . YELLOW . "Examples:" . RESET . "\n");
+    fwrite(STDOUT, "  easyaudit scan /path/to/magento\n");
+    fwrite(STDOUT, "  easyaudit scan -h\n");
+    fwrite(STDOUT, "  easyaudit fix-apply report.json\n");
+    exit(0);
 }
 
+if (!isset($commands[$cmdName])) {
+    fwrite(STDERR, RED . "Unknown command: $cmdName" . RESET . "\n");
+    fwrite(STDERR, "Run 'easyaudit --help' to see available commands.\n");
+    exit(64);
+}
+
+$command = $commands[$cmdName]();
 $exitCode = $command->run(array_slice($argv, 2));
 exit($exitCode);

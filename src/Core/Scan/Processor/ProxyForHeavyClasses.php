@@ -17,12 +17,19 @@ use EasyAudit\Core\Scan\Util\Formater;
 class ProxyForHeavyClasses extends AbstractProcessor
 {
     /**
-     * Classes that are considered "heavy" and should use proxies
+     * Classes that are considered "heavy" and should use proxies (pattern matching)
      */
     private array $heavyClassPatterns = [
         'Session',
         'Collection',
         'ResourceModel',
+    ];
+
+    /**
+     * Specific heavy classes that should use proxies (exact match)
+     */
+    private array $heavyClasses = [
+        'Magento\Cms\Model\Page',
     ];
 
     private array $processedFiles = [];
@@ -158,6 +165,11 @@ class ProxyForHeavyClasses extends AbstractProcessor
         // Skip factories and interfaces
         if (str_ends_with($className, 'Factory') || str_ends_with($className, 'Interface')) {
             return false;
+        }
+
+        // Check against specific heavy classes (exact match)
+        if (in_array($className, $this->heavyClasses, true)) {
+            return true;
         }
 
         // Check against heavy class patterns

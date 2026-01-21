@@ -1,5 +1,12 @@
 # EasyAudit
 
+[![Latest Release](https://img.shields.io/github/v/release/crealoz/easyaudit-cli?style=flat-square)](https://github.com/crealoz/easyaudit-cli/releases)
+[![License: MIT](https://img.shields.io/github/license/crealoz/easyaudit-cli?style=flat-square)](./LICENSE)
+[![GitHub Downloads](https://img.shields.io/github/downloads/crealoz/easyaudit-cli/total?style=flat-square)](https://github.com/crealoz/easyaudit-cli/releases)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF?style=flat-square)](https://php.net)
+[![Tests](https://img.shields.io/github/actions/workflow/status/crealoz/easyaudit-cli/tests.yml?style=flat-square&label=tests)](https://github.com/crealoz/easyaudit-cli/actions)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/crealoz/easyaudit-cli/main/coverage-badge.json&style=flat-square)](https://github.com/crealoz/easyaudit-cli)
+
 Static analysis tool for Magento 2 codebases. Detects anti-patterns, security risks, and architectural issues.
 
 ## Features
@@ -72,6 +79,21 @@ jobs:
 - [Available Processors](docs/processors.md) - All 16 analysis rules
 - [GitHub Actions](docs/github-actions.md) - CI/CD workflow examples
 - [Automated PR (paid)](docs/request-pr.md) - Auto-fix via API
+
+## Testing
+
+```bash
+# Run tests
+composer test
+
+# Run with coverage report
+composer test-coverage
+```
+
+| Metric | Count |
+|--------|-------|
+| Tests | 308 |
+| Assertions | 490 |
 
 ## Requirements
 

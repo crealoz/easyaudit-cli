@@ -6,9 +6,46 @@ use EasyAudit\Support\Env;
 
 final class FixPlan implements \EasyAudit\Console\CommandInterface
 {
+    public function getDescription(): string
+    {
+        return 'Show a plan of fixes for detected issues';
+    }
+
+    public function getSynopsis(): string
+    {
+        return 'fix-plan [options] <report.json>';
+    }
+
+    public function getHelp(): string
+    {
+        return <<<HELP
+Usage: easyaudit fix-plan [options] <report.json>
+
+Show a plan of fixes and credit costs for detected issues.
+
+Arguments:
+  <report.json>            Path to JSON report file
+
+Options:
+  --max-credits=<num>      Maximum credits to use (0 = unlimited)
+  --output=<file>          Output file path for the plan
+  -h, --help               Show this help message
+
+Examples:
+  easyaudit fix-plan report/easyaudit-report.json
+  easyaudit fix-plan --max-credits=10 report.json
+HELP;
+    }
+
     public function run(array $argv): int
     {
         [$opts, $rest] = Args::parse($argv);
+
+        if (Args::optBool($opts, 'help')) {
+            fwrite(STDOUT, $this->getHelp() . "\n");
+            return 0;
+        }
+
         $maxCredits = (int)Args::optStr($opts, 'max-credits', '0');
         $output     = Args::optStr($opts, 'output', null);
         $reportFile = $rest[0] ?? null;

@@ -4,8 +4,19 @@ namespace EasyAudit\Console\Util;
 final class Args
 {
     /**
+     * Short flag to long flag mapping.
+     */
+    private const SHORT_FLAGS = [
+        'h' => 'help',
+        'v' => 'verbose',
+        'q' => 'quiet',
+    ];
+
+    /**
      * Parse command line arguments into options and positional arguments.
-     * Options are prefixed with `--` and can be in the form `--key=value` or `--flag`.
+     * Options can be:
+     *   - Long: `--key=value` or `--flag`
+     *   - Short: `-h` (mapped to --help), `-v` (mapped to --verbose)
      * Positional arguments are collected in the second array.
      * @param array $argv
      * @return array
@@ -28,6 +39,14 @@ final class Args
                     }
                 } else {
                     $opts[substr($a, 2)] = true;
+                }
+            } elseif (str_starts_with($a, '-') && strlen($a) > 1 && $a[1] !== '-') {
+                // Handle short flags like -h, -v, -hv (combined)
+                $flags = substr($a, 1);
+                for ($i = 0; $i < strlen($flags); $i++) {
+                    $short = $flags[$i];
+                    $long = self::SHORT_FLAGS[$short] ?? $short;
+                    $opts[$long] = true;
                 }
             } else {
                 $rest = $a;

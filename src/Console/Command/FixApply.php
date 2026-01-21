@@ -10,6 +10,7 @@ use EasyAudit\Service\Logger;
 use EasyAudit\Service\PayloadPreparers\DiPreparer;
 use EasyAudit\Service\PayloadPreparers\GeneralPreparer;
 use EasyAudit\Service\PayloadPreparers\PreparerInterface;
+use EasyAudit\Support\ProjectIdentifier;
 
 final class FixApply implements \EasyAudit\Console\CommandInterface
 {
@@ -22,6 +23,7 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
     private array $diffs;
 
     private int $creditsRemaining = 0;
+    private string $projectId = '';
 
     public function __construct()
     {
@@ -30,36 +32,55 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
         $this->diffs = [];
     }
 
-    /**
-     * Command to apply fixes from a JSON report file.
-     * Uses EasyAudit API to generate patches (one per file).
-     * Usage: easyaudit fix-apply [options] <path|>
-     * Options:
-     *   --confirm           Skip confirmation prompt
-     *   --patch-out=DIR     Directory to save patch files (default: patches)
-     *   --format=FORMAT     Output format (git, patch). Default: git
-     *   <path>              Path to JSON report file. If omitted, reads from stdin
-     *   --help              Show this help message
-     * @param array $argv
-     * @return int
-     */
+    public function getDescription(): string
+    {
+        return 'Apply fixes for detected issues using EasyAudit API';
+    }
+
+    public function getSynopsis(): string
+    {
+        return 'fix-apply [options] <report.json>';
+    }
+
+    public function getHelp(): string
+    {
+        return <<<HELP
+Usage: easyaudit fix-apply [options] <report.json>
+
+Apply fixes from a JSON report file using the EasyAudit API.
+Generates patch files that can be applied to fix detected issues.
+
+Arguments:
+  <report.json>            Path to JSON report file (or pipe from stdin)
+
+Options:
+  --confirm                Skip confirmation prompt
+  --patch-out=<dir>        Directory to save patch files (default: patches)
+  --format=<format>        Output format (git, patch). Default: git
+  --project-name=<name>    Explicit project identifier (slug)
+  --scan-path=<path>       Path to scan root for auto-detection (default: .)
+  -h, --help               Show this help message
+
+Examples:
+  easyaudit fix-apply report/easyaudit-report.json
+  cat report.json | easyaudit fix-apply
+  easyaudit fix-apply --confirm --patch-out=./fixes report.json
+HELP;
+    }
+
     public function run(array $argv): int
     {
         [$opts, $rest] = Args::parse($argv);
         $help      = Args::optBool($opts, 'help', false);
         if ($help) {
-            fwrite(STDOUT, "Usage: easyaudit fix-apply [options] <path|>\n");
-            fwrite(STDOUT, "Options:\n");
-            fwrite(STDOUT, "  --confirm           Skip confirmation prompt\n");
-            fwrite(STDOUT, "  --patch-out=DIR     Directory to save patch files (default: patches)\n");
-            fwrite(STDOUT, "  --format=FORMAT     Output format (git, patch). Default: git\n");
-            fwrite(STDOUT, "  <path>              Path to JSON report file. If omitted, reads from stdin\n");
-            fwrite(STDOUT, "  --help              Show this help message\n");
+            fwrite(STDOUT, $this->getHelp() . "\n");
             return 0;
         }
-        $confirm   = Args::optBool($opts, 'confirm');
-        $patchOut  = Args::optStr($opts, 'patch-out', 'patches');
-        $format    = Args::optStr($opts, 'format', 'json');
+        $confirm     = Args::optBool($opts, 'confirm');
+        $patchOut    = \EasyAudit\Support\Paths::expandTilde(Args::optStr($opts, 'patch-out', 'patches'));
+        $format      = Args::optStr($opts, 'format', 'json');
+        $projectName = Args::optStr($opts, 'project-name');
+        $scanPath    = Args::optStr($opts, 'scan-path', '.');
 
         $source = $rest ?? '';
         if ($source === '' && posix_isatty(STDIN)) {
@@ -89,6 +110,15 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
             return 65;
         }
 
+        // Try to get scan path from report metadata if not provided
+        if ($scanPath === '.' && isset($errors['metadata']['scan_path'])) {
+            $scanPath = $errors['metadata']['scan_path'];
+        }
+
+        // Resolve project identifier
+        $this->projectId = ProjectIdentifier::resolve($projectName, $scanPath);
+        echo "Project: " . BLUE . $this->projectId . RESET . "\n";
+
         $fixables = $this->api->getAllowedType();
 
         // Group findings by file (regular fixes), di.xml (proxy fixes), and duplicate preferences
@@ -116,8 +146,12 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
         // Total items to process (individual files + di.xml files + duplicate groups)
         $this->totalFiles = count($byFile) + count($byDiFile);
         try {
-            $creditInfo = $this->api->getRemainingCredits();
+            $creditInfo = $this->api->getRemainingCredits($this->projectId);
             $startingCredits = $this->creditsRemaining = $creditInfo['credits'];
+            // Use validated project_id from middleware if available
+            if (isset($creditInfo['project_id'])) {
+                $this->projectId = $creditInfo['project_id'];
+            }
             echo "Your balance: " . ($this->creditsRemaining >= $cost ? GREEN : YELLOW) . $this->creditsRemaining . RESET . " credits\n";
             $msg = "Apply fixes to $this->totalFiles file(s)";
             if (!empty($byDiFile)) {
@@ -204,7 +238,7 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
 
             try {
                 $payload = $preparer->preparePayload($filePath, $data);
-                $response = $this->api->requestFilefix($filePath, $payload['content'], $payload['rules']);
+                $response = $this->api->requestFilefix($filePath, $payload['content'], $payload['rules'], $this->projectId);
 
                 if (!empty($response['diff'])) {
                     $this->diffs[$filePath] = $response['diff'];
