@@ -1,4 +1,4 @@
-name: Release Docker image
+name: Release
 
 on:
   push:
@@ -6,16 +6,74 @@ on:
       - 'v*.*.*'
 
 jobs:
-  docker:
+  release:
     runs-on: ubuntu-latest
 
     permissions:
       packages: write
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: curl, json
+          tools: box
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "MAJOR=$(echo $VERSION | cut -d. -f1)" >> $GITHUB_OUTPUT
+          echo "MINOR=$(echo $VERSION | cut -d. -f1,2)" >> $GITHUB_OUTPUT
+
+      - name: Inject version into source
+        run: |
+          sed -i "s/VERSION = 'dev'/VERSION = '${{ steps.version.outputs.VERSION }}'/" src/Version.php
+
+      - name: Build PHAR (first pass)
+        run: box compile
+
+      - name: Calculate PHAR hash
+        id: hash
+        run: |
+          HASH=$(sha512sum easyaudit.phar | cut -d' ' -f1)
+          echo "HASH=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Inject hash into source
+        run: |
+          sed -i "s/HASH = 'dev'/HASH = '${{ steps.hash.outputs.HASH }}'/" src/Version.php
+
+      - name: Build PHAR (final)
+        run: box compile
+
+      - name: Verify PHAR
+        run: |
+          php easyaudit.phar --version
+          echo "PHAR size: $(du -h easyaudit.phar | cut -f1)"
+
+      - name: Notify middleware webhook
+        if: ${{ vars.MIDDLEWARE_WEBHOOK_URL != '' }}
+        run: |
+          PAYLOAD='{"version":"${{ steps.version.outputs.VERSION }}","hash":"${{ steps.hash.outputs.HASH }}","released_at":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}'
+          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha512 -hmac "${{ secrets.WEBHOOK_SECRET }}" | cut -d' ' -f2)
+          curl -X POST "${{ vars.MIDDLEWARE_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "X-Webhook-Signature: sha512=$SIGNATURE" \
+            -d "$PAYLOAD" \
+            --fail-with-body || echo "Warning: Failed to notify middleware webhook"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: easyaudit.phar
+          generate_release_notes: true
+          fail_on_unmatched_files: true
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -24,24 +82,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from tag
-        id: vars
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "major=$(echo $VERSION | cut -d. -f1)" >> $GITHUB_OUTPUT
-          echo "minor=$(echo $VERSION | cut -d. -f1,2)" >> $GITHUB_OUTPUT
-
-      - name: Build image
+      - name: Build and push Docker image
         run: |
           IMAGE=ghcr.io/${{ github.repository_owner }}/easyaudit
-          VERSION=${{ steps.vars.outputs.version }}
-          MINOR=${{ steps.vars.outputs.minor }}
-          MAJOR=${{ steps.vars.outputs.major }}
+          VERSION=${{ steps.version.outputs.VERSION }}
+          MINOR=${{ steps.version.outputs.MINOR }}
+          MAJOR=${{ steps.version.outputs.MAJOR }}
 
           docker build -t $IMAGE:$VERSION .
 
-          # Tags mobiles
+          # Mobile tags
           docker tag $IMAGE:$VERSION $IMAGE:$MINOR
           docker tag $IMAGE:$VERSION $IMAGE:$MAJOR
           docker tag $IMAGE:$VERSION $IMAGE:latest

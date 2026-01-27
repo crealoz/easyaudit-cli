@@ -48,6 +48,15 @@ $commands = [
 
 $cmdName = $argv[1] ?? null;
 
+// Handle --version / -v at top level
+if ($cmdName === '-v' || $cmdName === '--version') {
+    fwrite(STDOUT, \EasyAudit\Version::getVersionString() . "\n");
+    if (\EasyAudit\Version::isReleaseBuild()) {
+        fwrite(STDOUT, "Full hash: " . \EasyAudit\Version::HASH . "\n");
+    }
+    exit(0);
+}
+
 // Handle -h or --help at top level
 if ($cmdName === '-h' || $cmdName === '--help' || $cmdName === null) {
     fwrite(STDOUT, BOLD . "EasyAudit" . RESET . " - Static analysis tool for Magento 2 codebases\n\n");
@@ -64,6 +73,7 @@ if ($cmdName === '-h' || $cmdName === '--help' || $cmdName === null) {
 
     fwrite(STDOUT, "\n" . YELLOW . "Global options:" . RESET . "\n");
     fwrite(STDOUT, "  " . GREEN . "-h, --help" . RESET . "                         Show help for a command\n");
+    fwrite(STDOUT, "  " . GREEN . "-v, --version" . RESET . "                      Show version information\n");
     fwrite(STDOUT, "\n" . YELLOW . "Examples:" . RESET . "\n");
     fwrite(STDOUT, "  easyaudit scan /path/to/magento\n");
     fwrite(STDOUT, "  easyaudit scan -h\n");

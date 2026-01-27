@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Version compatibility system** for CLI-Middleware communication:
+  - New `Version` class with `VERSION` and `HASH` constants
+  - `--version` / `-v` CLI flag to display version information
+  - `X-CLI-Version` and `X-CLI-Hash` headers sent with all API requests
+  - `UpgradeRequiredException` for handling HTTP 426 (Upgrade Required) responses
+- **Automated release workflow**:
+  - GitHub Actions builds PHAR with embedded version and SHA-512 hash
+  - Webhook notification to middleware for version registration
+  - Automatic GitHub Release creation with PHAR artifact
+  - Docker image tagging with version numbers
+
+---
+
+## [0.1.0] - 2025-01-27
+
+### Added
+- **Interactive `--fix-by-rule` mode** for fix-apply command:
+  - Select which rule to fix via interactive menu
+  - Patches organized into rule-specific subdirectories (`patches/{ruleId}/...`)
+  - Sequenced filenames for multiple patches per file (`File-2.patch`, `File-3.patch`)
+  - Relative path preservation in patch output structure
+- **`ClassToProxy` service** with 220+ heavy Magento classes:
+  - Shared detection between `ProxyForHeavyClasses` and `SpecificClassInjection` processors
+  - Includes repositories, resource connections, config readers, session handlers, etc.
+- New ignored patterns in `SpecificClassInjection`:
+  - Classes ending with `Provider` or `Resolver`
+  - All `Magento\Framework` classes
+  - Catalog visibility/status classes, sales order config, store manager, etc.
+- New `Filenames::getRelativePath()` and `Filenames::getSequencedPath()` utility methods
+- Integration test suite in phpunit.xml
+- Tests for `ClassToProxy` integration in `SpecificClassInjectionTest`
+
+### Changed
+- `SpecificClassInjection` now skips CLI commands (Symfony Console) entirely
+- `ProxyForHeavyClasses` uses `ClassToProxy` service instead of hardcoded list
+- `PreparerInterface::prepareFiles()` now accepts optional `$selectedRule` parameter
+- Removed `Collection` and `ResourceModel` from pattern-based heavy class detection (now uses explicit list)
+
+### Fixed
+- Reduced false positives in `SpecificClassInjection` for legitimate Magento patterns
+- Removed redundant `isRegistry()` and `isFileSystem()` checks (covered by `ClassToProxy`)
+
 ---
 
 ## [0.0.8] - 2025-01-13

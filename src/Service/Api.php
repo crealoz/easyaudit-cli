@@ -3,7 +3,10 @@
 namespace EasyAudit\Service;
 
 use EasyAudit\Exception\GitHubAuthException;
+use EasyAudit\Exception\RateLimitedException;
+use EasyAudit\Exception\UpgradeRequiredException;
 use EasyAudit\Support\Env;
+use EasyAudit\Version;
 use RuntimeException;
 
 /**
@@ -58,11 +61,9 @@ class Api
             throw new RuntimeException('Failed to initialize cURL.');
         }
 
-        $headers = [
+        $headers = $this->buildHeaders([
             'Content-Type: application/json',
-            'Authorization: ' . $this->authHeader,
-            'User-Agent: easyaudit-cli-api-client/1.0',
-        ];
+        ]);
 
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
@@ -114,11 +115,9 @@ class Api
             throw new RuntimeException('Failed to initialize cURL.');
         }
 
-        $headers = [
+        $headers = $this->buildHeaders([
             'Content-Type: application/json',
-            'Authorization: ' . $this->authHeader,
-            'User-Agent: easyaudit-cli-api-client/1.0',
-        ];
+        ]);
 
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
@@ -157,10 +156,7 @@ class Api
             throw new RuntimeException('Failed to initialize cURL.');
         }
 
-        $headers = [
-            'Authorization: ' . $this->authHeader,
-            'User-Agent: easyaudit-cli-api-client/1.0',
-        ];
+        $headers = $this->buildHeaders();
 
         curl_setopt_array($ch, [
             CURLOPT_POST            => true,
@@ -188,12 +184,38 @@ class Api
     }
 
     /**
+     * Build headers array with version information.
+     *
+     * @param array $additionalHeaders Extra headers to include
+     * @return array Complete headers array
+     */
+    private function buildHeaders(array $additionalHeaders = []): array
+    {
+        $headers = [
+            'Authorization: ' . $this->authHeader,
+            'User-Agent: easyaudit-cli-api-client/1.0',
+            'X-CLI-Version: ' . Version::VERSION,
+            'X-CLI-Hash: ' . Version::HASH,
+        ];
+
+        // Add CI/CD headers if running in CI environment
+        $ciDetector = new CiEnvironmentDetector();
+        if ($ciDetector->isRunningInCi()) {
+            $headers = array_merge($headers, $ciDetector->getHeaders());
+        }
+
+        return array_merge($headers, $additionalHeaders);
+    }
+
+    /**
      * Handle cURL response and validate status.
      *
      * @param \CurlHandle $ch cURL handle
      * @param bool $allowPartial When true, accepts "partial" status (insufficient credits)
      * @return array Decoded response data
      * @throws RuntimeException
+     * @throws UpgradeRequiredException
+     * @throws RateLimitedException
      */
     private function manageResponse($ch, bool $allowPartial = false): array
     {
@@ -206,6 +228,22 @@ class Api
             throw new RuntimeException('cURL error: ' . ($err !== '' ? $err : 'unknown'));
         }
         curl_close($ch);
+
+        // Handle HTTP 426 Upgrade Required
+        if ($httpCode === 426) {
+            $data = json_decode($responseBody, true);
+            $minVersion = $data['minimum_version'] ?? null;
+            $message = $data['message'] ?? '';
+            throw new UpgradeRequiredException(Version::VERSION, $minVersion, $message);
+        }
+
+        // Handle HTTP 429 Too Many Requests (Rate Limited / Suspended)
+        if ($httpCode === 429) {
+            $data = json_decode($responseBody, true);
+            $retryAfter = isset($data['retry_after']) ? (int) $data['retry_after'] : null;
+            $message = $data['message'] ?? '';
+            throw new RateLimitedException($retryAfter, $message);
+        }
 
         if ($httpCode !== 200) {
             $map = [
