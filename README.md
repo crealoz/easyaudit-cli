@@ -77,7 +77,7 @@ jobs:
 
 - [CLI Usage](docs/cli-usage.md) - Commands, options, examples
 - [Available Processors](docs/processors.md) - All 16 analysis rules
-- [GitHub Actions](docs/github-actions.md) - CI/CD workflow examples
+- [CI/CD Integration](docs/ci-cd.md) - GitHub, GitLab, Bitbucket, Azure, CircleCI, Jenkins, Travis
 - [Automated PR (paid)](docs/request-pr.md) - Auto-fix via API
 
 ## Testing

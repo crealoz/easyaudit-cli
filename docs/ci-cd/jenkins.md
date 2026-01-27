@@ -292,10 +292,10 @@ pipeline {
 
 ## See Also
 
-- [Automated PR (paid)](request-pr.md) - Auto-fix issues via API
-- [CLI Usage](cli-usage.md) - Local usage
-- [Processors](processors.md) - Available checks
+- [Automated PR (paid)](../request-pr.md) - Auto-fix issues via API
+- [CLI Usage](../cli-usage.md) - Local usage
+- [Processors](../processors.md) - Available checks
 
 ---
 
-[Back to README](../README.md)
+[Back to README](../../README.md)
