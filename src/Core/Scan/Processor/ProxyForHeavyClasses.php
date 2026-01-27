@@ -22,6 +22,7 @@ class ProxyForHeavyClasses extends AbstractProcessor
      */
     private array $heavyClassPatterns = [
         'Session',
+        'Collection',
     ];
 
     private array $processedFiles = [];

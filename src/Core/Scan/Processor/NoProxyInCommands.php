@@ -20,7 +20,7 @@ class NoProxyInCommands extends AbstractProcessor
      */
     public function process(array $files): void
     {
-        foreach ($files['di'] as $file) {
+        foreach ($files['di'] ?? [] as $file) {
             $previousUseErrors = libxml_use_internal_errors(true);
             $content = simplexml_load_file($file);
             libxml_clear_errors();
