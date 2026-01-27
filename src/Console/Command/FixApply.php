@@ -59,12 +59,21 @@ Options:
   --format=<format>        Output format (git, patch). Default: git
   --project-name=<name>    Explicit project identifier (slug)
   --scan-path=<path>       Path to scan root for auto-detection (default: .)
+  --fix-by-rule            Fix one rule at a time (interactive selection)
   -h, --help               Show this help message
+
+Modes:
+  Default mode:    All fixes for a file combined into one patch
+                   Output: patches/{relative/path/to/File}.patch
+
+  --fix-by-rule:   Interactive rule selection, one patch per fix
+                   Output: patches/{ruleId}/{relative/path/to/File}.patch
 
 Examples:
   easyaudit fix-apply report/easyaudit-report.json
   cat report.json | easyaudit fix-apply
   easyaudit fix-apply --confirm --patch-out=./fixes report.json
+  easyaudit fix-apply --fix-by-rule report.json
 HELP;
     }
 
@@ -81,6 +90,7 @@ HELP;
         $format      = Args::optStr($opts, 'format', 'json');
         $projectName = Args::optStr($opts, 'project-name');
         $scanPath    = Args::optStr($opts, 'scan-path', '.');
+        $fixByRule   = Args::optBool($opts, 'fix-by-rule');
 
         $source = $rest ?? '';
         if ($source === '' && posix_isatty(STDIN)) {
@@ -121,9 +131,20 @@ HELP;
 
         $fixables = $this->api->getAllowedType();
 
+        // If --fix-by-rule, show interactive rule selection
+        $selectedRule = null;
+        if ($fixByRule) {
+            $selectedRule = $this->selectRule($errors, $fixables);
+            if ($selectedRule === null) {
+                fwrite(STDOUT, "No rule selected. Cancelled.\n");
+                return 0;
+            }
+            echo "\n" . YELLOW . "Warning: Apply these patches before requesting another rule." . RESET . "\n\n";
+        }
+
         // Group findings by file (regular fixes), di.xml (proxy fixes), and duplicate preferences
-        $byFile = $generalPreparer->prepareFiles($errors, $fixables);
-        $byDiFile = $diPreparer->prepareFiles($errors, $fixables);
+        $byFile = $generalPreparer->prepareFiles($errors, $fixables, $selectedRule);
+        $byDiFile = $diPreparer->prepareFiles($errors, $fixables, $selectedRule);
 
         if (empty($byFile) && empty($byDiFile)) {
             fwrite(STDOUT, "No fixable issues found in the report.\n");
@@ -204,15 +225,36 @@ HELP;
             return 0;
         }
 
-        // Save each file's diff as a separate patch file
+        // Resolve scan path to absolute for relative path calculation
+        $scanPathAbsolute = realpath($scanPath) ?: $scanPath;
+
+        // Save patches using new path structure
         $savedCount = 0;
         foreach ($this->diffs as $filePath => $diffContent) {
             if (empty($diffContent)) {
                 continue;
             }
 
-            $patchFilename = Filenames::sanitize($filePath) . '.patch';
-            $patchPath = rtrim($patchOut, '/') . '/' . $patchFilename;
+            // Get relative path (e.g., "app/code/Vendor/Module/Model/MyClass")
+            $relativePath = Filenames::getRelativePath($filePath, $scanPathAbsolute);
+
+            if ($fixByRule && $selectedRule !== null) {
+                // Per-rule mode: patches/{ruleId}/{relativePath}.patch (with sequencing)
+                $targetDir = rtrim($patchOut, '/') . '/' . $selectedRule;
+                $patchFilename = Filenames::getSequencedPath($relativePath, $targetDir);
+            } else {
+                // Default mode: patches/{relativePath}.patch
+                $targetDir = rtrim($patchOut, '/');
+                $patchFilename = $relativePath . '.patch';
+            }
+
+            // Create nested directories if needed
+            $patchPath = $targetDir . '/' . $patchFilename;
+            $patchDir = dirname($patchPath);
+            if (!is_dir($patchDir) && !@mkdir($patchDir, 0775, true)) {
+                fwrite(STDERR, "Failed to create directory: $patchDir\n");
+                continue;
+            }
 
             file_put_contents($patchPath, $diffContent);
             $savedCount++;
@@ -289,5 +331,59 @@ HELP;
         $this->currentFile++;
 
         echo $line;
+    }
+
+    /**
+     * Display interactive rule selection menu.
+     *
+     * @param array $errors Parsed report data (array of findings)
+     * @param array $fixables Fixable rule types
+     * @return string|null Selected rule ID or null if cancelled
+     */
+    private function selectRule(array $errors, array $fixables): ?string
+    {
+        // Count issues per rule (count files, not findings)
+        $ruleCounts = [];
+        foreach ($errors as $finding) {
+            $ruleId = $finding['ruleId'] ?? null;
+            if ($ruleId && isset($fixables[$ruleId])) {
+                $fileCount = count($finding['files'] ?? []);
+                $ruleCounts[$ruleId] = ($ruleCounts[$ruleId] ?? 0) + $fileCount;
+            }
+        }
+
+        if (empty($ruleCounts)) {
+            return null;
+        }
+
+        // Display menu
+        echo "\nWhich rule do you want to fix?\n";
+        $index = 1;
+        $ruleMap = [];
+        foreach ($ruleCounts as $ruleId => $count) {
+            $ruleMap[$index] = $ruleId;
+            echo "[" . BLUE . $index . RESET . "] " . $ruleId . " (" . $count . " issue" . ($count > 1 ? 's' : '') . ")\n";
+            $index++;
+        }
+        echo "[" . BLUE . "0" . RESET . "] Cancel\n";
+        echo "> ";
+
+        // Read user input
+        $input = trim(fgets(STDIN));
+
+        if ($input === '0' || $input === '') {
+            return null;
+        }
+
+        $selection = (int) $input;
+        if (!isset($ruleMap[$selection])) {
+            echo YELLOW . "Invalid selection." . RESET . "\n";
+            return null;
+        }
+
+        $selectedRule = $ruleMap[$selection];
+        echo "Selected: " . GREEN . $selectedRule . RESET . "\n";
+
+        return $selectedRule;
     }
 }

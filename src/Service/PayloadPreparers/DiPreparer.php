@@ -10,9 +10,10 @@ class DiPreparer implements PreparerInterface
      *
      * @param array $findings Report findings
      * @param array $fixables List of fixable ruleIds
+     * @param string|null $selectedRule Optional rule filter (only process this rule)
      * @return array Grouped by diFile -> type -> proxies
      */
-    public function prepareFiles(array $findings, array $fixables): array
+    public function prepareFiles(array $findings, array $fixables, ?string $selectedRule = null): array
     {
         $byDiFile = [];
 
@@ -25,6 +26,11 @@ class DiPreparer implements PreparerInterface
             }
 
             if (!array_key_exists($ruleId, $fixables)) {
+                continue;
+            }
+
+            // Filter by selected rule if specified
+            if ($selectedRule !== null && $ruleId !== $selectedRule) {
                 continue;
             }
 

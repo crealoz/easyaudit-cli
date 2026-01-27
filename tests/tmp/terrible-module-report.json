@@ -1,0 +1,229 @@
+{
+    "0": {
+        "ruleId": "aroundToBeforePlugin",
+        "name": "Before Plugin",
+        "shortDescription": "This is a before plugin. The callable is invoked after other code in the function.",
+        "longDescription": "Around plugins are costly in terms of performance. If the callable is invoked after any other code in the function, it is a befor plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Plugin\/CustomerPlugin.php",
+                "startLine": 27,
+                "endLine": 31,
+                "message": "Plugin callable $proceed is invoked after other code in the function. So aroundGetCustomerEmail is a before plugin.",
+                "severity": "warning"
+            }
+        ]
+    },
+    "1": {
+        "ruleId": "aroundToAfterPlugin",
+        "name": "After Plugin",
+        "shortDescription": "This is an after plugin. The callable is invoked before other code in the function.",
+        "longDescription": "Around plugins are costly in terms of performance. If the callable is invoked before any other code in the function, it is a after plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Plugin\/CustomerPlugin.php",
+                "startLine": 14,
+                "endLine": 18,
+                "message": "Plugin callable $proceed is invoked before other code in the function. So aroundGetCustomerName is an after plugin.",
+                "severity": "warning"
+            }
+        ]
+    },
+    "2": {
+        "ruleId": "useCacheable",
+        "name": "Use of cacheable=\"false\"",
+        "shortDescription": "Block with cacheable=\"false\" found in layout XML.",
+        "longDescription": "Using cacheable=\"false\" is not recommended for blocks and should be avoided. This attribute prevents the block from being cached, which can significantly impact performance. Only use cacheable=\"false\" if the block must display dynamic, user-specific data (e.g., customer information, cart contents, sales data). For most cases, consider alternative approaches like using customer sections (private content) or ESI (Edge Side Includes).",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/view\/frontend\/layout\/faq_index_index.xml",
+                "startLine": 11,
+                "endLine": 11,
+                "message": "Block 'faq' uses cacheable=\"false\", which can impact performance. Consider using customer sections or ESI instead.",
+                "severity": "note"
+            }
+        ]
+    },
+    "3": {
+        "ruleId": "magento.code.hard-written-sql-select",
+        "name": "Hard Written SQL SELECT",
+        "shortDescription": "SELECT queries must be avoided",
+        "longDescription": "SELECT queries must be avoided. Use the Magento Framework methods instead or a custom repository with getList() and\/or getById() methods. Raw SQL queries bypass Magento's data abstraction layer, events, and can lead to security vulnerabilities.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Block\/RandomFaq.php",
+                "startLine": 34,
+                "endLine": 34,
+                "message": "Hard-written SELECT query detected: \"SELECT * FROM\". Use a repository with getList() or getById() methods, or a collection with addFieldToFilter().",
+                "severity": "error"
+            },
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Block\/RandomFaq.php",
+                "startLine": 34,
+                "endLine": 34,
+                "message": "Hard-written SELECT query detected: \"SELECT * FROM\". Use a repository with getList() or getById() methods, or a collection with addFieldToFilter().",
+                "severity": "error"
+            }
+        ]
+    },
+    "4": {
+        "ruleId": "extensionOfAbstractHelper",
+        "name": "Extension of AbstractHelper",
+        "shortDescription": "Helper class extends deprecated AbstractHelper.",
+        "longDescription": "Helper classes should not extend Magento\\Framework\\App\\Helper\\AbstractHelper. This pattern is deprecated in Magento 2. Helpers should be simple utility classes without framework dependencies, or better yet, logic should be moved to ViewModels for presentation or to Service classes for business logic.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Helper\/FaqList.php",
+                "startLine": 7,
+                "endLine": 7,
+                "message": "Helper class 'Crealoz\\TerribleModule\\Helper\\FaqList' extends deprecated AbstractHelper. Consider refactoring to a simple utility class or service.",
+                "severity": "warning"
+            }
+        ]
+    },
+    "5": {
+        "ruleId": "duplicatePreferences",
+        "name": "Duplicate Preferences",
+        "shortDescription": "Multiple preferences found for the same interface\/class.",
+        "longDescription": "Multiple preferences found for the same interface\/class. This can lead to unexpected behavior as only the last one will be applied, depending on module load sequence. Please remove duplicate preferences or check that sequence is done correctly in module declaration.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/etc\/di.xml",
+                "startLine": 4,
+                "endLine": 4,
+                "message": "Multiple preferences found for 'Crealoz\\TerribleModule\\Api\\Data\\FaqInterface'. This preference uses 'Crealoz\\TerribleModule\\Model\\Faq'. Total preferences: 2",
+                "severity": "error",
+                "metadata": {
+                    "interface": "Crealoz\\TerribleModule\\Api\\Data\\FaqInterface"
+                }
+            },
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/etc\/frontend\/di.xml",
+                "startLine": 4,
+                "endLine": 4,
+                "message": "Multiple preferences found for 'Crealoz\\TerribleModule\\Api\\Data\\FaqInterface'. This preference uses 'Crealoz\\TerribleModule\\Model\\Faq'. Total preferences: 2",
+                "severity": "error",
+                "metadata": {
+                    "interface": "Crealoz\\TerribleModule\\Api\\Data\\FaqInterface"
+                }
+            }
+        ]
+    },
+    "6": {
+        "ruleId": "noProxyUsedForHeavyClasses",
+        "name": "No Proxy for Heavy Classes",
+        "shortDescription": "Heavy classes injected without proxy configuration.",
+        "longDescription": "Some classes such as Session, Collection, and ResourceModel are heavy and should be injected through a proxy. This avoids performance issues when the class is instantiated. Using proxies improves performance especially when the class is not necessarily used, as the proxy delays instantiation until the first method call.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Block\/RandomFaq.php",
+                "startLine": 15,
+                "endLine": 15,
+                "message": "Class 'Crealoz\\TerribleModule\\Block\\RandomFaq' injects heavy class 'Magento\\Framework\\App\\ResourceConnection' (parameter $$resourceConnection) without a proxy. Consider configuring a proxy in di.xml to improve performance.",
+                "severity": "error",
+                "metadata": {
+                    "diFile": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/etc\/di.xml",
+                    "type": "Crealoz\\TerribleModule\\Block\\RandomFaq",
+                    "argument": "resourceConnection",
+                    "proxy": "Magento\\Framework\\App\\ResourceConnection\\Proxy"
+                }
+            },
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Controller\/Index\/CustomerFaq.php",
+                "startLine": 11,
+                "endLine": 11,
+                "message": "Class 'Crealoz\\TerribleModule\\Controller\\Index\\CustomerFaq' injects heavy class 'Magento\\Customer\\Model\\Session' (parameter $$customerSession) without a proxy. Consider configuring a proxy in di.xml to improve performance.",
+                "severity": "error",
+                "metadata": {
+                    "diFile": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/etc\/di.xml",
+                    "type": "Crealoz\\TerribleModule\\Controller\\Index\\CustomerFaq",
+                    "argument": "customerSession",
+                    "proxy": "Magento\\Customer\\Model\\Session\\Proxy"
+                }
+            }
+        ]
+    },
+    "7": {
+        "ruleId": "sameModulePlugin",
+        "name": "Same Module Plugins",
+        "shortDescription": "Plugins should not be used to modify the behavior of classes within the same module. This can lead to maintenance challenges and unexpected behaviors. Consider using preferences or direct class modifications instead.",
+        "longDescription": "Plugins are designed to modify the behavior of classes in other modules, promoting modularity and separation of concerns. Using plugins within the same module can create tight coupling between classes, making the codebase harder to maintain and understand. It is recommended to use preferences or direct class modifications for altering behavior within the same module, as these approaches are more straightforward and easier to manage.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/etc\/di.xml",
+                "startLine": 46,
+                "endLine": 46,
+                "message": "Crealoz\\TerribleModule\\Plugin\\FaqRepositoryPlugin plugs Crealoz\\TerribleModule\\Model\\FaqRepository within the same module.",
+                "severity": "error"
+            }
+        ]
+    },
+    "8": {
+        "ruleId": "specificClassInjection",
+        "name": "Specific Class Injection",
+        "shortDescription": "Consider using factory, builder, or interface",
+        "longDescription": "A class should not be injected in constructor as a specific class. In most cases, a factory, a builder, or an interface should be used. This automatic scan cannot be 100% accurate, please verify manually. Using proper abstraction improves testability, flexibility, and follows dependency inversion principle.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Controller\/Adminhtml\/Question\/Edit.php",
+                "startLine": 13,
+                "endLine": 13,
+                "message": "Specific class \"Crealoz\\TerribleModule\\Model\\Faq\" injected in $faq. Consider using a factory, builder, or interface instead. (Note: This is a suggestion - manual verification recommended)",
+                "severity": "warning",
+                "metadata": {
+                    "specificClasses": {
+                        "Crealoz\\TerribleModule\\Model\\Faq": "$faq"
+                    }
+                }
+            }
+        ]
+    },
+    "9": {
+        "ruleId": "replaceObjectManager",
+        "name": "Use of ObjectManager",
+        "shortDescription": "ObjectManager should not be used directly",
+        "longDescription": "The ObjectManager should not be used directly in Magento 2 code. Use dependency injection in constructors instead. Direct ObjectManager usage bypasses the DI container, makes testing difficult, and is considered an anti-pattern. The only exception is Factory classes which are designed to use ObjectManager internally.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Block\/FaqProduct.php",
+                "startLine": 6,
+                "endLine": 6,
+                "message": "Direct use of ObjectManager detected. Use dependency injection instead.",
+                "severity": "error",
+                "metadata": {
+                    "injections": {
+                        "Collection": "collection"
+                    }
+                }
+            },
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Block\/LatestFaq.php",
+                "startLine": 6,
+                "endLine": 6,
+                "message": "Direct use of ObjectManager detected. Use dependency injection instead.",
+                "severity": "error",
+                "metadata": {
+                    "injections": []
+                }
+            }
+        ]
+    },
+    "10": {
+        "ruleId": "magento.code.use-of-registry",
+        "name": "Use of Registry",
+        "shortDescription": "Magento\\Framework\\Registry is deprecated",
+        "longDescription": "The Registry pattern is deprecated in Magento 2. It bypasses dependency injection, creates hidden dependencies, makes code harder to test, and can lead to unexpected state mutations. Use constructor injection for explicit dependencies or data persistors for session-like storage instead.",
+        "files": [
+            {
+                "file": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module\/\/Block\/RandomFaq.php",
+                "startLine": 14,
+                "endLine": 14,
+                "message": "Class \"Crealoz\\TerribleModule\\Block\\RandomFaq\" uses deprecated Magento\\Framework\\Registry in constructor parameter \"$registry\". Use dependency injection or data persistors instead.",
+                "severity": "error"
+            }
+        ]
+    },
+    "metadata": {
+        "scan_path": "\/home\/christophe\/Public\/packages\/crealoz\/terrible-module"
+    }
+}

@@ -594,4 +594,89 @@ PHP;
         unlink($file);
         rmdir($tempDir);
     }
+
+    public function testProcessIgnoresHeavyClassesFromClassToProxy(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Classes from ClassToProxy list should be ignored (not flagged)
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Service;
+
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Store\Model\StoreManagerInterface;
+
+class HeavyDependencyService
+{
+    public function __construct(
+        private ProductRepositoryInterface $productRepository,
+        private CustomerRepositoryInterface $customerRepository,
+        private ResourceConnection $resourceConnection,
+        private StoreManagerInterface $storeManager
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/HeavyDependencyService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // All these classes are in ClassToProxy, so should be ignored
+        $this->assertEquals(0, $processor->getFoundCount(), 'Heavy classes from ClassToProxy should be ignored');
+    }
+
+    public function testProcessIgnoresHeavyClassButFlagsOthers(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Mix: heavy class (ignored) + collection (should be flagged)
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Service;
+
+use Magento\Framework\App\ResourceConnection;
+use Magento\Catalog\Model\ResourceModel\Product\Collection;
+
+class MixedService
+{
+    public function __construct(
+        private ResourceConnection $resourceConnection,
+        private Collection $productCollection
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/MixedService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        // ResourceConnection is in ClassToProxy (ignored), but Collection should be flagged
+        $this->assertEquals(1, $processor->getFoundCount(), 'Should only flag Collection, not ResourceConnection');
+
+        // Verify it's the collection that was flagged
+        $this->assertNotEmpty($report);
+        $collectionRule = array_filter($report, fn($r) => $r['ruleId'] === 'collectionMustUseFactory');
+        $this->assertNotEmpty($collectionRule, 'Collection should be flagged');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
 }

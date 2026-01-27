@@ -5,6 +5,7 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Service\ClassToProxy;
 use ReflectionClass;
 use ReflectionException;
 
@@ -27,17 +28,46 @@ class SpecificClassInjection extends AbstractProcessor
 {
     /**
      * Classes that are always ignored (legitimate specific class injections)
+     * These are typically configuration, status, or state classes that don't
+     * follow the factory/interface pattern and are meant to be injected directly.
      */
     private const IGNORED_CLASSES = [
-        'Magento\Framework\Escaper',
-        'Magento\Framework\Data\Collection\AbstractDb',
-        'Magento\Framework\App\State',
+        // EAV configuration
         'Magento\Eav\Model\Validator\Attribute\Backend',
+        'Magento\Eav\Model\Config',
+        'Magento\Eav\Model\Entity\Attribute\Config',
+        // CMS
         'Magento\Cms\Model\Page',
-        'Magento\Checkout\Model\Session',
-        'Magento\Customer\Model\Session',
+        // Theme/UI
         'Magento\Theme\Block\Html\Header\Logo',
-        'Magento\Framework\Filesystem'
+        // Catalog - Visibility and Status
+        'Magento\Catalog\Model\Product\Visibility',
+        'Magento\Catalog\Model\Product\Attribute\Source\Status',
+        'Magento\Catalog\Model\Product\Type',
+        'Magento\Catalog\Model\Product\Media\Config',
+        'Magento\CatalogInventory\Model\Stock',
+        // Sales - Order Status and State
+        'Magento\Sales\Model\Order\Status',
+        'Magento\Sales\Model\Order\Config',
+        'Magento\Sales\Model\Order\StatusFactory',
+        // Customer
+        'Magento\Customer\Model\Group',
+        'Magento\Customer\Model\Customer\Attribute\Source\Group',
+        // Store
+        'Magento\Store\Model\StoreManager',
+        'Magento\Store\Model\Store',
+        // Indexer
+        'Magento\Indexer\Model\Indexer\State',
+        // Tax
+        'Magento\Tax\Model\Calculation',
+        'Magento\Tax\Model\Config',
+        // Directory
+        'Magento\Directory\Model\Currency',
+        'Magento\Directory\Model\Country',
+        'Magento\Directory\Model\Region',
+        // Quote
+        'Magento\Quote\Model\Quote\Address\RateResult\Method',
+        'Magento\Quote\Model\Quote\Item\Option',
     ];
 
     /**
@@ -281,7 +311,7 @@ class SpecificClassInjection extends AbstractProcessor
     private function analyzeFile(string $file, string $fileContent): void
     {
         // Skip Factory classes - they're designed to instantiate concrete classes
-        if ($this->isFactory($fileContent)) {
+        if ($this->isFactory($fileContent) || $this->isCommand($fileContent)) {
             return;
         }
 
@@ -447,30 +477,41 @@ class SpecificClassInjection extends AbstractProcessor
     private function isArgumentIgnored(string $className): bool
     {
         return $this->isBasicType($className)
-            || $this->isInterfaceOrFactory($className)
-            || $this->isMagentoFrameworkModel($className)
+            || $this->isLegitimate($className)
+            || $this->isMagentoFramework($className)
             || $this->isContext($className)
-            || $this->isRegistry($className)
             || $this->isSession($className)
             || $this->isHelper($className)
             || $this->isStdLib($className)
-            || $this->isFileSystem($className)
             || $this->isSerializer($className)
-            || $this->isGenerator($className);
+            || $this->isGenerator($className)
+            || ClassToProxy::isRequired($className);
     }
 
     /**
      * Pattern matching methods
      */
 
+    /**
+     * Checks for basic type
+     *
+     * @param string $className
+     * @return bool
+     */
     private function isBasicType(string $className): bool
     {
         return in_array($className, ['string', 'int', 'float', 'bool', 'array', 'mixed'], true);
     }
 
-    private function isInterfaceOrFactory(string $className): bool
+    /**
+     * Is argument an Interface or a Factory
+     *
+     * @param string $className
+     * @return bool
+     */
+    private function isLegitimate(string $className): bool
     {
-        return str_ends_with($className, 'Interface') || str_ends_with($className, 'Factory');
+        return str_ends_with($className, 'Interface') || str_ends_with($className, 'Factory') || str_ends_with($className, 'Provider') || str_ends_with($className, 'Resolver');
     }
 
     /**
@@ -479,6 +520,27 @@ class SpecificClassInjection extends AbstractProcessor
     private function isFactory(string $fileContent): bool
     {
         return preg_match('/class\s+\w*Factory\b/', $fileContent) === 1;
+    }
+
+    /**
+     * Check if the class extends Symfony\Component\Console\Command\Command.
+     * In that case, proxy is preferred for heavy dependencies since commands
+     * are instantiated on every CLI invocation.
+     *
+     * @param string $fileContent The file content to analyze
+     * @return bool True if the class is a CLI command
+     */
+    private function isCommand(string $fileContent): bool
+    {
+        // Check for Symfony Command import
+        if (str_contains($fileContent, 'Symfony\Component\Console\Command\Command')) {
+            // Verify it's actually extended (not just used as a type hint)
+            if (preg_match('/class\s+\w+\s+extends\s+(?:\\\\?Symfony\\\\Component\\\\Console\\\\Command\\\\)?Command\b/', $fileContent)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isModel(string $className): bool
@@ -501,19 +563,20 @@ class SpecificClassInjection extends AbstractProcessor
         return str_contains($className, 'ResourceModel');
     }
 
-    private function isMagentoFrameworkModel(string $className): bool
+    /**
+     * Magento framework classes should not use factories
+     *
+     * @param string $className
+     * @return bool
+     */
+    private function isMagentoFramework(string $className): bool
     {
-        return str_contains($className, 'Magento\Framework\Model');
+        return str_contains($className, 'Magento\Framework');
     }
 
     private function isContext(string $className): bool
     {
         return str_contains($className, 'Context');
-    }
-
-    private function isRegistry(string $className): bool
-    {
-        return $className === 'Magento\Framework\Registry';
     }
 
     private function isSession(string $className): bool
@@ -529,11 +592,6 @@ class SpecificClassInjection extends AbstractProcessor
     private function isStdLib(string $className): bool
     {
         return str_contains($className, 'Stdlib');
-    }
-
-    private function isFileSystem(string $className): bool
-    {
-        return str_contains($className, 'Magento\Framework\Filesystem');
     }
 
     private function isSerializer(string $className): bool

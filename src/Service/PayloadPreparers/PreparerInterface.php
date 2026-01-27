@@ -17,9 +17,10 @@ interface PreparerInterface
      *
      * @param array $errors
      * @param array $fixables
+     * @param string|null $selectedRule Optional rule filter (only process this rule)
      * @return mixed
      */
-    public function prepareFiles(array $errors, array $fixables): array;
+    public function prepareFiles(array $errors, array $fixables, ?string $selectedRule = null): array;
 
     /**
      * Prepare payload that can be sent to easy audit fixer for a specific file.

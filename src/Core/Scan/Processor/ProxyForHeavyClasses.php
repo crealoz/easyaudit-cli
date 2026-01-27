@@ -5,6 +5,7 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Service\ClassToProxy;
 
 /**
  * Class ProxyForHeavyClasses
@@ -21,18 +22,16 @@ class ProxyForHeavyClasses extends AbstractProcessor
      */
     private array $heavyClassPatterns = [
         'Session',
-        'Collection',
-        'ResourceModel',
-    ];
-
-    /**
-     * Specific heavy classes that should use proxies (exact match)
-     */
-    private array $heavyClasses = [
-        'Magento\Cms\Model\Page',
     ];
 
     private array $processedFiles = [];
+
+    private ClassToProxy $classToProxy;
+
+    public function __construct()
+    {
+        $this->classToProxy = new ClassToProxy();
+    }
 
     public function getIdentifier(): string
     {
@@ -167,16 +166,16 @@ class ProxyForHeavyClasses extends AbstractProcessor
             return false;
         }
 
-        // Check against specific heavy classes (exact match)
-        if (in_array($className, $this->heavyClasses, true)) {
-            return true;
-        }
-
         // Check against heavy class patterns
         foreach ($this->heavyClassPatterns as $pattern) {
             if (str_contains($className, $pattern)) {
                 return true;
             }
+        }
+
+        // Check against specific heavy classes (exact match)
+        if ($this->classToProxy::isRequired($className)) {
+            return true;
         }
 
         return false;
