@@ -5,7 +5,7 @@
 [![GitHub Downloads](https://img.shields.io/github/downloads/crealoz/easyaudit-cli/total?style=flat-square)](https://github.com/crealoz/easyaudit-cli/releases)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF?style=flat-square)](https://php.net)
 [![Tests](https://img.shields.io/github/actions/workflow/status/crealoz/easyaudit-cli/tests.yml?style=flat-square&label=tests)](https://github.com/crealoz/easyaudit-cli/actions)
-[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/crealoz/easyaudit-cli/main/coverage-badge.json&style=flat-square)](https://github.com/crealoz/easyaudit-cli)
+[![codecov](https://codecov.io/gh/crealoz/easyaudit-cli/graph/badge.svg?token=JA0WEVL9XM)](https://codecov.io/gh/crealoz/easyaudit-cli)
 
 Static analysis tool for Magento 2 codebases. Detects anti-patterns, security risks, and architectural issues.
 

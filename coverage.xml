@@ -1,0 +1,3114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1769521034">
+  <project timestamp="1769521034">
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Command/ActivateSelfSigned.php">
+      <class name="EasyAudit\Console\Command\ActivateSelfSigned" namespace="global">
+        <metrics complexity="6" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="16" coveredstatements="0" elements="20" coveredelements="0"/>
+      </class>
+      <line num="12" type="method" name="getDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="14" type="stmt" count="0"/>
+      <line num="17" type="method" name="getSynopsis" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="19" type="stmt" count="0"/>
+      <line num="22" type="method" name="getHelp" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="24" type="stmt" count="0"/>
+      <line num="32" type="stmt" count="0"/>
+      <line num="35" type="method" name="run" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="37" type="stmt" count="0"/>
+      <line num="38" type="stmt" count="0"/>
+      <line num="39" type="stmt" count="0"/>
+      <line num="40" type="stmt" count="0"/>
+      <line num="44" type="stmt" count="0"/>
+      <line num="45" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="48" type="stmt" count="0"/>
+      <line num="50" type="stmt" count="0"/>
+      <line num="51" type="stmt" count="0"/>
+      <line num="52" type="stmt" count="0"/>
+      <metrics loc="55" ncloc="54" classes="1" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="16" coveredstatements="0" elements="20" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Command/Auth.php">
+      <class name="EasyAudit\Console\Command\Auth" namespace="global">
+        <metrics complexity="16" methods="5" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="45" coveredstatements="0" elements="50" coveredelements="0"/>
+      </class>
+      <line num="10" type="method" name="getDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="12" type="stmt" count="0"/>
+      <line num="15" type="method" name="getSynopsis" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="17" type="stmt" count="0"/>
+      <line num="20" type="method" name="getHelp" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="22" type="stmt" count="0"/>
+      <line num="35" type="stmt" count="0"/>
+      <line num="38" type="method" name="askSecret" visibility="private" complexity="3" crap="12" count="0"/>
+      <line num="40" type="stmt" count="0"/>
+      <line num="41" type="stmt" count="0"/>
+      <line num="42" type="stmt" count="0"/>
+      <line num="43" type="stmt" count="0"/>
+      <line num="44" type="stmt" count="0"/>
+      <line num="45" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="48" type="stmt" count="0"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="50" type="stmt" count="0"/>
+      <line num="51" type="stmt" count="0"/>
+      <line num="52" type="stmt" count="0"/>
+      <line num="53" type="stmt" count="0"/>
+      <line num="56" type="method" name="run" visibility="public" complexity="10" crap="110" count="0"/>
+      <line num="58" type="stmt" count="0"/>
+      <line num="59" type="stmt" count="0"/>
+      <line num="60" type="stmt" count="0"/>
+      <line num="61" type="stmt" count="0"/>
+      <line num="65" type="stmt" count="0"/>
+      <line num="66" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="69" type="stmt" count="0"/>
+      <line num="70" type="stmt" count="0"/>
+      <line num="71" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="79" type="stmt" count="0"/>
+      <line num="84" type="stmt" count="0"/>
+      <line num="85" type="stmt" count="0"/>
+      <line num="86" type="stmt" count="0"/>
+      <line num="87" type="stmt" count="0"/>
+      <line num="92" type="stmt" count="0"/>
+      <line num="93" type="stmt" count="0"/>
+      <line num="94" type="stmt" count="0"/>
+      <line num="95" type="stmt" count="0"/>
+      <line num="97" type="stmt" count="0"/>
+      <line num="98" type="stmt" count="0"/>
+      <metrics loc="101" ncloc="99" classes="1" methods="5" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="45" coveredstatements="0" elements="50" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Command/Credits.php">
+      <class name="EasyAudit\Console\Command\Credits" namespace="global">
+        <metrics complexity="6" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="14" coveredstatements="0" elements="18" coveredelements="0"/>
+      </class>
+      <line num="9" type="method" name="getDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="11" type="stmt" count="0"/>
+      <line num="14" type="method" name="getSynopsis" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="16" type="stmt" count="0"/>
+      <line num="19" type="method" name="getHelp" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="21" type="stmt" count="0"/>
+      <line num="28" type="stmt" count="0"/>
+      <line num="31" type="method" name="run" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="33" type="stmt" count="0"/>
+      <line num="34" type="stmt" count="0"/>
+      <line num="35" type="stmt" count="0"/>
+      <line num="36" type="stmt" count="0"/>
+      <line num="39" type="stmt" count="0"/>
+      <line num="40" type="stmt" count="0"/>
+      <line num="41" type="stmt" count="0"/>
+      <line num="42" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <metrics loc="50" ncloc="49" classes="1" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="14" coveredstatements="0" elements="18" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Command/FixApply.php">
+      <class name="EasyAudit\Console\Command\FixApply" namespace="global">
+        <metrics complexity="59" methods="8" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="176" coveredstatements="0" elements="184" coveredelements="0"/>
+      </class>
+      <line num="28" type="method" name="__construct" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="30" type="stmt" count="0"/>
+      <line num="31" type="stmt" count="0"/>
+      <line num="32" type="stmt" count="0"/>
+      <line num="35" type="method" name="getDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="37" type="stmt" count="0"/>
+      <line num="40" type="method" name="getSynopsis" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="42" type="stmt" count="0"/>
+      <line num="45" type="method" name="getHelp" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="80" type="method" name="run" visibility="public" complexity="36" crap="1332" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="83" type="stmt" count="0"/>
+      <line num="84" type="stmt" count="0"/>
+      <line num="85" type="stmt" count="0"/>
+      <line num="86" type="stmt" count="0"/>
+      <line num="88" type="stmt" count="0"/>
+      <line num="89" type="stmt" count="0"/>
+      <line num="90" type="stmt" count="0"/>
+      <line num="91" type="stmt" count="0"/>
+      <line num="92" type="stmt" count="0"/>
+      <line num="93" type="stmt" count="0"/>
+      <line num="95" type="stmt" count="0"/>
+      <line num="96" type="stmt" count="0"/>
+      <line num="97" type="stmt" count="0"/>
+      <line num="98" type="stmt" count="0"/>
+      <line num="99" type="stmt" count="0"/>
+      <line num="100" type="stmt" count="0"/>
+      <line num="102" type="stmt" count="0"/>
+      <line num="103" type="stmt" count="0"/>
+      <line num="104" type="stmt" count="0"/>
+      <line num="105" type="stmt" count="0"/>
+      <line num="108" type="stmt" count="0"/>
+      <line num="109" type="stmt" count="0"/>
+      <line num="110" type="stmt" count="0"/>
+      <line num="113" type="stmt" count="0"/>
+      <line num="114" type="stmt" count="0"/>
+      <line num="115" type="stmt" count="0"/>
+      <line num="117" type="stmt" count="0"/>
+      <line num="118" type="stmt" count="0"/>
+      <line num="119" type="stmt" count="0"/>
+      <line num="120" type="stmt" count="0"/>
+      <line num="124" type="stmt" count="0"/>
+      <line num="125" type="stmt" count="0"/>
+      <line num="129" type="stmt" count="0"/>
+      <line num="130" type="stmt" count="0"/>
+      <line num="132" type="stmt" count="0"/>
+      <line num="135" type="stmt" count="0"/>
+      <line num="136" type="stmt" count="0"/>
+      <line num="137" type="stmt" count="0"/>
+      <line num="138" type="stmt" count="0"/>
+      <line num="139" type="stmt" count="0"/>
+      <line num="140" type="stmt" count="0"/>
+      <line num="142" type="stmt" count="0"/>
+      <line num="146" type="stmt" count="0"/>
+      <line num="147" type="stmt" count="0"/>
+      <line num="149" type="stmt" count="0"/>
+      <line num="150" type="stmt" count="0"/>
+      <line num="151" type="stmt" count="0"/>
+      <line num="155" type="stmt" count="0"/>
+      <line num="156" type="stmt" count="0"/>
+      <line num="157" type="stmt" count="0"/>
+      <line num="158" type="stmt" count="0"/>
+      <line num="162" type="stmt" count="0"/>
+      <line num="165" type="stmt" count="0"/>
+      <line num="168" type="stmt" count="0"/>
+      <line num="170" type="stmt" count="0"/>
+      <line num="171" type="stmt" count="0"/>
+      <line num="173" type="stmt" count="0"/>
+      <line num="174" type="stmt" count="0"/>
+      <line num="176" type="stmt" count="0"/>
+      <line num="177" type="stmt" count="0"/>
+      <line num="178" type="stmt" count="0"/>
+      <line num="179" type="stmt" count="0"/>
+      <line num="181" type="stmt" count="0"/>
+      <line num="183" type="stmt" count="0"/>
+      <line num="184" type="stmt" count="0"/>
+      <line num="185" type="stmt" count="0"/>
+      <line num="188" type="stmt" count="0"/>
+      <line num="190" type="stmt" count="0"/>
+      <line num="191" type="stmt" count="0"/>
+      <line num="192" type="stmt" count="0"/>
+      <line num="193" type="stmt" count="0"/>
+      <line num="194" type="stmt" count="0"/>
+      <line num="195" type="stmt" count="0"/>
+      <line num="198" type="stmt" count="0"/>
+      <line num="199" type="stmt" count="0"/>
+      <line num="203" type="stmt" count="0"/>
+      <line num="206" type="stmt" count="0"/>
+      <line num="209" type="stmt" count="0"/>
+      <line num="212" type="stmt" count="0"/>
+      <line num="213" type="stmt" count="0"/>
+      <line num="214" type="stmt" count="0"/>
+      <line num="215" type="stmt" count="0"/>
+      <line num="218" type="stmt" count="0"/>
+      <line num="219" type="stmt" count="0"/>
+      <line num="220" type="stmt" count="0"/>
+      <line num="223" type="stmt" count="0"/>
+      <line num="224" type="stmt" count="0"/>
+      <line num="225" type="stmt" count="0"/>
+      <line num="229" type="stmt" count="0"/>
+      <line num="232" type="stmt" count="0"/>
+      <line num="233" type="stmt" count="0"/>
+      <line num="234" type="stmt" count="0"/>
+      <line num="235" type="stmt" count="0"/>
+      <line num="239" type="stmt" count="0"/>
+      <line num="241" type="stmt" count="0"/>
+      <line num="243" type="stmt" count="0"/>
+      <line num="244" type="stmt" count="0"/>
+      <line num="247" type="stmt" count="0"/>
+      <line num="248" type="stmt" count="0"/>
+      <line num="252" type="stmt" count="0"/>
+      <line num="253" type="stmt" count="0"/>
+      <line num="254" type="stmt" count="0"/>
+      <line num="255" type="stmt" count="0"/>
+      <line num="256" type="stmt" count="0"/>
+      <line num="259" type="stmt" count="0"/>
+      <line num="260" type="stmt" count="0"/>
+      <line num="263" type="stmt" count="0"/>
+      <line num="266" type="stmt" count="0"/>
+      <line num="267" type="stmt" count="0"/>
+      <line num="268" type="stmt" count="0"/>
+      <line num="270" type="stmt" count="0"/>
+      <line num="273" type="stmt" count="0"/>
+      <line num="276" type="method" name="preparePayload" visibility="private" complexity="6" crap="42" count="0"/>
+      <line num="278" type="stmt" count="0"/>
+      <line num="279" type="stmt" count="0"/>
+      <line num="282" type="stmt" count="0"/>
+      <line num="283" type="stmt" count="0"/>
+      <line num="285" type="stmt" count="0"/>
+      <line num="286" type="stmt" count="0"/>
+      <line num="289" type="stmt" count="0"/>
+      <line num="290" type="stmt" count="0"/>
+      <line num="292" type="stmt" count="0"/>
+      <line num="293" type="stmt" count="0"/>
+      <line num="295" type="stmt" count="0"/>
+      <line num="296" type="stmt" count="0"/>
+      <line num="298" type="stmt" count="0"/>
+      <line num="299" type="stmt" count="0"/>
+      <line num="310" type="method" name="renderProgressBar" visibility="private" complexity="3" crap="12" count="0"/>
+      <line num="312" type="stmt" count="0"/>
+      <line num="313" type="stmt" count="0"/>
+      <line num="314" type="stmt" count="0"/>
+      <line num="315" type="stmt" count="0"/>
+      <line num="317" type="stmt" count="0"/>
+      <line num="318" type="stmt" count="0"/>
+      <line num="321" type="stmt" count="0"/>
+      <line num="322" type="stmt" count="0"/>
+      <line num="323" type="stmt" count="0"/>
+      <line num="325" type="stmt" count="0"/>
+      <line num="327" type="stmt" count="0"/>
+      <line num="328" type="stmt" count="0"/>
+      <line num="329" type="stmt" count="0"/>
+      <line num="331" type="stmt" count="0"/>
+      <line num="333" type="stmt" count="0"/>
+      <line num="343" type="method" name="selectRule" visibility="private" complexity="10" crap="110" count="0"/>
+      <line num="346" type="stmt" count="0"/>
+      <line num="347" type="stmt" count="0"/>
+      <line num="348" type="stmt" count="0"/>
+      <line num="349" type="stmt" count="0"/>
+      <line num="350" type="stmt" count="0"/>
+      <line num="351" type="stmt" count="0"/>
+      <line num="355" type="stmt" count="0"/>
+      <line num="356" type="stmt" count="0"/>
+      <line num="360" type="stmt" count="0"/>
+      <line num="361" type="stmt" count="0"/>
+      <line num="362" type="stmt" count="0"/>
+      <line num="363" type="stmt" count="0"/>
+      <line num="364" type="stmt" count="0"/>
+      <line num="365" type="stmt" count="0"/>
+      <line num="366" type="stmt" count="0"/>
+      <line num="368" type="stmt" count="0"/>
+      <line num="369" type="stmt" count="0"/>
+      <line num="372" type="stmt" count="0"/>
+      <line num="374" type="stmt" count="0"/>
+      <line num="375" type="stmt" count="0"/>
+      <line num="378" type="stmt" count="0"/>
+      <line num="379" type="stmt" count="0"/>
+      <line num="380" type="stmt" count="0"/>
+      <line num="381" type="stmt" count="0"/>
+      <line num="384" type="stmt" count="0"/>
+      <line num="385" type="stmt" count="0"/>
+      <line num="387" type="stmt" count="0"/>
+      <metrics loc="389" ncloc="350" classes="1" methods="8" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="176" coveredstatements="0" elements="184" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Command/FixPlan.php">
+      <class name="EasyAudit\Console\Command\FixPlan" namespace="global">
+        <metrics complexity="9" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="0" elements="34" coveredelements="0"/>
+      </class>
+      <line num="9" type="method" name="getDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="11" type="stmt" count="0"/>
+      <line num="14" type="method" name="getSynopsis" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="16" type="stmt" count="0"/>
+      <line num="19" type="method" name="getHelp" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="21" type="stmt" count="0"/>
+      <line num="37" type="stmt" count="0"/>
+      <line num="40" type="method" name="run" visibility="public" complexity="6" crap="42" count="0"/>
+      <line num="42" type="stmt" count="0"/>
+      <line num="44" type="stmt" count="0"/>
+      <line num="45" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="50" type="stmt" count="0"/>
+      <line num="51" type="stmt" count="0"/>
+      <line num="53" type="stmt" count="0"/>
+      <line num="54" type="stmt" count="0"/>
+      <line num="55" type="stmt" count="0"/>
+      <line num="58" type="stmt" count="0"/>
+      <line num="59" type="stmt" count="0"/>
+      <line num="60" type="stmt" count="0"/>
+      <line num="61" type="stmt" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="69" type="stmt" count="0"/>
+      <line num="70" type="stmt" count="0"/>
+      <line num="71" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="74" type="stmt" count="0"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="79" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <metrics loc="85" ncloc="83" classes="1" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="0" elements="34" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Command/Scan.php">
+      <class name="EasyAudit\Console\Command\Scan" namespace="global">
+        <metrics complexity="17" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="43" coveredstatements="0" elements="47" coveredelements="0"/>
+      </class>
+      <line num="14" type="method" name="getDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="16" type="stmt" count="0"/>
+      <line num="19" type="method" name="getSynopsis" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="21" type="stmt" count="0"/>
+      <line num="24" type="method" name="getHelp" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="26" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="49" type="method" name="run" visibility="public" complexity="14" crap="210" count="0"/>
+      <line num="52" type="stmt" count="0"/>
+      <line num="53" type="stmt" count="0"/>
+      <line num="54" type="stmt" count="0"/>
+      <line num="57" type="stmt" count="0"/>
+      <line num="58" type="stmt" count="0"/>
+      <line num="59" type="stmt" count="0"/>
+      <line num="60" type="stmt" count="0"/>
+      <line num="61" type="stmt" count="0"/>
+      <line num="62" type="stmt" count="0"/>
+      <line num="63" type="stmt" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="66" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="69" type="stmt" count="0"/>
+      <line num="70" type="stmt" count="0"/>
+      <line num="73" type="stmt" count="0"/>
+      <line num="74" type="stmt" count="0"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="83" type="stmt" count="0"/>
+      <line num="84" type="stmt" count="0"/>
+      <line num="86" type="stmt" count="0"/>
+      <line num="87" type="stmt" count="0"/>
+      <line num="89" type="stmt" count="0"/>
+      <line num="90" type="stmt" count="0"/>
+      <line num="92" type="stmt" count="0"/>
+      <line num="95" type="stmt" count="0"/>
+      <line num="96" type="stmt" count="0"/>
+      <line num="97" type="stmt" count="0"/>
+      <line num="98" type="stmt" count="0"/>
+      <line num="99" type="stmt" count="0"/>
+      <line num="100" type="stmt" count="0"/>
+      <line num="104" type="stmt" count="0"/>
+      <line num="105" type="stmt" count="0"/>
+      <line num="106" type="stmt" count="0"/>
+      <metrics loc="109" ncloc="106" classes="1" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="43" coveredstatements="0" elements="47" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/CommandInterface.php">
+      <metrics loc="27" ncloc="14" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Util/Args.php">
+      <class name="EasyAudit\Console\Util\Args" namespace="global">
+        <metrics complexity="19" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="32" coveredstatements="0" elements="36" coveredelements="0"/>
+      </class>
+      <line num="24" type="method" name="parse" visibility="public" complexity="10" crap="110" count="0"/>
+      <line num="26" type="stmt" count="0"/>
+      <line num="27" type="stmt" count="0"/>
+      <line num="28" type="stmt" count="0"/>
+      <line num="29" type="stmt" count="0"/>
+      <line num="30" type="stmt" count="0"/>
+      <line num="31" type="stmt" count="0"/>
+      <line num="32" type="stmt" count="0"/>
+      <line num="33" type="stmt" count="0"/>
+      <line num="34" type="stmt" count="0"/>
+      <line num="35" type="stmt" count="0"/>
+      <line num="36" type="stmt" count="0"/>
+      <line num="38" type="stmt" count="0"/>
+      <line num="41" type="stmt" count="0"/>
+      <line num="43" type="stmt" count="0"/>
+      <line num="45" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="48" type="stmt" count="0"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="52" type="stmt" count="0"/>
+      <line num="55" type="stmt" count="0"/>
+      <line num="66" type="method" name="optStr" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="79" type="method" name="optArr" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="84" type="stmt" count="0"/>
+      <line num="96" type="method" name="optBool" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="98" type="stmt" count="0"/>
+      <line num="99" type="stmt" count="0"/>
+      <line num="101" type="stmt" count="0"/>
+      <line num="102" type="stmt" count="0"/>
+      <line num="103" type="stmt" count="0"/>
+      <line num="105" type="stmt" count="0"/>
+      <line num="106" type="stmt" count="0"/>
+      <metrics loc="109" ncloc="71" classes="1" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="32" coveredstatements="0" elements="36" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Util/Confirm.php">
+      <class name="EasyAudit\Console\Util\Confirm" namespace="global">
+        <metrics complexity="4" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="0" elements="7" coveredelements="0"/>
+      </class>
+      <line num="15" type="method" name="confirm" visibility="public" complexity="4" crap="20" count="0"/>
+      <line num="17" type="stmt" count="0"/>
+      <line num="18" type="stmt" count="0"/>
+      <line num="19" type="stmt" count="0"/>
+      <line num="20" type="stmt" count="0"/>
+      <line num="21" type="stmt" count="0"/>
+      <line num="23" type="stmt" count="0"/>
+      <metrics loc="25" ncloc="18" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="0" elements="7" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Console/Util/Filenames.php">
+      <class name="EasyAudit\Console\Util\Filenames" namespace="global">
+        <metrics complexity="6" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="17" coveredstatements="0" elements="20" coveredelements="0"/>
+      </class>
+      <line num="13" type="method" name="sanitize" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="16" type="stmt" count="0"/>
+      <line num="19" type="stmt" count="0"/>
+      <line num="22" type="stmt" count="0"/>
+      <line num="35" type="method" name="getRelativePath" visibility="public" complexity="2" crap="6" count="0"/>
+      <line num="38" type="stmt" count="0"/>
+      <line num="39" type="stmt" count="0"/>
+      <line num="42" type="stmt" count="0"/>
+      <line num="43" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="50" type="stmt" count="0"/>
+      <line num="62" type="method" name="getSequencedPath" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="65" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="73" type="stmt" count="0"/>
+      <line num="74" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <metrics loc="80" ncloc="47" classes="1" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="17" coveredstatements="0" elements="20" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Report/JsonReporter.php">
+      <class name="EasyAudit\Core\Report\JsonReporter" namespace="global">
+        <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
+      </class>
+      <line num="8" type="method" name="generate" visibility="public" complexity="1" crap="1" count="8"/>
+      <line num="10" type="stmt" count="8"/>
+      <metrics loc="12" ncloc="12" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Report/ReporterInterface.php">
+      <metrics loc="8" ncloc="8" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Report/SarifReporter.php">
+      <class name="EasyAudit\Core\Report\SarifReporter" namespace="global">
+        <metrics complexity="9" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="52" coveredstatements="52" elements="53" coveredelements="53"/>
+      </class>
+      <line num="9" type="method" name="generate" visibility="public" complexity="9" crap="9" count="23"/>
+      <line num="11" type="stmt" count="23"/>
+      <line num="13" type="stmt" count="23"/>
+      <line num="14" type="stmt" count="23"/>
+      <line num="16" type="stmt" count="23"/>
+      <line num="17" type="stmt" count="23"/>
+      <line num="18" type="stmt" count="17"/>
+      <line num="19" type="stmt" count="1"/>
+      <line num="21" type="stmt" count="16"/>
+      <line num="22" type="stmt" count="16"/>
+      <line num="23" type="stmt" count="16"/>
+      <line num="24" type="stmt" count="16"/>
+      <line num="25" type="stmt" count="16"/>
+      <line num="26" type="stmt" count="16"/>
+      <line num="27" type="stmt" count="16"/>
+      <line num="28" type="stmt" count="16"/>
+      <line num="29" type="stmt" count="16"/>
+      <line num="30" type="stmt" count="16"/>
+      <line num="31" type="stmt" count="16"/>
+      <line num="32" type="stmt" count="16"/>
+      <line num="33" type="stmt" count="16"/>
+      <line num="34" type="stmt" count="16"/>
+      <line num="35" type="stmt" count="16"/>
+      <line num="36" type="stmt" count="16"/>
+      <line num="37" type="stmt" count="16"/>
+      <line num="38" type="stmt" count="16"/>
+      <line num="39" type="stmt" count="16"/>
+      <line num="40" type="stmt" count="16"/>
+      <line num="41" type="stmt" count="16"/>
+      <line num="42" type="stmt" count="16"/>
+      <line num="43" type="stmt" count="16"/>
+      <line num="44" type="stmt" count="16"/>
+      <line num="45" type="stmt" count="16"/>
+      <line num="46" type="stmt" count="16"/>
+      <line num="47" type="stmt" count="16"/>
+      <line num="48" type="stmt" count="16"/>
+      <line num="49" type="stmt" count="16"/>
+      <line num="53" type="stmt" count="23"/>
+      <line num="54" type="stmt" count="23"/>
+      <line num="55" type="stmt" count="23"/>
+      <line num="56" type="stmt" count="23"/>
+      <line num="57" type="stmt" count="23"/>
+      <line num="58" type="stmt" count="23"/>
+      <line num="59" type="stmt" count="23"/>
+      <line num="60" type="stmt" count="23"/>
+      <line num="61" type="stmt" count="23"/>
+      <line num="62" type="stmt" count="23"/>
+      <line num="63" type="stmt" count="23"/>
+      <line num="64" type="stmt" count="23"/>
+      <line num="65" type="stmt" count="23"/>
+      <line num="66" type="stmt" count="23"/>
+      <line num="67" type="stmt" count="23"/>
+      <line num="69" type="stmt" count="23"/>
+      <metrics loc="71" ncloc="71" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="52" coveredstatements="52" elements="53" coveredelements="53"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/ExternalToolMapping.php">
+      <class name="EasyAudit\Core\Scan\ExternalToolMapping" namespace="global">
+        <metrics complexity="4" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="0" elements="8" coveredelements="0"/>
+      </class>
+      <line num="26" type="method" name="isExternallyFixable" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="28" type="stmt" count="0"/>
+      <line num="34" type="method" name="getCommand" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="36" type="stmt" count="0"/>
+      <line num="42" type="method" name="getTool" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="44" type="stmt" count="0"/>
+      <line num="50" type="method" name="getDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="52" type="stmt" count="0"/>
+      <metrics loc="55" ncloc="35" classes="1" methods="4" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="0" elements="8" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/AbstractProcessor.php">
+      <class name="EasyAudit\Core\Scan\Processor\AbstractProcessor" namespace="global">
+        <metrics complexity="2" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="8" coveredstatements="8" elements="10" coveredelements="10"/>
+      </class>
+      <line num="13" type="method" name="getFoundCount" visibility="public" complexity="1" crap="1" count="82"/>
+      <line num="15" type="stmt" count="82"/>
+      <line num="18" type="method" name="getReport" visibility="public" complexity="1" crap="1" count="17"/>
+      <line num="20" type="stmt" count="17"/>
+      <line num="21" type="stmt" count="17"/>
+      <line num="22" type="stmt" count="17"/>
+      <line num="23" type="stmt" count="17"/>
+      <line num="24" type="stmt" count="17"/>
+      <line num="25" type="stmt" count="17"/>
+      <line num="26" type="stmt" count="17"/>
+      <metrics loc="28" ncloc="28" classes="1" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="8" coveredstatements="8" elements="10" coveredelements="10"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/AdvancedBlockVsViewModel.php">
+      <class name="EasyAudit\Core\Scan\Processor\AdvancedBlockVsViewModel" namespace="global">
+        <metrics complexity="24" methods="9" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="85" coveredstatements="0" elements="94" coveredelements="0"/>
+      </class>
+      <line num="47" type="method" name="getIdentifier" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="52" type="method" name="getFileType" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="54" type="stmt" count="0"/>
+      <line num="57" type="method" name="getReport" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="59" type="stmt" count="0"/>
+      <line num="61" type="stmt" count="0"/>
+      <line num="62" type="stmt" count="0"/>
+      <line num="63" type="stmt" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="65" type="stmt" count="0"/>
+      <line num="66" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="69" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="73" type="stmt" count="0"/>
+      <line num="74" type="stmt" count="0"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="79" type="stmt" count="0"/>
+      <line num="80" type="stmt" count="0"/>
+      <line num="83" type="stmt" count="0"/>
+      <line num="86" type="method" name="getMessage" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="88" type="stmt" count="0"/>
+      <line num="91" type="method" name="process" visibility="public" complexity="4" crap="20" count="0"/>
+      <line num="93" type="stmt" count="0"/>
+      <line num="94" type="stmt" count="0"/>
+      <line num="97" type="stmt" count="0"/>
+      <line num="98" type="stmt" count="0"/>
+      <line num="99" type="stmt" count="0"/>
+      <line num="100" type="stmt" count="0"/>
+      <line num="103" type="stmt" count="0"/>
+      <line num="104" type="stmt" count="0"/>
+      <line num="111" type="method" name="checkUseOfThis" visibility="private" complexity="2" crap="6" count="0"/>
+      <line num="114" type="stmt" count="0"/>
+      <line num="116" type="stmt" count="0"/>
+      <line num="117" type="stmt" count="0"/>
+      <line num="120" type="stmt" count="0"/>
+      <line num="121" type="stmt" count="0"/>
+      <line num="122" type="stmt" count="0"/>
+      <line num="123" type="stmt" count="0"/>
+      <line num="125" type="stmt" count="0"/>
+      <line num="127" type="stmt" count="0"/>
+      <line num="128" type="stmt" count="0"/>
+      <line num="129" type="stmt" count="0"/>
+      <line num="130" type="stmt" count="0"/>
+      <line num="131" type="stmt" count="0"/>
+      <line num="132" type="stmt" count="0"/>
+      <line num="139" type="method" name="checkDataCrunch" visibility="private" complexity="10" crap="110" count="0"/>
+      <line num="142" type="stmt" count="0"/>
+      <line num="143" type="stmt" count="0"/>
+      <line num="144" type="stmt" count="0"/>
+      <line num="145" type="stmt" count="0"/>
+      <line num="146" type="stmt" count="0"/>
+      <line num="151" type="stmt" count="0"/>
+      <line num="153" type="stmt" count="0"/>
+      <line num="154" type="stmt" count="0"/>
+      <line num="156" type="stmt" count="0"/>
+      <line num="157" type="stmt" count="0"/>
+      <line num="158" type="stmt" count="0"/>
+      <line num="159" type="stmt" count="0"/>
+      <line num="160" type="stmt" count="0"/>
+      <line num="163" type="stmt" count="0"/>
+      <line num="164" type="stmt" count="0"/>
+      <line num="168" type="stmt" count="0"/>
+      <line num="169" type="stmt" count="0"/>
+      <line num="172" type="stmt" count="0"/>
+      <line num="176" type="stmt" count="0"/>
+      <line num="177" type="stmt" count="0"/>
+      <line num="179" type="stmt" count="0"/>
+      <line num="180" type="stmt" count="0"/>
+      <line num="181" type="stmt" count="0"/>
+      <line num="182" type="stmt" count="0"/>
+      <line num="185" type="stmt" count="0"/>
+      <line num="187" type="stmt" count="0"/>
+      <line num="188" type="stmt" count="0"/>
+      <line num="189" type="stmt" count="0"/>
+      <line num="190" type="stmt" count="0"/>
+      <line num="191" type="stmt" count="0"/>
+      <line num="192" type="stmt" count="0"/>
+      <line num="197" type="method" name="getName" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="199" type="stmt" count="0"/>
+      <line num="202" type="method" name="getLongDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="204" type="stmt" count="0"/>
+      <line num="205" type="stmt" count="0"/>
+      <line num="206" type="stmt" count="0"/>
+      <line num="207" type="stmt" count="0"/>
+      <line num="208" type="stmt" count="0"/>
+      <line num="209" type="stmt" count="0"/>
+      <line num="210" type="stmt" count="0"/>
+      <line num="211" type="stmt" count="0"/>
+      <metrics loc="214" ncloc="184" classes="1" methods="9" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="85" coveredstatements="0" elements="94" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/AroundPlugins.php">
+      <class name="EasyAudit\Core\Scan\Processor\AroundPlugins" namespace="global">
+        <metrics complexity="34" methods="10" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="91" coveredstatements="73" elements="101" coveredelements="78"/>
+      </class>
+      <line num="26" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="28" type="stmt" count="1"/>
+      <line num="31" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="33" type="stmt" count="1"/>
+      <line num="36" type="method" name="getReport" visibility="public" complexity="4" crap="4.34" count="3"/>
+      <line num="38" type="stmt" count="3"/>
+      <line num="39" type="stmt" count="3"/>
+      <line num="40" type="stmt" count="2"/>
+      <line num="41" type="stmt" count="2"/>
+      <line num="42" type="stmt" count="2"/>
+      <line num="43" type="stmt" count="2"/>
+      <line num="44" type="stmt" count="2"/>
+      <line num="45" type="stmt" count="2"/>
+      <line num="46" type="stmt" count="2"/>
+      <line num="47" type="stmt" count="2"/>
+      <line num="49" type="stmt" count="3"/>
+      <line num="50" type="stmt" count="1"/>
+      <line num="51" type="stmt" count="1"/>
+      <line num="52" type="stmt" count="1"/>
+      <line num="53" type="stmt" count="1"/>
+      <line num="54" type="stmt" count="1"/>
+      <line num="55" type="stmt" count="1"/>
+      <line num="56" type="stmt" count="1"/>
+      <line num="57" type="stmt" count="1"/>
+      <line num="59" type="stmt" count="3"/>
+      <line num="60" type="stmt" count="0"/>
+      <line num="61" type="stmt" count="0"/>
+      <line num="62" type="stmt" count="0"/>
+      <line num="63" type="stmt" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="65" type="stmt" count="0"/>
+      <line num="66" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="70" type="stmt" count="3"/>
+      <line num="73" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="75" type="stmt" count="1"/>
+      <line num="78" type="method" name="process" visibility="public" complexity="3" crap="3" count="6"/>
+      <line num="80" type="stmt" count="6"/>
+      <line num="81" type="stmt" count="2"/>
+      <line num="83" type="stmt" count="4"/>
+      <line num="84" type="stmt" count="4"/>
+      <line num="85" type="stmt" count="4"/>
+      <line num="95" type="method" name="isAroundPlugin" visibility="private" complexity="14" crap="14.71" count="4"/>
+      <line num="97" type="stmt" count="4"/>
+      <line num="98" type="stmt" count="4"/>
+      <line num="99" type="stmt" count="4"/>
+      <line num="100" type="stmt" count="4"/>
+      <line num="101" type="stmt" count="4"/>
+      <line num="102" type="stmt" count="4"/>
+      <line num="103" type="stmt" count="3"/>
+      <line num="104" type="stmt" count="3"/>
+      <line num="105" type="stmt" count="3"/>
+      <line num="107" type="stmt" count="3"/>
+      <line num="108" type="stmt" count="3"/>
+      <line num="110" type="stmt" count="3"/>
+      <line num="111" type="stmt" count="3"/>
+      <line num="112" type="stmt" count="3"/>
+      <line num="113" type="stmt" count="3"/>
+      <line num="114" type="stmt" count="3"/>
+      <line num="115" type="stmt" count="3"/>
+      <line num="116" type="stmt" count="3"/>
+      <line num="117" type="stmt" count="3"/>
+      <line num="119" type="stmt" count="3"/>
+      <line num="120" type="stmt" count="3"/>
+      <line num="121" type="stmt" count="0"/>
+      <line num="122" type="stmt" count="0"/>
+      <line num="124" type="stmt" count="3"/>
+      <line num="125" type="stmt" count="3"/>
+      <line num="126" type="stmt" count="3"/>
+      <line num="127" type="stmt" count="0"/>
+      <line num="128" type="stmt" count="0"/>
+      <line num="133" type="stmt" count="3"/>
+      <line num="134" type="stmt" count="3"/>
+      <line num="135" type="stmt" count="3"/>
+      <line num="136" type="stmt" count="3"/>
+      <line num="138" type="stmt" count="1"/>
+      <line num="139" type="stmt" count="1"/>
+      <line num="140" type="stmt" count="2"/>
+      <line num="142" type="stmt" count="2"/>
+      <line num="143" type="stmt" count="2"/>
+      <line num="147" type="stmt" count="0"/>
+      <line num="148" type="stmt" count="0"/>
+      <line num="161" type="method" name="isAfterPlugin" visibility="private" complexity="4" crap="4.07" count="3"/>
+      <line num="163" type="stmt" count="3"/>
+      <line num="164" type="stmt" count="3"/>
+      <line num="165" type="stmt" count="0"/>
+      <line num="167" type="stmt" count="3"/>
+      <line num="168" type="stmt" count="1"/>
+      <line num="170" type="stmt" count="2"/>
+      <line num="181" type="method" name="isBeforePlugin" visibility="private" complexity="4" crap="4.37" count="2"/>
+      <line num="183" type="stmt" count="2"/>
+      <line num="184" type="stmt" count="2"/>
+      <line num="185" type="stmt" count="2"/>
+      <line num="186" type="stmt" count="0"/>
+      <line num="188" type="stmt" count="2"/>
+      <line num="189" type="stmt" count="2"/>
+      <line num="191" type="stmt" count="0"/>
+      <line num="195" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="197" type="stmt" count="1"/>
+      <line num="200" type="method" name="getLongDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="202" type="stmt" count="0"/>
+      <metrics loc="204" ncloc="170" classes="1" methods="10" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="91" coveredstatements="73" elements="101" coveredelements="78"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/BlockViewModelRatio.php">
+      <class name="EasyAudit\Core\Scan\Processor\BlockViewModelRatio" namespace="global">
+        <metrics complexity="25" methods="12" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="72" coveredstatements="63" elements="84" coveredelements="72"/>
+      </class>
+      <line num="20" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="22" type="stmt" count="1"/>
+      <line num="25" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="27" type="stmt" count="1"/>
+      <line num="30" type="method" name="getReport" visibility="public" complexity="2" crap="2" count="6"/>
+      <line num="32" type="stmt" count="6"/>
+      <line num="34" type="stmt" count="6"/>
+      <line num="35" type="stmt" count="3"/>
+      <line num="36" type="stmt" count="3"/>
+      <line num="37" type="stmt" count="3"/>
+      <line num="38" type="stmt" count="3"/>
+      <line num="39" type="stmt" count="3"/>
+      <line num="40" type="stmt" count="3"/>
+      <line num="41" type="stmt" count="3"/>
+      <line num="42" type="stmt" count="3"/>
+      <line num="45" type="stmt" count="6"/>
+      <line num="48" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="50" type="stmt" count="1"/>
+      <line num="53" type="method" name="process" visibility="public" complexity="4" crap="4" count="6"/>
+      <line num="55" type="stmt" count="6"/>
+      <line num="56" type="stmt" count="2"/>
+      <line num="59" type="stmt" count="4"/>
+      <line num="61" type="stmt" count="4"/>
+      <line num="62" type="stmt" count="4"/>
+      <line num="64" type="stmt" count="4"/>
+      <line num="65" type="stmt" count="3"/>
+      <line num="66" type="stmt" count="3"/>
+      <line num="67" type="stmt" count="3"/>
+      <line num="69" type="stmt" count="3"/>
+      <line num="70" type="stmt" count="3"/>
+      <line num="71" type="stmt" count="3"/>
+      <line num="72" type="stmt" count="3"/>
+      <line num="73" type="stmt" count="3"/>
+      <line num="74" type="stmt" count="3"/>
+      <line num="75" type="stmt" count="3"/>
+      <line num="76" type="stmt" count="3"/>
+      <line num="77" type="stmt" count="3"/>
+      <line num="88" type="method" name="segregateFilesByModule" visibility="private" complexity="4" crap="4.02" count="4"/>
+      <line num="90" type="stmt" count="4"/>
+      <line num="92" type="stmt" count="4"/>
+      <line num="93" type="stmt" count="4"/>
+      <line num="95" type="stmt" count="4"/>
+      <line num="96" type="stmt" count="0"/>
+      <line num="99" type="stmt" count="4"/>
+      <line num="100" type="stmt" count="4"/>
+      <line num="103" type="stmt" count="4"/>
+      <line num="106" type="stmt" count="4"/>
+      <line num="119" type="method" name="extractModuleName" visibility="private" complexity="4" crap="9.49" count="4"/>
+      <line num="122" type="stmt" count="4"/>
+      <line num="126" type="stmt" count="4"/>
+      <line num="127" type="stmt" count="4"/>
+      <line num="131" type="stmt" count="0"/>
+      <line num="133" type="stmt" count="0"/>
+      <line num="134" type="stmt" count="0"/>
+      <line num="135" type="stmt" count="0"/>
+      <line num="139" type="stmt" count="0"/>
+      <line num="140" type="stmt" count="0"/>
+      <line num="143" type="stmt" count="0"/>
+      <line num="152" type="method" name="calculateBlockRatio" visibility="private" complexity="2" crap="2.03" count="4"/>
+      <line num="154" type="stmt" count="4"/>
+      <line num="155" type="stmt" count="4"/>
+      <line num="156" type="stmt" count="0"/>
+      <line num="159" type="stmt" count="4"/>
+      <line num="161" type="stmt" count="4"/>
+      <line num="170" type="method" name="countBlockFiles" visibility="private" complexity="3" crap="3" count="4"/>
+      <line num="172" type="stmt" count="4"/>
+      <line num="174" type="stmt" count="4"/>
+      <line num="175" type="stmt" count="4"/>
+      <line num="176" type="stmt" count="4"/>
+      <line num="180" type="stmt" count="4"/>
+      <line num="189" type="method" name="isBlockFile" visibility="private" complexity="1" crap="1" count="4"/>
+      <line num="192" type="stmt" count="4"/>
+      <line num="195" type="stmt" count="4"/>
+      <line num="198" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="200" type="stmt" count="1"/>
+      <line num="203" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="205" type="stmt" count="1"/>
+      <line num="206" type="stmt" count="1"/>
+      <line num="207" type="stmt" count="1"/>
+      <line num="208" type="stmt" count="1"/>
+      <line num="209" type="stmt" count="1"/>
+      <line num="210" type="stmt" count="1"/>
+      <line num="211" type="stmt" count="1"/>
+      <line num="212" type="stmt" count="1"/>
+      <metrics loc="215" ncloc="164" classes="1" methods="12" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="72" coveredstatements="63" elements="84" coveredelements="72"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/Cacheable.php">
+      <class name="EasyAudit\Core\Scan\Processor\Cacheable" namespace="global">
+        <metrics complexity="18" methods="7" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="55" coveredstatements="55" elements="62" coveredelements="62"/>
+      </class>
+      <line num="25" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="27" type="stmt" count="1"/>
+      <line num="30" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="32" type="stmt" count="1"/>
+      <line num="35" type="method" name="getReport" visibility="public" complexity="2" crap="2" count="9"/>
+      <line num="37" type="stmt" count="9"/>
+      <line num="38" type="stmt" count="9"/>
+      <line num="39" type="stmt" count="2"/>
+      <line num="40" type="stmt" count="2"/>
+      <line num="41" type="stmt" count="2"/>
+      <line num="42" type="stmt" count="2"/>
+      <line num="43" type="stmt" count="2"/>
+      <line num="44" type="stmt" count="2"/>
+      <line num="45" type="stmt" count="2"/>
+      <line num="46" type="stmt" count="2"/>
+      <line num="49" type="stmt" count="9"/>
+      <line num="52" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="54" type="stmt" count="1"/>
+      <line num="57" type="method" name="process" visibility="public" complexity="11" crap="11" count="9"/>
+      <line num="59" type="stmt" count="9"/>
+      <line num="60" type="stmt" count="2"/>
+      <line num="63" type="stmt" count="7"/>
+      <line num="65" type="stmt" count="7"/>
+      <line num="66" type="stmt" count="1"/>
+      <line num="70" type="stmt" count="6"/>
+      <line num="71" type="stmt" count="6"/>
+      <line num="72" type="stmt" count="6"/>
+      <line num="73" type="stmt" count="6"/>
+      <line num="75" type="stmt" count="6"/>
+      <line num="76" type="stmt" count="1"/>
+      <line num="79" type="stmt" count="5"/>
+      <line num="80" type="stmt" count="5"/>
+      <line num="82" type="stmt" count="5"/>
+      <line num="83" type="stmt" count="4"/>
+      <line num="84" type="stmt" count="4"/>
+      <line num="87" type="stmt" count="4"/>
+      <line num="88" type="stmt" count="4"/>
+      <line num="89" type="stmt" count="4"/>
+      <line num="90" type="stmt" count="4"/>
+      <line num="91" type="stmt" count="4"/>
+      <line num="95" type="stmt" count="4"/>
+      <line num="96" type="stmt" count="4"/>
+      <line num="99" type="stmt" count="2"/>
+      <line num="100" type="stmt" count="2"/>
+      <line num="101" type="stmt" count="2"/>
+      <line num="104" type="stmt" count="2"/>
+      <line num="106" type="stmt" count="2"/>
+      <line num="107" type="stmt" count="2"/>
+      <line num="108" type="stmt" count="2"/>
+      <line num="109" type="stmt" count="2"/>
+      <line num="110" type="stmt" count="2"/>
+      <line num="111" type="stmt" count="2"/>
+      <line num="117" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="119" type="stmt" count="1"/>
+      <line num="122" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="124" type="stmt" count="1"/>
+      <line num="125" type="stmt" count="1"/>
+      <line num="126" type="stmt" count="1"/>
+      <line num="127" type="stmt" count="1"/>
+      <line num="128" type="stmt" count="1"/>
+      <line num="129" type="stmt" count="1"/>
+      <line num="130" type="stmt" count="1"/>
+      <metrics loc="133" ncloc="117" classes="1" methods="7" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="55" coveredstatements="55" elements="62" coveredelements="62"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/HardWrittenSQL.php">
+      <class name="EasyAudit\Core\Scan\Processor\HardWrittenSQL" namespace="global">
+        <metrics complexity="40" methods="14" coveredmethods="13" conditionals="0" coveredconditionals="0" statements="131" coveredstatements="130" elements="145" coveredelements="143"/>
+      </class>
+      <line num="81" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="83" type="stmt" count="1"/>
+      <line num="86" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="88" type="stmt" count="1"/>
+      <line num="91" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="93" type="stmt" count="1"/>
+      <line num="96" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="98" type="stmt" count="1"/>
+      <line num="101" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="103" type="stmt" count="1"/>
+      <line num="111" type="method" name="process" visibility="public" complexity="10" crap="10" count="11"/>
+      <line num="113" type="stmt" count="11"/>
+      <line num="114" type="stmt" count="2"/>
+      <line num="117" type="stmt" count="9"/>
+      <line num="119" type="stmt" count="9"/>
+      <line num="120" type="stmt" count="1"/>
+      <line num="123" type="stmt" count="8"/>
+      <line num="124" type="stmt" count="8"/>
+      <line num="125" type="stmt" count="0"/>
+      <line num="129" type="stmt" count="8"/>
+      <line num="132" type="stmt" count="8"/>
+      <line num="136" type="stmt" count="9"/>
+      <line num="137" type="stmt" count="6"/>
+      <line num="139" type="stmt" count="9"/>
+      <line num="140" type="stmt" count="4"/>
+      <line num="142" type="stmt" count="9"/>
+      <line num="143" type="stmt" count="3"/>
+      <line num="145" type="stmt" count="9"/>
+      <line num="146" type="stmt" count="3"/>
+      <line num="148" type="stmt" count="9"/>
+      <line num="149" type="stmt" count="4"/>
+      <line num="159" type="method" name="isSetupDirectory" visibility="private" complexity="2" crap="2" count="9"/>
+      <line num="161" type="stmt" count="9"/>
+      <line num="162" type="stmt" count="9"/>
+      <line num="171" type="method" name="removeComments" visibility="private" complexity="1" crap="1" count="8"/>
+      <line num="174" type="stmt" count="8"/>
+      <line num="177" type="stmt" count="8"/>
+      <line num="180" type="stmt" count="8"/>
+      <line num="182" type="stmt" count="8"/>
+      <line num="192" type="method" name="detectSQL" visibility="private" complexity="4" crap="4" count="8"/>
+      <line num="194" type="stmt" count="8"/>
+      <line num="195" type="stmt" count="8"/>
+      <line num="196" type="stmt" count="7"/>
+      <line num="197" type="stmt" count="7"/>
+      <line num="198" type="stmt" count="7"/>
+      <line num="201" type="stmt" count="7"/>
+      <line num="205" type="stmt" count="7"/>
+      <line num="208" type="stmt" count="7"/>
+      <line num="211" type="stmt" count="7"/>
+      <line num="212" type="stmt" count="7"/>
+      <line num="213" type="stmt" count="7"/>
+      <line num="214" type="stmt" count="7"/>
+      <line num="215" type="stmt" count="7"/>
+      <line num="216" type="stmt" count="7"/>
+      <line num="219" type="stmt" count="7"/>
+      <line num="220" type="stmt" count="7"/>
+      <line num="235" type="method" name="findLineNumber" visibility="private" complexity="3" crap="3" count="7"/>
+      <line num="238" type="stmt" count="7"/>
+      <line num="241" type="stmt" count="7"/>
+      <line num="242" type="stmt" count="7"/>
+      <line num="244" type="stmt" count="7"/>
+      <line num="246" type="stmt" count="7"/>
+      <line num="247" type="stmt" count="7"/>
+      <line num="249" type="stmt" count="7"/>
+      <line num="250" type="stmt" count="5"/>
+      <line num="255" type="stmt" count="5"/>
+      <line num="265" type="method" name="createMessage" visibility="private" complexity="1" crap="1" count="7"/>
+      <line num="267" type="stmt" count="7"/>
+      <line num="269" type="stmt" count="7"/>
+      <line num="270" type="stmt" count="7"/>
+      <line num="271" type="stmt" count="7"/>
+      <line num="272" type="stmt" count="7"/>
+      <line num="273" type="stmt" count="7"/>
+      <line num="274" type="stmt" count="7"/>
+      <line num="275" type="stmt" count="7"/>
+      <line num="277" type="stmt" count="7"/>
+      <line num="278" type="stmt" count="7"/>
+      <line num="279" type="stmt" count="7"/>
+      <line num="280" type="stmt" count="7"/>
+      <line num="281" type="stmt" count="7"/>
+      <line num="282" type="stmt" count="7"/>
+      <line num="291" type="method" name="truncateSQL" visibility="private" complexity="2" crap="2" count="7"/>
+      <line num="293" type="stmt" count="7"/>
+      <line num="295" type="stmt" count="7"/>
+      <line num="296" type="stmt" count="3"/>
+      <line num="299" type="stmt" count="7"/>
+      <line num="308" type="method" name="storeResult" visibility="private" complexity="6" crap="6" count="7"/>
+      <line num="311" type="stmt" count="7"/>
+      <line num="312" type="stmt" count="6"/>
+      <line num="313" type="stmt" count="6"/>
+      <line num="314" type="stmt" count="5"/>
+      <line num="315" type="stmt" count="4"/>
+      <line num="316" type="stmt" count="4"/>
+      <line num="317" type="stmt" count="4"/>
+      <line num="318" type="stmt" count="3"/>
+      <line num="319" type="stmt" count="3"/>
+      <line num="320" type="stmt" count="4"/>
+      <line num="321" type="stmt" count="3"/>
+      <line num="322" type="stmt" count="3"/>
+      <line num="323" type="stmt" count="4"/>
+      <line num="324" type="stmt" count="4"/>
+      <line num="325" type="stmt" count="4"/>
+      <line num="334" type="method" name="getReport" visibility="public" complexity="6" crap="6" count="11"/>
+      <line num="336" type="stmt" count="11"/>
+      <line num="338" type="stmt" count="11"/>
+      <line num="339" type="stmt" count="6"/>
+      <line num="340" type="stmt" count="6"/>
+      <line num="341" type="stmt" count="6"/>
+      <line num="342" type="stmt" count="6"/>
+      <line num="343" type="stmt" count="6"/>
+      <line num="344" type="stmt" count="6"/>
+      <line num="345" type="stmt" count="6"/>
+      <line num="348" type="stmt" count="11"/>
+      <line num="349" type="stmt" count="4"/>
+      <line num="350" type="stmt" count="4"/>
+      <line num="351" type="stmt" count="4"/>
+      <line num="352" type="stmt" count="4"/>
+      <line num="353" type="stmt" count="4"/>
+      <line num="354" type="stmt" count="4"/>
+      <line num="355" type="stmt" count="4"/>
+      <line num="358" type="stmt" count="11"/>
+      <line num="359" type="stmt" count="3"/>
+      <line num="360" type="stmt" count="3"/>
+      <line num="361" type="stmt" count="3"/>
+      <line num="362" type="stmt" count="3"/>
+      <line num="363" type="stmt" count="3"/>
+      <line num="364" type="stmt" count="3"/>
+      <line num="365" type="stmt" count="3"/>
+      <line num="368" type="stmt" count="11"/>
+      <line num="369" type="stmt" count="3"/>
+      <line num="370" type="stmt" count="3"/>
+      <line num="371" type="stmt" count="3"/>
+      <line num="372" type="stmt" count="3"/>
+      <line num="373" type="stmt" count="3"/>
+      <line num="374" type="stmt" count="3"/>
+      <line num="375" type="stmt" count="3"/>
+      <line num="378" type="stmt" count="11"/>
+      <line num="379" type="stmt" count="4"/>
+      <line num="380" type="stmt" count="4"/>
+      <line num="381" type="stmt" count="4"/>
+      <line num="382" type="stmt" count="4"/>
+      <line num="383" type="stmt" count="4"/>
+      <line num="384" type="stmt" count="4"/>
+      <line num="385" type="stmt" count="4"/>
+      <line num="388" type="stmt" count="11"/>
+      <metrics loc="391" ncloc="294" classes="1" methods="14" coveredmethods="13" conditionals="0" coveredconditionals="0" statements="131" coveredstatements="130" elements="145" coveredelements="143"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/Helpers.php">
+      <class name="EasyAudit\Core\Scan\Processor\Helpers" namespace="global">
+        <metrics complexity="42" methods="12" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="108" coveredstatements="96" elements="120" coveredelements="104"/>
+      </class>
+      <line num="34" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="36" type="stmt" count="1"/>
+      <line num="39" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="41" type="stmt" count="1"/>
+      <line num="44" type="method" name="getReport" visibility="public" complexity="3" crap="3" count="8"/>
+      <line num="46" type="stmt" count="8"/>
+      <line num="48" type="stmt" count="8"/>
+      <line num="49" type="stmt" count="2"/>
+      <line num="50" type="stmt" count="2"/>
+      <line num="51" type="stmt" count="2"/>
+      <line num="52" type="stmt" count="2"/>
+      <line num="53" type="stmt" count="2"/>
+      <line num="54" type="stmt" count="2"/>
+      <line num="55" type="stmt" count="2"/>
+      <line num="58" type="stmt" count="8"/>
+      <line num="59" type="stmt" count="2"/>
+      <line num="60" type="stmt" count="2"/>
+      <line num="61" type="stmt" count="2"/>
+      <line num="62" type="stmt" count="2"/>
+      <line num="63" type="stmt" count="2"/>
+      <line num="64" type="stmt" count="2"/>
+      <line num="65" type="stmt" count="2"/>
+      <line num="68" type="stmt" count="8"/>
+      <line num="71" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="73" type="stmt" count="1"/>
+      <line num="76" type="method" name="process" visibility="public" complexity="9" crap="9" count="8"/>
+      <line num="79" type="stmt" count="8"/>
+      <line num="80" type="stmt" count="2"/>
+      <line num="81" type="stmt" count="2"/>
+      <line num="86" type="stmt" count="8"/>
+      <line num="87" type="stmt" count="6"/>
+      <line num="89" type="stmt" count="6"/>
+      <line num="90" type="stmt" count="2"/>
+      <line num="93" type="stmt" count="4"/>
+      <line num="98" type="stmt" count="8"/>
+      <line num="99" type="stmt" count="2"/>
+      <line num="101" type="stmt" count="8"/>
+      <line num="102" type="stmt" count="2"/>
+      <line num="109" type="method" name="scanPhtmlForHelpers" visibility="private" complexity="8" crap="10.37" count="2"/>
+      <line num="111" type="stmt" count="2"/>
+      <line num="112" type="stmt" count="2"/>
+      <line num="113" type="stmt" count="0"/>
+      <line num="117" type="stmt" count="2"/>
+      <line num="119" type="stmt" count="2"/>
+      <line num="120" type="stmt" count="0"/>
+      <line num="123" type="stmt" count="2"/>
+      <line num="124" type="stmt" count="2"/>
+      <line num="125" type="stmt" count="2"/>
+      <line num="128" type="stmt" count="2"/>
+      <line num="129" type="stmt" count="0"/>
+      <line num="133" type="stmt" count="2"/>
+      <line num="134" type="stmt" count="0"/>
+      <line num="135" type="stmt" count="0"/>
+      <line num="136" type="stmt" count="0"/>
+      <line num="140" type="stmt" count="2"/>
+      <line num="141" type="stmt" count="2"/>
+      <line num="144" type="stmt" count="2"/>
+      <line num="151" type="method" name="checkPhpFileForHelper" visibility="private" complexity="7" crap="7.05" count="4"/>
+      <line num="153" type="stmt" count="4"/>
+      <line num="154" type="stmt" count="4"/>
+      <line num="155" type="stmt" count="0"/>
+      <line num="159" type="stmt" count="4"/>
+      <line num="160" type="stmt" count="0"/>
+      <line num="163" type="stmt" count="4"/>
+      <line num="166" type="stmt" count="4"/>
+      <line num="167" type="stmt" count="4"/>
+      <line num="168" type="stmt" count="0"/>
+      <line num="171" type="stmt" count="4"/>
+      <line num="174" type="stmt" count="4"/>
+      <line num="175" type="stmt" count="4"/>
+      <line num="178" type="stmt" count="4"/>
+      <line num="180" type="stmt" count="4"/>
+      <line num="181" type="stmt" count="4"/>
+      <line num="182" type="stmt" count="2"/>
+      <line num="183" type="stmt" count="2"/>
+      <line num="187" type="stmt" count="4"/>
+      <line num="189" type="stmt" count="2"/>
+      <line num="190" type="stmt" count="2"/>
+      <line num="191" type="stmt" count="2"/>
+      <line num="192" type="stmt" count="2"/>
+      <line num="193" type="stmt" count="2"/>
+      <line num="194" type="stmt" count="2"/>
+      <line num="197" type="stmt" count="2"/>
+      <line num="198" type="stmt" count="2"/>
+      <line num="199" type="stmt" count="2"/>
+      <line num="200" type="stmt" count="2"/>
+      <line num="201" type="stmt" count="2"/>
+      <line num="202" type="stmt" count="2"/>
+      <line num="209" type="method" name="extendsAbstractHelper" visibility="private" complexity="4" crap="4" count="4"/>
+      <line num="211" type="stmt" count="4"/>
+      <line num="212" type="stmt" count="4"/>
+      <line num="213" type="stmt" count="4"/>
+      <line num="214" type="stmt" count="4"/>
+      <line num="220" type="method" name="extractClassName" visibility="private" complexity="2" crap="2.03" count="4"/>
+      <line num="222" type="stmt" count="4"/>
+      <line num="223" type="stmt" count="4"/>
+      <line num="224" type="stmt" count="4"/>
+      <line num="225" type="stmt" count="4"/>
+      <line num="228" type="stmt" count="0"/>
+      <line num="234" type="method" name="findClassDeclarationLine" visibility="private" complexity="4" crap="4.59" count="4"/>
+      <line num="236" type="stmt" count="4"/>
+      <line num="238" type="stmt" count="4"/>
+      <line num="239" type="stmt" count="4"/>
+      <line num="240" type="stmt" count="4"/>
+      <line num="244" type="stmt" count="0"/>
+      <line num="245" type="stmt" count="0"/>
+      <line num="248" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="250" type="stmt" count="1"/>
+      <line num="253" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="255" type="stmt" count="1"/>
+      <line num="256" type="stmt" count="1"/>
+      <line num="257" type="stmt" count="1"/>
+      <line num="258" type="stmt" count="1"/>
+      <line num="259" type="stmt" count="1"/>
+      <line num="260" type="stmt" count="1"/>
+      <line num="261" type="stmt" count="1"/>
+      <line num="262" type="stmt" count="1"/>
+      <line num="263" type="stmt" count="1"/>
+      <line num="264" type="stmt" count="1"/>
+      <line num="265" type="stmt" count="1"/>
+      <metrics loc="268" ncloc="228" classes="1" methods="12" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="108" coveredstatements="96" elements="120" coveredelements="104"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/MagentoFrameworkPlugin.php">
+      <class name="EasyAudit\Core\Scan\Processor\MagentoFrameworkPlugin" namespace="global">
+        <metrics complexity="14" methods="7" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="31" coveredstatements="31" elements="38" coveredelements="38"/>
+      </class>
+      <line num="10" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="7"/>
+      <line num="12" type="stmt" count="7"/>
+      <line num="15" type="method" name="getFoundCount" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="17" type="stmt" count="4"/>
+      <line num="20" type="method" name="process" visibility="public" complexity="8" crap="8" count="6"/>
+      <line num="22" type="stmt" count="6"/>
+      <line num="23" type="stmt" count="6"/>
+      <line num="24" type="stmt" count="2"/>
+      <line num="26" type="stmt" count="4"/>
+      <line num="27" type="stmt" count="4"/>
+      <line num="28" type="stmt" count="4"/>
+      <line num="29" type="stmt" count="4"/>
+      <line num="30" type="stmt" count="4"/>
+      <line num="32" type="stmt" count="4"/>
+      <line num="33" type="stmt" count="1"/>
+      <line num="35" type="stmt" count="3"/>
+      <line num="36" type="stmt" count="3"/>
+      <line num="37" type="stmt" count="3"/>
+      <line num="38" type="stmt" count="3"/>
+      <line num="40" type="stmt" count="3"/>
+      <line num="41" type="stmt" count="2"/>
+      <line num="42" type="stmt" count="2"/>
+      <line num="43" type="stmt" count="2"/>
+      <line num="45" type="stmt" count="2"/>
+      <line num="46" type="stmt" count="2"/>
+      <line num="47" type="stmt" count="2"/>
+      <line num="48" type="stmt" count="2"/>
+      <line num="49" type="stmt" count="2"/>
+      <line num="54" type="stmt" count="4"/>
+      <line num="55" type="stmt" count="2"/>
+      <line num="59" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="61" type="stmt" count="1"/>
+      <line num="64" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="7"/>
+      <line num="66" type="stmt" count="7"/>
+      <line num="69" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="7"/>
+      <line num="71" type="stmt" count="7"/>
+      <line num="74" type="method" name="getName" visibility="public" complexity="1" crap="1" count="7"/>
+      <line num="76" type="stmt" count="7"/>
+      <metrics loc="78" ncloc="78" classes="1" methods="7" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="31" coveredstatements="31" elements="38" coveredelements="38"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/NoProxyInCommands.php">
+      <class name="EasyAudit\Core\Scan\Processor\NoProxyInCommands" namespace="global">
+        <metrics complexity="22" methods="9" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="57" coveredstatements="17" elements="66" coveredelements="22"/>
+      </class>
+      <line num="13" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="5"/>
+      <line num="15" type="stmt" count="5"/>
+      <line num="21" type="method" name="process" visibility="public" complexity="5" crap="5.09" count="4"/>
+      <line num="23" type="stmt" count="4"/>
+      <line num="24" type="stmt" count="2"/>
+      <line num="25" type="stmt" count="2"/>
+      <line num="26" type="stmt" count="2"/>
+      <line num="27" type="stmt" count="2"/>
+      <line num="29" type="stmt" count="2"/>
+      <line num="30" type="stmt" count="1"/>
+      <line num="32" type="stmt" count="1"/>
+      <line num="33" type="stmt" count="1"/>
+      <line num="34" type="stmt" count="1"/>
+      <line num="35" type="stmt" count="0"/>
+      <line num="39" type="stmt" count="4"/>
+      <line num="40" type="stmt" count="0"/>
+      <line num="44" type="method" name="getFilePath" visibility="private" complexity="2" crap="6" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="48" type="stmt" count="0"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="51" type="stmt" count="0"/>
+      <line num="62" type="method" name="manageCommandNode" visibility="private" complexity="7" crap="56" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="65" type="stmt" count="0"/>
+      <line num="66" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="69" type="stmt" count="0"/>
+      <line num="70" type="stmt" count="0"/>
+      <line num="71" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="79" type="stmt" count="0"/>
+      <line num="80" type="stmt" count="0"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="83" type="stmt" count="0"/>
+      <line num="84" type="stmt" count="0"/>
+      <line num="85" type="stmt" count="0"/>
+      <line num="86" type="stmt" count="0"/>
+      <line num="87" type="stmt" count="0"/>
+      <line num="88" type="stmt" count="0"/>
+      <line num="89" type="stmt" count="0"/>
+      <line num="90" type="stmt" count="0"/>
+      <line num="91" type="stmt" count="0"/>
+      <line num="92" type="stmt" count="0"/>
+      <line num="93" type="stmt" count="0"/>
+      <line num="106" type="method" name="getCommandProxies" visibility="private" complexity="3" crap="12" count="0"/>
+      <line num="108" type="stmt" count="0"/>
+      <line num="110" type="stmt" count="0"/>
+      <line num="111" type="stmt" count="0"/>
+      <line num="112" type="stmt" count="0"/>
+      <line num="113" type="stmt" count="0"/>
+      <line num="114" type="stmt" count="0"/>
+      <line num="117" type="stmt" count="0"/>
+      <line num="120" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="122" type="stmt" count="1"/>
+      <line num="125" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="5"/>
+      <line num="127" type="stmt" count="5"/>
+      <line num="130" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="5"/>
+      <line num="132" type="stmt" count="5"/>
+      <line num="135" type="stmt" count="5"/>
+      <line num="138" type="method" name="getName" visibility="public" complexity="1" crap="1" count="5"/>
+      <line num="140" type="stmt" count="5"/>
+      <metrics loc="142" ncloc="121" classes="1" methods="9" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="57" coveredstatements="17" elements="66" coveredelements="22"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/PaymentInterfaceUseAudit.php">
+      <class name="EasyAudit\Core\Scan\Processor\PaymentInterfaceUseAudit" namespace="global">
+        <metrics complexity="21" methods="9" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="54" coveredstatements="0" elements="63" coveredelements="0"/>
+      </class>
+      <line num="21" type="method" name="getIdentifier" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="23" type="stmt" count="0"/>
+      <line num="26" type="method" name="getFileType" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="28" type="stmt" count="0"/>
+      <line num="31" type="method" name="getReport" visibility="public" complexity="2" crap="6" count="0"/>
+      <line num="33" type="stmt" count="0"/>
+      <line num="35" type="stmt" count="0"/>
+      <line num="36" type="stmt" count="0"/>
+      <line num="37" type="stmt" count="0"/>
+      <line num="38" type="stmt" count="0"/>
+      <line num="39" type="stmt" count="0"/>
+      <line num="40" type="stmt" count="0"/>
+      <line num="41" type="stmt" count="0"/>
+      <line num="42" type="stmt" count="0"/>
+      <line num="43" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="49" type="method" name="getMessage" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="51" type="stmt" count="0"/>
+      <line num="54" type="method" name="process" visibility="public" complexity="7" crap="56" count="0"/>
+      <line num="56" type="stmt" count="0"/>
+      <line num="57" type="stmt" count="0"/>
+      <line num="60" type="stmt" count="0"/>
+      <line num="62" type="stmt" count="0"/>
+      <line num="63" type="stmt" count="0"/>
+      <line num="66" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="73" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="79" type="stmt" count="0"/>
+      <line num="80" type="stmt" count="0"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="83" type="stmt" count="0"/>
+      <line num="91" type="method" name="extendsAbstractMethod" visibility="private" complexity="2" crap="6" count="0"/>
+      <line num="94" type="stmt" count="0"/>
+      <line num="95" type="stmt" count="0"/>
+      <line num="101" type="method" name="findClassDeclarationLine" visibility="private" complexity="5" crap="30" count="0"/>
+      <line num="103" type="stmt" count="0"/>
+      <line num="105" type="stmt" count="0"/>
+      <line num="106" type="stmt" count="0"/>
+      <line num="107" type="stmt" count="0"/>
+      <line num="112" type="stmt" count="0"/>
+      <line num="113" type="stmt" count="0"/>
+      <line num="114" type="stmt" count="0"/>
+      <line num="117" type="method" name="getName" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="119" type="stmt" count="0"/>
+      <line num="122" type="method" name="getLongDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="124" type="stmt" count="0"/>
+      <line num="125" type="stmt" count="0"/>
+      <line num="126" type="stmt" count="0"/>
+      <line num="127" type="stmt" count="0"/>
+      <line num="128" type="stmt" count="0"/>
+      <line num="129" type="stmt" count="0"/>
+      <line num="130" type="stmt" count="0"/>
+      <line num="131" type="stmt" count="0"/>
+      <line num="132" type="stmt" count="0"/>
+      <line num="133" type="stmt" count="0"/>
+      <line num="134" type="stmt" count="0"/>
+      <line num="135" type="stmt" count="0"/>
+      <line num="136" type="stmt" count="0"/>
+      <metrics loc="139" ncloc="119" classes="1" methods="9" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="54" coveredstatements="0" elements="63" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/Preferences.php">
+      <class name="EasyAudit\Core\Scan\Processor\Preferences" namespace="global">
+        <metrics complexity="19" methods="7" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="63" coveredstatements="56" elements="70" coveredelements="61"/>
+      </class>
+      <line num="21" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="23" type="stmt" count="1"/>
+      <line num="26" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="28" type="stmt" count="1"/>
+      <line num="31" type="method" name="getReport" visibility="public" complexity="2" crap="2" count="4"/>
+      <line num="33" type="stmt" count="4"/>
+      <line num="34" type="stmt" count="4"/>
+      <line num="35" type="stmt" count="2"/>
+      <line num="36" type="stmt" count="2"/>
+      <line num="37" type="stmt" count="2"/>
+      <line num="38" type="stmt" count="2"/>
+      <line num="39" type="stmt" count="2"/>
+      <line num="40" type="stmt" count="2"/>
+      <line num="41" type="stmt" count="2"/>
+      <line num="42" type="stmt" count="2"/>
+      <line num="45" type="stmt" count="4"/>
+      <line num="48" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="50" type="stmt" count="1"/>
+      <line num="53" type="method" name="process" visibility="public" complexity="12" crap="12" count="4"/>
+      <line num="55" type="stmt" count="4"/>
+      <line num="57" type="stmt" count="4"/>
+      <line num="58" type="stmt" count="1"/>
+      <line num="62" type="stmt" count="3"/>
+      <line num="63" type="stmt" count="3"/>
+      <line num="64" type="stmt" count="3"/>
+      <line num="65" type="stmt" count="3"/>
+      <line num="66" type="stmt" count="3"/>
+      <line num="68" type="stmt" count="3"/>
+      <line num="69" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="3"/>
+      <line num="73" type="stmt" count="3"/>
+      <line num="74" type="stmt" count="3"/>
+      <line num="75" type="stmt" count="3"/>
+      <line num="77" type="stmt" count="3"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="81" type="stmt" count="3"/>
+      <line num="82" type="stmt" count="3"/>
+      <line num="85" type="stmt" count="3"/>
+      <line num="86" type="stmt" count="3"/>
+      <line num="87" type="stmt" count="3"/>
+      <line num="88" type="stmt" count="3"/>
+      <line num="93" type="stmt" count="3"/>
+      <line num="94" type="stmt" count="3"/>
+      <line num="95" type="stmt" count="2"/>
+      <line num="98" type="stmt" count="2"/>
+      <line num="99" type="stmt" count="2"/>
+      <line num="100" type="stmt" count="2"/>
+      <line num="101" type="stmt" count="2"/>
+      <line num="103" type="stmt" count="2"/>
+      <line num="104" type="stmt" count="2"/>
+      <line num="105" type="stmt" count="2"/>
+      <line num="107" type="stmt" count="2"/>
+      <line num="108" type="stmt" count="2"/>
+      <line num="109" type="stmt" count="2"/>
+      <line num="110" type="stmt" count="2"/>
+      <line num="111" type="stmt" count="2"/>
+      <line num="112" type="stmt" count="2"/>
+      <line num="113" type="stmt" count="2"/>
+      <line num="114" type="stmt" count="2"/>
+      <line num="115" type="stmt" count="2"/>
+      <line num="116" type="stmt" count="2"/>
+      <line num="117" type="stmt" count="2"/>
+      <line num="124" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="126" type="stmt" count="1"/>
+      <line num="129" type="method" name="getLongDescription" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="131" type="stmt" count="0"/>
+      <line num="132" type="stmt" count="0"/>
+      <line num="133" type="stmt" count="0"/>
+      <line num="134" type="stmt" count="0"/>
+      <line num="135" type="stmt" count="0"/>
+      <metrics loc="138" ncloc="126" classes="1" methods="7" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="63" coveredstatements="56" elements="70" coveredelements="61"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/ProxyForHeavyClasses.php">
+      <class name="EasyAudit\Core\Scan\Processor\ProxyForHeavyClasses" namespace="global">
+        <metrics complexity="43" methods="13" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="104" coveredstatements="86" elements="117" coveredelements="94"/>
+      </class>
+      <line num="32" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="14"/>
+      <line num="34" type="stmt" count="14"/>
+      <line num="37" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="39" type="stmt" count="1"/>
+      <line num="42" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="44" type="stmt" count="1"/>
+      <line num="47" type="method" name="getReport" visibility="public" complexity="2" crap="2" count="9"/>
+      <line num="49" type="stmt" count="9"/>
+      <line num="51" type="stmt" count="9"/>
+      <line num="52" type="stmt" count="4"/>
+      <line num="53" type="stmt" count="4"/>
+      <line num="54" type="stmt" count="4"/>
+      <line num="55" type="stmt" count="4"/>
+      <line num="56" type="stmt" count="4"/>
+      <line num="57" type="stmt" count="4"/>
+      <line num="58" type="stmt" count="4"/>
+      <line num="59" type="stmt" count="4"/>
+      <line num="62" type="stmt" count="9"/>
+      <line num="65" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="67" type="stmt" count="1"/>
+      <line num="70" type="method" name="process" visibility="public" complexity="4" crap="4" count="9"/>
+      <line num="72" type="stmt" count="9"/>
+      <line num="73" type="stmt" count="2"/>
+      <line num="77" type="stmt" count="7"/>
+      <line num="80" type="stmt" count="7"/>
+      <line num="81" type="stmt" count="7"/>
+      <line num="88" type="method" name="processPhpFile" visibility="private" complexity="9" crap="9.07" count="7"/>
+      <line num="91" type="stmt" count="7"/>
+      <line num="92" type="stmt" count="1"/>
+      <line num="95" type="stmt" count="6"/>
+      <line num="96" type="stmt" count="6"/>
+      <line num="97" type="stmt" count="0"/>
+      <line num="101" type="stmt" count="6"/>
+      <line num="102" type="stmt" count="6"/>
+      <line num="103" type="stmt" count="0"/>
+      <line num="107" type="stmt" count="6"/>
+      <line num="108" type="stmt" count="6"/>
+      <line num="109" type="stmt" count="0"/>
+      <line num="113" type="stmt" count="6"/>
+      <line num="116" type="stmt" count="6"/>
+      <line num="119" type="stmt" count="6"/>
+      <line num="120" type="stmt" count="6"/>
+      <line num="122" type="stmt" count="5"/>
+      <line num="123" type="stmt" count="4"/>
+      <line num="124" type="stmt" count="4"/>
+      <line num="125" type="stmt" count="4"/>
+      <line num="127" type="stmt" count="4"/>
+      <line num="128" type="stmt" count="4"/>
+      <line num="129" type="stmt" count="4"/>
+      <line num="130" type="stmt" count="4"/>
+      <line num="131" type="stmt" count="4"/>
+      <line num="132" type="stmt" count="4"/>
+      <line num="133" type="stmt" count="4"/>
+      <line num="134" type="stmt" count="4"/>
+      <line num="135" type="stmt" count="4"/>
+      <line num="136" type="stmt" count="4"/>
+      <line num="137" type="stmt" count="4"/>
+      <line num="138" type="stmt" count="4"/>
+      <line num="139" type="stmt" count="4"/>
+      <line num="148" type="method" name="extractClassName" visibility="private" complexity="2" crap="2.03" count="6"/>
+      <line num="151" type="stmt" count="6"/>
+      <line num="152" type="stmt" count="6"/>
+      <line num="153" type="stmt" count="6"/>
+      <line num="154" type="stmt" count="6"/>
+      <line num="157" type="stmt" count="0"/>
+      <line num="163" type="method" name="isHeavyClass" visibility="private" complexity="6" crap="7.90" count="6"/>
+      <line num="166" type="stmt" count="6"/>
+      <line num="167" type="stmt" count="2"/>
+      <line num="171" type="stmt" count="5"/>
+      <line num="172" type="stmt" count="5"/>
+      <line num="173" type="stmt" count="5"/>
+      <line num="178" type="stmt" count="0"/>
+      <line num="179" type="stmt" count="0"/>
+      <line num="182" type="stmt" count="0"/>
+      <line num="192" type="method" name="findDiXmlForFile" visibility="private" complexity="7" crap="16.14" count="4"/>
+      <line num="198" type="stmt" count="4"/>
+      <line num="199" type="stmt" count="0"/>
+      <line num="200" type="stmt" count="0"/>
+      <line num="201" type="stmt" count="0"/>
+      <line num="202" type="stmt" count="0"/>
+      <line num="207" type="stmt" count="4"/>
+      <line num="208" type="stmt" count="4"/>
+      <line num="209" type="stmt" count="4"/>
+      <line num="210" type="stmt" count="4"/>
+      <line num="211" type="stmt" count="4"/>
+      <line num="214" type="stmt" count="0"/>
+      <line num="215" type="stmt" count="0"/>
+      <line num="217" type="stmt" count="0"/>
+      <line num="220" type="stmt" count="0"/>
+      <line num="226" type="method" name="hasProxyInDiXml" visibility="private" complexity="7" crap="7.48" count="5"/>
+      <line num="229" type="stmt" count="5"/>
+      <line num="230" type="stmt" count="5"/>
+      <line num="231" type="stmt" count="5"/>
+      <line num="232" type="stmt" count="0"/>
+      <line num="236" type="stmt" count="5"/>
+      <line num="237" type="stmt" count="5"/>
+      <line num="239" type="stmt" count="5"/>
+      <line num="240" type="stmt" count="1"/>
+      <line num="241" type="stmt" count="1"/>
+      <line num="243" type="stmt" count="1"/>
+      <line num="244" type="stmt" count="1"/>
+      <line num="247" type="stmt" count="0"/>
+      <line num="248" type="stmt" count="0"/>
+      <line num="254" type="stmt" count="4"/>
+      <line num="257" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="259" type="stmt" count="1"/>
+      <line num="262" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="264" type="stmt" count="1"/>
+      <line num="265" type="stmt" count="1"/>
+      <line num="266" type="stmt" count="1"/>
+      <line num="267" type="stmt" count="1"/>
+      <line num="268" type="stmt" count="1"/>
+      <line num="269" type="stmt" count="1"/>
+      <line num="270" type="stmt" count="1"/>
+      <line num="271" type="stmt" count="1"/>
+      <line num="272" type="stmt" count="1"/>
+      <line num="273" type="stmt" count="1"/>
+      <metrics loc="276" ncloc="224" classes="1" methods="13" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="104" coveredstatements="86" elements="117" coveredelements="94"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/SameModulePlugins.php">
+      <class name="EasyAudit\Core\Scan\Processor\SameModulePlugins" namespace="global">
+        <metrics complexity="21" methods="6" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="37" coveredstatements="36" elements="43" coveredelements="41"/>
+      </class>
+      <line num="10" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="8"/>
+      <line num="12" type="stmt" count="8"/>
+      <line num="15" type="method" name="process" visibility="public" complexity="16" crap="16" count="7"/>
+      <line num="17" type="stmt" count="7"/>
+      <line num="18" type="stmt" count="2"/>
+      <line num="20" type="stmt" count="5"/>
+      <line num="21" type="stmt" count="5"/>
+      <line num="22" type="stmt" count="5"/>
+      <line num="23" type="stmt" count="5"/>
+      <line num="24" type="stmt" count="5"/>
+      <line num="26" type="stmt" count="5"/>
+      <line num="27" type="stmt" count="1"/>
+      <line num="29" type="stmt" count="4"/>
+      <line num="30" type="stmt" count="4"/>
+      <line num="31" type="stmt" count="4"/>
+      <line num="32" type="stmt" count="4"/>
+      <line num="33" type="stmt" count="4"/>
+      <line num="35" type="stmt" count="4"/>
+      <line num="36" type="stmt" count="4"/>
+      <line num="37" type="stmt" count="4"/>
+      <line num="38" type="stmt" count="4"/>
+      <line num="39" type="stmt" count="1"/>
+      <line num="41" type="stmt" count="3"/>
+      <line num="42" type="stmt" count="0"/>
+      <line num="44" type="stmt" count="3"/>
+      <line num="45" type="stmt" count="3"/>
+      <line num="46" type="stmt" count="3"/>
+      <line num="47" type="stmt" count="3"/>
+      <line num="48" type="stmt" count="3"/>
+      <line num="50" type="stmt" count="2"/>
+      <line num="51" type="stmt" count="2"/>
+      <line num="52" type="stmt" count="2"/>
+      <line num="54" type="stmt" count="2"/>
+      <line num="60" type="stmt" count="5"/>
+      <line num="61" type="stmt" count="2"/>
+      <line num="65" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="67" type="stmt" count="1"/>
+      <line num="70" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="8"/>
+      <line num="72" type="stmt" count="8"/>
+      <line num="75" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="8"/>
+      <line num="77" type="stmt" count="8"/>
+      <line num="80" type="method" name="getName" visibility="public" complexity="1" crap="1" count="8"/>
+      <line num="82" type="stmt" count="8"/>
+      <metrics loc="84" ncloc="84" classes="1" methods="6" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="37" coveredstatements="36" elements="43" coveredelements="41"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/SpecificClassInjection.php">
+      <class name="EasyAudit\Core\Scan\Processor\SpecificClassInjection" namespace="global">
+        <metrics complexity="116" methods="41" coveredmethods="23" conditionals="0" coveredconditionals="0" statements="334" coveredstatements="187" elements="375" coveredelements="210"/>
+      </class>
+      <line num="128" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="130" type="stmt" count="1"/>
+      <line num="133" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="135" type="stmt" count="1"/>
+      <line num="138" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="140" type="stmt" count="1"/>
+      <line num="143" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="145" type="stmt" count="1"/>
+      <line num="148" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="150" type="stmt" count="1"/>
+      <line num="158" type="method" name="process" visibility="public" complexity="12" crap="13.30" count="17"/>
+      <line num="160" type="stmt" count="17"/>
+      <line num="161" type="stmt" count="2"/>
+      <line num="165" type="stmt" count="15"/>
+      <line num="167" type="stmt" count="15"/>
+      <line num="168" type="stmt" count="15"/>
+      <line num="169" type="stmt" count="15"/>
+      <line num="170" type="stmt" count="0"/>
+      <line num="174" type="stmt" count="15"/>
+      <line num="175" type="stmt" count="1"/>
+      <line num="178" type="stmt" count="14"/>
+      <line num="182" type="stmt" count="15"/>
+      <line num="183" type="stmt" count="6"/>
+      <line num="185" type="stmt" count="15"/>
+      <line num="186" type="stmt" count="0"/>
+      <line num="188" type="stmt" count="15"/>
+      <line num="189" type="stmt" count="2"/>
+      <line num="191" type="stmt" count="15"/>
+      <line num="192" type="stmt" count="0"/>
+      <line num="194" type="stmt" count="15"/>
+      <line num="195" type="stmt" count="0"/>
+      <line num="197" type="stmt" count="15"/>
+      <line num="198" type="stmt" count="1"/>
+      <line num="200" type="stmt" count="15"/>
+      <line num="201" type="stmt" count="0"/>
+      <line num="211" type="method" name="buildClassHierarchy" visibility="private" complexity="6" crap="9.28" count="15"/>
+      <line num="213" type="stmt" count="15"/>
+      <line num="214" type="stmt" count="15"/>
+      <line num="216" type="stmt" count="15"/>
+      <line num="217" type="stmt" count="15"/>
+      <line num="218" type="stmt" count="15"/>
+      <line num="219" type="stmt" count="0"/>
+      <line num="223" type="stmt" count="15"/>
+      <line num="224" type="stmt" count="0"/>
+      <line num="226" type="stmt" count="15"/>
+      <line num="229" type="stmt" count="15"/>
+      <line num="230" type="stmt" count="15"/>
+      <line num="233" type="stmt" count="0"/>
+      <line num="234" type="stmt" count="0"/>
+      <line num="237" type="stmt" count="0"/>
+      <line num="240" type="stmt" count="0"/>
+      <line num="242" type="stmt" count="0"/>
+      <line num="243" type="stmt" count="0"/>
+      <line num="245" type="stmt" count="0"/>
+      <line num="248" type="stmt" count="15"/>
+      <line num="249" type="stmt" count="15"/>
+      <line num="260" type="method" name="resolveClassNameFromContent" visibility="private" complexity="4" crap="20" count="0"/>
+      <line num="263" type="stmt" count="0"/>
+      <line num="264" type="stmt" count="0"/>
+      <line num="268" type="stmt" count="0"/>
+      <line num="269" type="stmt" count="0"/>
+      <line num="270" type="stmt" count="0"/>
+      <line num="274" type="stmt" count="0"/>
+      <line num="275" type="stmt" count="0"/>
+      <line num="276" type="stmt" count="0"/>
+      <line num="280" type="stmt" count="0"/>
+      <line num="289" type="method" name="hasChildren" visibility="private" complexity="1" crap="1" count="7"/>
+      <line num="291" type="stmt" count="7"/>
+      <line num="300" type="method" name="getChildren" visibility="private" complexity="1" crap="1" count="7"/>
+      <line num="302" type="stmt" count="7"/>
+      <line num="311" type="method" name="analyzeFile" visibility="private" complexity="7" crap="7.39" count="14"/>
+      <line num="314" type="stmt" count="14"/>
+      <line num="315" type="stmt" count="1"/>
+      <line num="319" type="stmt" count="13"/>
+      <line num="320" type="stmt" count="13"/>
+      <line num="321" type="stmt" count="0"/>
+      <line num="325" type="stmt" count="13"/>
+      <line num="328" type="stmt" count="13"/>
+      <line num="330" type="stmt" count="13"/>
+      <line num="331" type="stmt" count="0"/>
+      <line num="335" type="stmt" count="13"/>
+      <line num="339" type="stmt" count="13"/>
+      <line num="342" type="stmt" count="13"/>
+      <line num="344" type="stmt" count="13"/>
+      <line num="345" type="stmt" count="0"/>
+      <line num="347" type="stmt" count="13"/>
+      <line num="357" type="method" name="getParentConstructorParams" visibility="private" complexity="3" crap="4.68" count="13"/>
+      <line num="359" type="stmt" count="13"/>
+      <line num="362" type="stmt" count="13"/>
+      <line num="363" type="stmt" count="13"/>
+      <line num="366" type="stmt" count="0"/>
+      <line num="369" type="stmt" count="0"/>
+      <line num="370" type="stmt" count="0"/>
+      <line num="373" type="stmt" count="0"/>
+      <line num="382" type="method" name="extractClassName" visibility="private" complexity="3" crap="3.07" count="13"/>
+      <line num="384" type="stmt" count="13"/>
+      <line num="385" type="stmt" count="13"/>
+      <line num="386" type="stmt" count="13"/>
+      <line num="387" type="stmt" count="13"/>
+      <line num="390" type="stmt" count="0"/>
+      <line num="402" type="method" name="analyzeParameter" visibility="private" complexity="12" crap="14.81" count="13"/>
+      <line num="410" type="stmt" count="13"/>
+      <line num="411" type="stmt" count="0"/>
+      <line num="415" type="stmt" count="13"/>
+      <line num="416" type="stmt" count="5"/>
+      <line num="420" type="stmt" count="10"/>
+      <line num="423" type="stmt" count="10"/>
+      <line num="425" type="stmt" count="8"/>
+      <line num="426" type="stmt" count="6"/>
+      <line num="427" type="stmt" count="6"/>
+      <line num="431" type="stmt" count="3"/>
+      <line num="432" type="stmt" count="2"/>
+      <line num="433" type="stmt" count="2"/>
+      <line num="437" type="stmt" count="1"/>
+      <line num="438" type="stmt" count="0"/>
+      <line num="439" type="stmt" count="0"/>
+      <line num="445" type="stmt" count="1"/>
+      <line num="447" type="stmt" count="1"/>
+      <line num="448" type="stmt" count="0"/>
+      <line num="451" type="stmt" count="1"/>
+      <line num="452" type="stmt" count="0"/>
+      <line num="455" type="stmt" count="1"/>
+      <line num="456" type="stmt" count="0"/>
+      <line num="459" type="stmt" count="1"/>
+      <line num="460" type="stmt" count="1"/>
+      <line num="466" type="stmt" count="3"/>
+      <line num="467" type="stmt" count="0"/>
+      <line num="477" type="method" name="isArgumentIgnored" visibility="private" complexity="10" crap="10" count="13"/>
+      <line num="479" type="stmt" count="13"/>
+      <line num="480" type="stmt" count="13"/>
+      <line num="481" type="stmt" count="13"/>
+      <line num="482" type="stmt" count="13"/>
+      <line num="483" type="stmt" count="13"/>
+      <line num="484" type="stmt" count="13"/>
+      <line num="485" type="stmt" count="13"/>
+      <line num="486" type="stmt" count="13"/>
+      <line num="487" type="stmt" count="13"/>
+      <line num="488" type="stmt" count="13"/>
+      <line num="501" type="method" name="isBasicType" visibility="private" complexity="1" crap="1" count="13"/>
+      <line num="503" type="stmt" count="13"/>
+      <line num="512" type="method" name="isLegitimate" visibility="private" complexity="4" crap="4" count="13"/>
+      <line num="514" type="stmt" count="13"/>
+      <line num="520" type="method" name="isFactory" visibility="private" complexity="1" crap="1" count="14"/>
+      <line num="522" type="stmt" count="14"/>
+      <line num="533" type="method" name="isCommand" visibility="private" complexity="3" crap="4.12" count="13"/>
+      <line num="536" type="stmt" count="13"/>
+      <line num="538" type="stmt" count="0"/>
+      <line num="539" type="stmt" count="0"/>
+      <line num="543" type="stmt" count="13"/>
+      <line num="546" type="method" name="isModel" visibility="private" complexity="1" crap="1" count="10"/>
+      <line num="548" type="stmt" count="10"/>
+      <line num="551" type="method" name="isCollection" visibility="private" complexity="1" crap="1" count="8"/>
+      <line num="553" type="stmt" count="8"/>
+      <line num="556" type="method" name="isRepository" visibility="private" complexity="1" crap="1" count="3"/>
+      <line num="558" type="stmt" count="3"/>
+      <line num="561" type="method" name="isResourceModel" visibility="private" complexity="1" crap="1" count="1"/>
+      <line num="563" type="stmt" count="1"/>
+      <line num="572" type="method" name="isMagentoFramework" visibility="private" complexity="1" crap="1" count="11"/>
+      <line num="574" type="stmt" count="11"/>
+      <line num="577" type="method" name="isContext" visibility="private" complexity="1" crap="1" count="10"/>
+      <line num="579" type="stmt" count="10"/>
+      <line num="582" type="method" name="isSession" visibility="private" complexity="1" crap="1" count="10"/>
+      <line num="584" type="stmt" count="10"/>
+      <line num="587" type="method" name="isHelper" visibility="private" complexity="1" crap="1" count="10"/>
+      <line num="589" type="stmt" count="10"/>
+      <line num="592" type="method" name="isStdLib" visibility="private" complexity="1" crap="1" count="10"/>
+      <line num="594" type="stmt" count="10"/>
+      <line num="597" type="method" name="isSerializer" visibility="private" complexity="1" crap="1" count="10"/>
+      <line num="599" type="stmt" count="10"/>
+      <line num="602" type="method" name="isGenerator" visibility="private" complexity="1" crap="1" count="10"/>
+      <line num="604" type="stmt" count="10"/>
+      <line num="615" type="method" name="isNonMagentoLibrary" visibility="private" complexity="3" crap="3.14" count="3"/>
+      <line num="617" type="stmt" count="3"/>
+      <line num="618" type="stmt" count="3"/>
+      <line num="619" type="stmt" count="3"/>
+      <line num="622" type="stmt" count="0"/>
+      <line num="631" type="method" name="hasApiInterface" visibility="private" complexity="6" crap="24.43" count="1"/>
+      <line num="634" type="stmt" count="1"/>
+      <line num="635" type="stmt" count="1"/>
+      <line num="639" type="stmt" count="0"/>
+      <line num="640" type="stmt" count="0"/>
+      <line num="642" type="stmt" count="0"/>
+      <line num="643" type="stmt" count="0"/>
+      <line num="644" type="stmt" count="0"/>
+      <line num="647" type="stmt" count="0"/>
+      <line num="649" type="stmt" count="0"/>
+      <line num="652" type="stmt" count="0"/>
+      <line num="659" type="method" name="addCollectionError" visibility="private" complexity="2" crap="2.38" count="6"/>
+      <line num="665" type="stmt" count="6"/>
+      <line num="666" type="stmt" count="6"/>
+      <line num="668" type="stmt" count="6"/>
+      <line num="669" type="stmt" count="0"/>
+      <line num="670" type="stmt" count="0"/>
+      <line num="671" type="stmt" count="0"/>
+      <line num="672" type="stmt" count="0"/>
+      <line num="673" type="stmt" count="0"/>
+      <line num="674" type="stmt" count="0"/>
+      <line num="675" type="stmt" count="0"/>
+      <line num="677" type="stmt" count="0"/>
+      <line num="678" type="stmt" count="0"/>
+      <line num="679" type="stmt" count="0"/>
+      <line num="680" type="stmt" count="0"/>
+      <line num="681" type="stmt" count="0"/>
+      <line num="682" type="stmt" count="0"/>
+      <line num="683" type="stmt" count="0"/>
+      <line num="684" type="stmt" count="0"/>
+      <line num="686" type="stmt" count="6"/>
+      <line num="687" type="stmt" count="6"/>
+      <line num="688" type="stmt" count="6"/>
+      <line num="689" type="stmt" count="6"/>
+      <line num="690" type="stmt" count="6"/>
+      <line num="691" type="stmt" count="6"/>
+      <line num="693" type="stmt" count="6"/>
+      <line num="694" type="stmt" count="6"/>
+      <line num="695" type="stmt" count="6"/>
+      <line num="696" type="stmt" count="6"/>
+      <line num="697" type="stmt" count="6"/>
+      <line num="698" type="stmt" count="6"/>
+      <line num="699" type="stmt" count="6"/>
+      <line num="700" type="stmt" count="6"/>
+      <line num="702" type="stmt" count="6"/>
+      <line num="705" type="method" name="addRepositoryError" visibility="private" complexity="2" crap="2.38" count="2"/>
+      <line num="711" type="stmt" count="2"/>
+      <line num="712" type="stmt" count="2"/>
+      <line num="713" type="stmt" count="2"/>
+      <line num="715" type="stmt" count="2"/>
+      <line num="716" type="stmt" count="0"/>
+      <line num="717" type="stmt" count="0"/>
+      <line num="718" type="stmt" count="0"/>
+      <line num="719" type="stmt" count="0"/>
+      <line num="720" type="stmt" count="0"/>
+      <line num="721" type="stmt" count="0"/>
+      <line num="722" type="stmt" count="0"/>
+      <line num="723" type="stmt" count="0"/>
+      <line num="725" type="stmt" count="0"/>
+      <line num="726" type="stmt" count="0"/>
+      <line num="727" type="stmt" count="0"/>
+      <line num="728" type="stmt" count="0"/>
+      <line num="729" type="stmt" count="0"/>
+      <line num="730" type="stmt" count="0"/>
+      <line num="731" type="stmt" count="0"/>
+      <line num="732" type="stmt" count="0"/>
+      <line num="734" type="stmt" count="2"/>
+      <line num="735" type="stmt" count="2"/>
+      <line num="736" type="stmt" count="2"/>
+      <line num="737" type="stmt" count="2"/>
+      <line num="738" type="stmt" count="2"/>
+      <line num="739" type="stmt" count="2"/>
+      <line num="741" type="stmt" count="2"/>
+      <line num="742" type="stmt" count="2"/>
+      <line num="743" type="stmt" count="2"/>
+      <line num="744" type="stmt" count="2"/>
+      <line num="745" type="stmt" count="2"/>
+      <line num="746" type="stmt" count="2"/>
+      <line num="747" type="stmt" count="2"/>
+      <line num="748" type="stmt" count="2"/>
+      <line num="750" type="stmt" count="2"/>
+      <line num="753" type="method" name="addModelWithInterfaceError" visibility="private" complexity="1" crap="2" count="0"/>
+      <line num="759" type="stmt" count="0"/>
+      <line num="760" type="stmt" count="0"/>
+      <line num="761" type="stmt" count="0"/>
+      <line num="762" type="stmt" count="0"/>
+      <line num="763" type="stmt" count="0"/>
+      <line num="764" type="stmt" count="0"/>
+      <line num="766" type="stmt" count="0"/>
+      <line num="767" type="stmt" count="0"/>
+      <line num="768" type="stmt" count="0"/>
+      <line num="769" type="stmt" count="0"/>
+      <line num="770" type="stmt" count="0"/>
+      <line num="771" type="stmt" count="0"/>
+      <line num="772" type="stmt" count="0"/>
+      <line num="773" type="stmt" count="0"/>
+      <line num="774" type="stmt" count="0"/>
+      <line num="777" type="method" name="addResourceModelError" visibility="private" complexity="1" crap="1" count="1"/>
+      <line num="783" type="stmt" count="1"/>
+      <line num="784" type="stmt" count="1"/>
+      <line num="785" type="stmt" count="1"/>
+      <line num="786" type="stmt" count="1"/>
+      <line num="787" type="stmt" count="1"/>
+      <line num="791" type="stmt" count="1"/>
+      <line num="792" type="stmt" count="1"/>
+      <line num="793" type="stmt" count="1"/>
+      <line num="794" type="stmt" count="1"/>
+      <line num="795" type="stmt" count="1"/>
+      <line num="796" type="stmt" count="1"/>
+      <line num="797" type="stmt" count="1"/>
+      <line num="800" type="method" name="addGenericClassWarning" visibility="private" complexity="1" crap="2" count="0"/>
+      <line num="806" type="stmt" count="0"/>
+      <line num="807" type="stmt" count="0"/>
+      <line num="808" type="stmt" count="0"/>
+      <line num="809" type="stmt" count="0"/>
+      <line num="810" type="stmt" count="0"/>
+      <line num="812" type="stmt" count="0"/>
+      <line num="813" type="stmt" count="0"/>
+      <line num="814" type="stmt" count="0"/>
+      <line num="815" type="stmt" count="0"/>
+      <line num="816" type="stmt" count="0"/>
+      <line num="817" type="stmt" count="0"/>
+      <line num="818" type="stmt" count="0"/>
+      <line num="819" type="stmt" count="0"/>
+      <line num="820" type="stmt" count="0"/>
+      <line num="829" type="method" name="guessInterfaceName" visibility="private" complexity="2" crap="2.15" count="2"/>
+      <line num="833" type="stmt" count="2"/>
+      <line num="834" type="stmt" count="2"/>
+      <line num="838" type="stmt" count="0"/>
+      <line num="847" type="method" name="getApiInterface" visibility="private" complexity="4" crap="20" count="0"/>
+      <line num="850" type="stmt" count="0"/>
+      <line num="851" type="stmt" count="0"/>
+      <line num="852" type="stmt" count="0"/>
+      <line num="853" type="stmt" count="0"/>
+      <line num="856" type="stmt" count="0"/>
+      <line num="861" type="stmt" count="0"/>
+      <line num="870" type="method" name="guessRepositoryInterface" visibility="private" complexity="2" crap="6" count="0"/>
+      <line num="873" type="stmt" count="0"/>
+      <line num="874" type="stmt" count="0"/>
+      <line num="876" type="stmt" count="0"/>
+      <line num="884" type="method" name="getReport" visibility="public" complexity="8" crap="15.20" count="16"/>
+      <line num="886" type="stmt" count="16"/>
+      <line num="888" type="stmt" count="16"/>
+      <line num="889" type="stmt" count="6"/>
+      <line num="890" type="stmt" count="6"/>
+      <line num="891" type="stmt" count="6"/>
+      <line num="892" type="stmt" count="6"/>
+      <line num="893" type="stmt" count="6"/>
+      <line num="894" type="stmt" count="6"/>
+      <line num="895" type="stmt" count="6"/>
+      <line num="898" type="stmt" count="16"/>
+      <line num="899" type="stmt" count="0"/>
+      <line num="900" type="stmt" count="0"/>
+      <line num="901" type="stmt" count="0"/>
+      <line num="902" type="stmt" count="0"/>
+      <line num="903" type="stmt" count="0"/>
+      <line num="904" type="stmt" count="0"/>
+      <line num="905" type="stmt" count="0"/>
+      <line num="908" type="stmt" count="16"/>
+      <line num="909" type="stmt" count="2"/>
+      <line num="910" type="stmt" count="2"/>
+      <line num="911" type="stmt" count="2"/>
+      <line num="912" type="stmt" count="2"/>
+      <line num="913" type="stmt" count="2"/>
+      <line num="914" type="stmt" count="2"/>
+      <line num="915" type="stmt" count="2"/>
+      <line num="918" type="stmt" count="16"/>
+      <line num="919" type="stmt" count="0"/>
+      <line num="920" type="stmt" count="0"/>
+      <line num="921" type="stmt" count="0"/>
+      <line num="922" type="stmt" count="0"/>
+      <line num="923" type="stmt" count="0"/>
+      <line num="924" type="stmt" count="0"/>
+      <line num="925" type="stmt" count="0"/>
+      <line num="928" type="stmt" count="16"/>
+      <line num="929" type="stmt" count="0"/>
+      <line num="930" type="stmt" count="0"/>
+      <line num="931" type="stmt" count="0"/>
+      <line num="932" type="stmt" count="0"/>
+      <line num="933" type="stmt" count="0"/>
+      <line num="934" type="stmt" count="0"/>
+      <line num="935" type="stmt" count="0"/>
+      <line num="938" type="stmt" count="16"/>
+      <line num="939" type="stmt" count="1"/>
+      <line num="940" type="stmt" count="1"/>
+      <line num="941" type="stmt" count="1"/>
+      <line num="942" type="stmt" count="1"/>
+      <line num="943" type="stmt" count="1"/>
+      <line num="944" type="stmt" count="1"/>
+      <line num="945" type="stmt" count="1"/>
+      <line num="948" type="stmt" count="16"/>
+      <line num="949" type="stmt" count="0"/>
+      <line num="950" type="stmt" count="0"/>
+      <line num="951" type="stmt" count="0"/>
+      <line num="952" type="stmt" count="0"/>
+      <line num="953" type="stmt" count="0"/>
+      <line num="954" type="stmt" count="0"/>
+      <line num="955" type="stmt" count="0"/>
+      <line num="958" type="stmt" count="16"/>
+      <metrics loc="961" ncloc="724" classes="1" methods="41" coveredmethods="23" conditionals="0" coveredconditionals="0" statements="334" coveredstatements="187" elements="375" coveredelements="210"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/UnusedModules.php">
+      <class name="EasyAudit\Core\Scan\Processor\UnusedModules" namespace="global">
+        <metrics complexity="28" methods="10" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="73" coveredstatements="66" elements="83" coveredelements="73"/>
+      </class>
+      <line num="21" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="23" type="stmt" count="1"/>
+      <line num="26" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="28" type="stmt" count="1"/>
+      <line num="31" type="method" name="getReport" visibility="public" complexity="2" crap="2" count="4"/>
+      <line num="33" type="stmt" count="4"/>
+      <line num="35" type="stmt" count="4"/>
+      <line num="36" type="stmt" count="1"/>
+      <line num="37" type="stmt" count="1"/>
+      <line num="38" type="stmt" count="1"/>
+      <line num="39" type="stmt" count="1"/>
+      <line num="40" type="stmt" count="1"/>
+      <line num="41" type="stmt" count="1"/>
+      <line num="42" type="stmt" count="1"/>
+      <line num="43" type="stmt" count="1"/>
+      <line num="46" type="stmt" count="4"/>
+      <line num="49" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="51" type="stmt" count="1"/>
+      <line num="54" type="method" name="process" visibility="public" complexity="8" crap="8.06" count="6"/>
+      <line num="56" type="stmt" count="6"/>
+      <line num="57" type="stmt" count="2"/>
+      <line num="61" type="stmt" count="4"/>
+      <line num="63" type="stmt" count="4"/>
+      <line num="64" type="stmt" count="3"/>
+      <line num="65" type="stmt" count="3"/>
+      <line num="69" type="stmt" count="1"/>
+      <line num="71" type="stmt" count="1"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="75" type="stmt" count="1"/>
+      <line num="77" type="stmt" count="1"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="1"/>
+      <line num="83" type="stmt" count="1"/>
+      <line num="84" type="stmt" count="1"/>
+      <line num="85" type="stmt" count="1"/>
+      <line num="86" type="stmt" count="1"/>
+      <line num="87" type="stmt" count="1"/>
+      <line num="88" type="stmt" count="1"/>
+      <line num="89" type="stmt" count="1"/>
+      <line num="97" type="method" name="loadMagentoConfig" visibility="private" complexity="6" crap="6.73" count="4"/>
+      <line num="99" type="stmt" count="4"/>
+      <line num="101" type="stmt" count="4"/>
+      <line num="102" type="stmt" count="3"/>
+      <line num="103" type="stmt" count="3"/>
+      <line num="107" type="stmt" count="1"/>
+      <line num="109" type="stmt" count="1"/>
+      <line num="110" type="stmt" count="1"/>
+      <line num="112" type="stmt" count="1"/>
+      <line num="114" type="stmt" count="0"/>
+      <line num="115" type="stmt" count="0"/>
+      <line num="116" type="stmt" count="0"/>
+      <line num="126" type="method" name="findConfigPath" visibility="private" complexity="4" crap="4" count="4"/>
+      <line num="129" type="stmt" count="4"/>
+      <line num="132" type="stmt" count="4"/>
+      <line num="133" type="stmt" count="4"/>
+      <line num="134" type="stmt" count="4"/>
+      <line num="135" type="stmt" count="4"/>
+      <line num="136" type="stmt" count="4"/>
+      <line num="137" type="stmt" count="4"/>
+      <line num="138" type="stmt" count="4"/>
+      <line num="139" type="stmt" count="4"/>
+      <line num="141" type="stmt" count="4"/>
+      <line num="142" type="stmt" count="4"/>
+      <line num="143" type="stmt" count="1"/>
+      <line num="147" type="stmt" count="3"/>
+      <line num="156" type="method" name="extractModuleName" visibility="private" complexity="3" crap="3.33" count="1"/>
+      <line num="158" type="stmt" count="1"/>
+      <line num="160" type="stmt" count="1"/>
+      <line num="161" type="stmt" count="0"/>
+      <line num="165" type="stmt" count="1"/>
+      <line num="166" type="stmt" count="1"/>
+      <line num="169" type="stmt" count="0"/>
+      <line num="172" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="174" type="stmt" count="1"/>
+      <line num="177" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="179" type="stmt" count="1"/>
+      <line num="180" type="stmt" count="1"/>
+      <line num="181" type="stmt" count="1"/>
+      <line num="182" type="stmt" count="1"/>
+      <line num="183" type="stmt" count="1"/>
+      <line num="184" type="stmt" count="1"/>
+      <line num="185" type="stmt" count="1"/>
+      <line num="186" type="stmt" count="1"/>
+      <metrics loc="189" ncloc="151" classes="1" methods="10" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="73" coveredstatements="66" elements="83" coveredelements="73"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/UseOfObjectManager.php">
+      <class name="EasyAudit\Core\Scan\Processor\UseOfObjectManager" namespace="global">
+        <metrics complexity="54" methods="16" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="133" coveredstatements="105" elements="149" coveredelements="114"/>
+      </class>
+      <line num="29" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="31" type="stmt" count="1"/>
+      <line num="34" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="36" type="stmt" count="1"/>
+      <line num="39" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="41" type="stmt" count="1"/>
+      <line num="44" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="46" type="stmt" count="1"/>
+      <line num="49" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="51" type="stmt" count="1"/>
+      <line num="59" type="method" name="process" visibility="public" complexity="6" crap="6.03" count="8"/>
+      <line num="61" type="stmt" count="8"/>
+      <line num="62" type="stmt" count="2"/>
+      <line num="65" type="stmt" count="6"/>
+      <line num="66" type="stmt" count="6"/>
+      <line num="67" type="stmt" count="6"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="71" type="stmt" count="6"/>
+      <line num="75" type="stmt" count="6"/>
+      <line num="76" type="stmt" count="3"/>
+      <line num="78" type="stmt" count="6"/>
+      <line num="79" type="stmt" count="1"/>
+      <line num="90" type="method" name="analyzeFile" visibility="private" complexity="10" crap="10" count="6"/>
+      <line num="93" type="stmt" count="6"/>
+      <line num="94" type="stmt" count="6"/>
+      <line num="95" type="stmt" count="1"/>
+      <line num="99" type="stmt" count="5"/>
+      <line num="100" type="stmt" count="5"/>
+      <line num="103" type="stmt" count="5"/>
+      <line num="104" type="stmt" count="5"/>
+      <line num="105" type="stmt" count="5"/>
+      <line num="106" type="stmt" count="5"/>
+      <line num="109" type="stmt" count="5"/>
+      <line num="110" type="stmt" count="1"/>
+      <line num="113" type="stmt" count="4"/>
+      <line num="114" type="stmt" count="3"/>
+      <line num="125" type="method" name="isFactory" visibility="private" complexity="1" crap="1" count="4"/>
+      <line num="127" type="stmt" count="4"/>
+      <line num="136" type="method" name="addObjectManagerUsage" visibility="private" complexity="3" crap="3.00" count="3"/>
+      <line num="139" type="stmt" count="3"/>
+      <line num="142" type="stmt" count="3"/>
+      <line num="143" type="stmt" count="0"/>
+      <line num="144" type="stmt" count="3"/>
+      <line num="145" type="stmt" count="3"/>
+      <line num="149" type="stmt" count="3"/>
+      <line num="151" type="stmt" count="3"/>
+      <line num="153" type="stmt" count="3"/>
+      <line num="154" type="stmt" count="3"/>
+      <line num="155" type="stmt" count="3"/>
+      <line num="156" type="stmt" count="3"/>
+      <line num="157" type="stmt" count="3"/>
+      <line num="158" type="stmt" count="3"/>
+      <line num="159" type="stmt" count="3"/>
+      <line num="160" type="stmt" count="3"/>
+      <line num="161" type="stmt" count="3"/>
+      <line num="162" type="stmt" count="3"/>
+      <line num="163" type="stmt" count="3"/>
+      <line num="172" type="method" name="extractInjections" visibility="private" complexity="10" crap="14.93" count="3"/>
+      <line num="174" type="stmt" count="3"/>
+      <line num="175" type="stmt" count="3"/>
+      <line num="178" type="stmt" count="3"/>
+      <line num="181" type="stmt" count="3"/>
+      <line num="184" type="stmt" count="3"/>
+      <line num="188" type="stmt" count="3"/>
+      <line num="192" type="stmt" count="3"/>
+      <line num="194" type="stmt" count="3"/>
+      <line num="195" type="stmt" count="3"/>
+      <line num="198" type="stmt" count="3"/>
+      <line num="199" type="stmt" count="0"/>
+      <line num="202" type="stmt" count="3"/>
+      <line num="203" type="stmt" count="0"/>
+      <line num="206" type="stmt" count="3"/>
+      <line num="207" type="stmt" count="0"/>
+      <line num="211" type="stmt" count="3"/>
+      <line num="213" type="stmt" count="3"/>
+      <line num="214" type="stmt" count="0"/>
+      <line num="217" type="stmt" count="0"/>
+      <line num="218" type="stmt" count="0"/>
+      <line num="219" type="stmt" count="0"/>
+      <line num="223" type="stmt" count="0"/>
+      <line num="224" type="stmt" count="0"/>
+      <line num="225" type="stmt" count="0"/>
+      <line num="230" type="stmt" count="3"/>
+      <line num="233" type="stmt" count="3"/>
+      <line num="234" type="stmt" count="0"/>
+      <line num="237" type="stmt" count="3"/>
+      <line num="238" type="stmt" count="3"/>
+      <line num="241" type="stmt" count="3"/>
+      <line num="250" type="method" name="getConstructorParameterTypes" visibility="private" complexity="8" crap="9.37" count="3"/>
+      <line num="252" type="stmt" count="3"/>
+      <line num="255" type="stmt" count="3"/>
+      <line num="256" type="stmt" count="3"/>
+      <line num="257" type="stmt" count="3"/>
+      <line num="258" type="stmt" count="3"/>
+      <line num="260" type="stmt" count="3"/>
+      <line num="261" type="stmt" count="0"/>
+      <line num="263" type="stmt" count="3"/>
+      <line num="264" type="stmt" count="3"/>
+      <line num="265" type="stmt" count="3"/>
+      <line num="271" type="stmt" count="3"/>
+      <line num="272" type="stmt" count="3"/>
+      <line num="275" type="stmt" count="3"/>
+      <line num="276" type="stmt" count="0"/>
+      <line num="278" type="stmt" count="0"/>
+      <line num="281" type="stmt" count="0"/>
+      <line num="282" type="stmt" count="0"/>
+      <line num="288" type="stmt" count="3"/>
+      <line num="298" type="method" name="typeExistsInConstructor" visibility="private" complexity="2" crap="2" count="3"/>
+      <line num="301" type="stmt" count="3"/>
+      <line num="302" type="stmt" count="3"/>
+      <line num="305" type="stmt" count="3"/>
+      <line num="306" type="stmt" count="3"/>
+      <line num="315" type="method" name="findObjectManagerVariables" visibility="private" complexity="2" crap="2.06" count="3"/>
+      <line num="317" type="stmt" count="3"/>
+      <line num="319" type="stmt" count="3"/>
+      <line num="320" type="stmt" count="0"/>
+      <line num="322" type="stmt" count="3"/>
+      <line num="332" type="method" name="derivePropertyName" visibility="private" complexity="1" crap="1" count="3"/>
+      <line num="335" type="stmt" count="3"/>
+      <line num="336" type="stmt" count="3"/>
+      <line num="339" type="stmt" count="3"/>
+      <line num="348" type="method" name="addUselessImport" visibility="private" complexity="3" crap="3.14" count="1"/>
+      <line num="351" type="stmt" count="1"/>
+      <line num="353" type="stmt" count="1"/>
+      <line num="354" type="stmt" count="1"/>
+      <line num="355" type="stmt" count="0"/>
+      <line num="356" type="stmt" count="0"/>
+      <line num="359" type="stmt" count="1"/>
+      <line num="361" type="stmt" count="1"/>
+      <line num="362" type="stmt" count="1"/>
+      <line num="370" type="method" name="getReport" visibility="public" complexity="3" crap="3.53" count="2"/>
+      <line num="372" type="stmt" count="2"/>
+      <line num="374" type="stmt" count="2"/>
+      <line num="375" type="stmt" count="2"/>
+      <line num="376" type="stmt" count="2"/>
+      <line num="377" type="stmt" count="2"/>
+      <line num="378" type="stmt" count="2"/>
+      <line num="379" type="stmt" count="2"/>
+      <line num="380" type="stmt" count="2"/>
+      <line num="381" type="stmt" count="2"/>
+      <line num="384" type="stmt" count="2"/>
+      <line num="385" type="stmt" count="0"/>
+      <line num="386" type="stmt" count="0"/>
+      <line num="387" type="stmt" count="0"/>
+      <line num="388" type="stmt" count="0"/>
+      <line num="389" type="stmt" count="0"/>
+      <line num="390" type="stmt" count="0"/>
+      <line num="391" type="stmt" count="0"/>
+      <line num="394" type="stmt" count="2"/>
+      <metrics loc="397" ncloc="279" classes="1" methods="16" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="133" coveredstatements="105" elements="149" coveredelements="114"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Processor/UseOfRegistry.php">
+      <class name="EasyAudit\Core\Scan\Processor\UseOfRegistry" namespace="global">
+        <metrics complexity="22" methods="10" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="50" coveredstatements="46" elements="60" coveredelements="53"/>
+      </class>
+      <line num="40" type="method" name="getIdentifier" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="42" type="stmt" count="1"/>
+      <line num="45" type="method" name="getFileType" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="47" type="stmt" count="1"/>
+      <line num="50" type="method" name="getName" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="52" type="stmt" count="1"/>
+      <line num="55" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="57" type="stmt" count="1"/>
+      <line num="60" type="method" name="getLongDescription" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="62" type="stmt" count="1"/>
+      <line num="70" type="method" name="process" visibility="public" complexity="6" crap="6.03" count="10"/>
+      <line num="72" type="stmt" count="10"/>
+      <line num="73" type="stmt" count="2"/>
+      <line num="76" type="stmt" count="8"/>
+      <line num="77" type="stmt" count="8"/>
+      <line num="78" type="stmt" count="8"/>
+      <line num="79" type="stmt" count="0"/>
+      <line num="83" type="stmt" count="8"/>
+      <line num="84" type="stmt" count="1"/>
+      <line num="87" type="stmt" count="7"/>
+      <line num="90" type="stmt" count="8"/>
+      <line num="91" type="stmt" count="5"/>
+      <line num="101" type="method" name="analyzeFile" visibility="private" complexity="5" crap="5.15" count="7"/>
+      <line num="104" type="stmt" count="7"/>
+      <line num="105" type="stmt" count="7"/>
+      <line num="106" type="stmt" count="0"/>
+      <line num="110" type="stmt" count="7"/>
+      <line num="113" type="stmt" count="7"/>
+      <line num="115" type="stmt" count="7"/>
+      <line num="116" type="stmt" count="0"/>
+      <line num="120" type="stmt" count="7"/>
+      <line num="123" type="stmt" count="7"/>
+      <line num="124" type="stmt" count="7"/>
+      <line num="125" type="stmt" count="5"/>
+      <line num="136" type="method" name="extractClassName" visibility="private" complexity="3" crap="3.07" count="7"/>
+      <line num="138" type="stmt" count="7"/>
+      <line num="139" type="stmt" count="7"/>
+      <line num="140" type="stmt" count="7"/>
+      <line num="141" type="stmt" count="7"/>
+      <line num="144" type="stmt" count="0"/>
+      <line num="155" type="method" name="addRegistryUsage" visibility="private" complexity="1" crap="1" count="5"/>
+      <line num="162" type="stmt" count="5"/>
+      <line num="164" type="stmt" count="5"/>
+      <line num="165" type="stmt" count="5"/>
+      <line num="166" type="stmt" count="5"/>
+      <line num="167" type="stmt" count="5"/>
+      <line num="168" type="stmt" count="5"/>
+      <line num="169" type="stmt" count="5"/>
+      <line num="171" type="stmt" count="5"/>
+      <line num="172" type="stmt" count="5"/>
+      <line num="180" type="method" name="getReport" visibility="public" complexity="2" crap="2" count="10"/>
+      <line num="182" type="stmt" count="10"/>
+      <line num="183" type="stmt" count="5"/>
+      <line num="186" type="stmt" count="5"/>
+      <line num="187" type="stmt" count="5"/>
+      <line num="188" type="stmt" count="5"/>
+      <line num="189" type="stmt" count="5"/>
+      <line num="190" type="stmt" count="5"/>
+      <line num="191" type="stmt" count="5"/>
+      <line num="192" type="stmt" count="5"/>
+      <metrics loc="195" ncloc="133" classes="1" methods="10" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="50" coveredstatements="46" elements="60" coveredelements="53"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/ProcessorInterface.php">
+      <metrics loc="50" ncloc="23" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Scanner.php">
+      <class name="EasyAudit\Core\Scan\Scanner" namespace="global">
+        <metrics complexity="32" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="82" coveredstatements="0" elements="85" coveredelements="0"/>
+      </class>
+      <line num="44" type="method" name="run" visibility="public" complexity="17" crap="306" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="52" type="stmt" count="0"/>
+      <line num="53" type="stmt" count="0"/>
+      <line num="56" type="stmt" count="0"/>
+      <line num="57" type="stmt" count="0"/>
+      <line num="60" type="stmt" count="0"/>
+      <line num="61" type="stmt" count="0"/>
+      <line num="62" type="stmt" count="0"/>
+      <line num="63" type="stmt" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="66" type="stmt" count="0"/>
+      <line num="67" type="stmt" count="0"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="69" type="stmt" count="0"/>
+      <line num="70" type="stmt" count="0"/>
+      <line num="71" type="stmt" count="0"/>
+      <line num="73" type="stmt" count="0"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="84" type="stmt" count="0"/>
+      <line num="86" type="stmt" count="0"/>
+      <line num="87" type="stmt" count="0"/>
+      <line num="88" type="stmt" count="0"/>
+      <line num="89" type="stmt" count="0"/>
+      <line num="92" type="stmt" count="0"/>
+      <line num="93" type="stmt" count="0"/>
+      <line num="94" type="stmt" count="0"/>
+      <line num="96" type="stmt" count="0"/>
+      <line num="97" type="stmt" count="0"/>
+      <line num="98" type="stmt" count="0"/>
+      <line num="100" type="stmt" count="0"/>
+      <line num="101" type="stmt" count="0"/>
+      <line num="102" type="stmt" count="0"/>
+      <line num="103" type="stmt" count="0"/>
+      <line num="104" type="stmt" count="0"/>
+      <line num="107" type="stmt" count="0"/>
+      <line num="108" type="stmt" count="0"/>
+      <line num="109" type="stmt" count="0"/>
+      <line num="111" type="stmt" count="0"/>
+      <line num="118" type="stmt" count="0"/>
+      <line num="119" type="stmt" count="0"/>
+      <line num="120" type="stmt" count="0"/>
+      <line num="121" type="stmt" count="0"/>
+      <line num="130" type="method" name="scanPaths" visibility="private" complexity="9" crap="90" count="0"/>
+      <line num="132" type="stmt" count="0"/>
+      <line num="133" type="stmt" count="0"/>
+      <line num="134" type="stmt" count="0"/>
+      <line num="135" type="stmt" count="0"/>
+      <line num="137" type="stmt" count="0"/>
+      <line num="138" type="stmt" count="0"/>
+      <line num="139" type="stmt" count="0"/>
+      <line num="140" type="stmt" count="0"/>
+      <line num="143" type="stmt" count="0"/>
+      <line num="144" type="stmt" count="0"/>
+      <line num="145" type="stmt" count="0"/>
+      <line num="148" type="stmt" count="0"/>
+      <line num="149" type="stmt" count="0"/>
+      <line num="151" type="stmt" count="0"/>
+      <line num="152" type="stmt" count="0"/>
+      <line num="154" type="stmt" count="0"/>
+      <line num="156" type="stmt" count="0"/>
+      <line num="157" type="stmt" count="0"/>
+      <line num="159" type="stmt" count="0"/>
+      <line num="161" type="stmt" count="0"/>
+      <line num="169" type="method" name="getProcessors" visibility="private" complexity="6" crap="42" count="0"/>
+      <line num="171" type="stmt" count="0"/>
+      <line num="172" type="stmt" count="0"/>
+      <line num="173" type="stmt" count="0"/>
+      <line num="174" type="stmt" count="0"/>
+      <line num="175" type="stmt" count="0"/>
+      <line num="176" type="stmt" count="0"/>
+      <line num="177" type="stmt" count="0"/>
+      <line num="179" type="stmt" count="0"/>
+      <line num="180" type="stmt" count="0"/>
+      <line num="181" type="stmt" count="0"/>
+      <line num="183" type="stmt" count="0"/>
+      <line num="185" type="stmt" count="0"/>
+      <line num="190" type="stmt" count="0"/>
+      <metrics loc="192" ncloc="175" classes="1" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="82" coveredstatements="0" elements="85" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Util/Classes.php">
+      <class name="EasyAudit\Core\Scan\Util\Classes" namespace="global">
+        <metrics complexity="14" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="29" coveredstatements="28" elements="32" coveredelements="30"/>
+      </class>
+      <line num="7" type="method" name="parseImportedClasses" visibility="public" complexity="4" crap="4" count="26"/>
+      <line num="8" type="stmt" count="26"/>
+      <line num="9" type="stmt" count="26"/>
+      <line num="10" type="stmt" count="26"/>
+      <line num="11" type="stmt" count="26"/>
+      <line num="12" type="stmt" count="1"/>
+      <line num="13" type="stmt" count="1"/>
+      <line num="14" type="stmt" count="1"/>
+      <line num="16" type="stmt" count="26"/>
+      <line num="17" type="stmt" count="26"/>
+      <line num="20" type="stmt" count="26"/>
+      <line num="23" type="method" name="parseConstructorParameters" visibility="public" complexity="4" crap="4" count="26"/>
+      <line num="24" type="stmt" count="26"/>
+      <line num="25" type="stmt" count="26"/>
+      <line num="26" type="stmt" count="26"/>
+      <line num="28" type="stmt" count="26"/>
+      <line num="31" type="method" name="consolidateParameters" visibility="public" complexity="6" crap="6.01" count="26"/>
+      <line num="32" type="stmt" count="26"/>
+      <line num="33" type="stmt" count="26"/>
+      <line num="34" type="stmt" count="26"/>
+      <line num="35" type="stmt" count="26"/>
+      <line num="36" type="stmt" count="0"/>
+      <line num="38" type="stmt" count="26"/>
+      <line num="39" type="stmt" count="26"/>
+      <line num="40" type="stmt" count="26"/>
+      <line num="41" type="stmt" count="26"/>
+      <line num="42" type="stmt" count="26"/>
+      <line num="44" type="stmt" count="26"/>
+      <line num="45" type="stmt" count="26"/>
+      <line num="47" type="stmt" count="26"/>
+      <line num="48" type="stmt" count="26"/>
+      <line num="51" type="stmt" count="26"/>
+      <metrics loc="53" ncloc="53" classes="1" methods="3" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="29" coveredstatements="28" elements="32" coveredelements="30"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Util/Content.php">
+      <class name="EasyAudit\Core\Scan\Util\Content" namespace="global">
+        <metrics complexity="4" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="8" coveredstatements="4" elements="10" coveredelements="4"/>
+      </class>
+      <line num="7" type="method" name="getLineNumber" visibility="public" complexity="3" crap="3.07" count="31"/>
+      <line num="9" type="stmt" count="31"/>
+      <line num="10" type="stmt" count="31"/>
+      <line num="11" type="stmt" count="31"/>
+      <line num="12" type="stmt" count="31"/>
+      <line num="15" type="stmt" count="0"/>
+      <line num="18" type="method" name="extractContent" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="20" type="stmt" count="0"/>
+      <line num="21" type="stmt" count="0"/>
+      <line num="22" type="stmt" count="0"/>
+      <metrics loc="24" ncloc="22" classes="1" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="8" coveredstatements="4" elements="10" coveredelements="4"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Util/Fixable.php">
+      <class name="EasyAudit\Core\Scan\Util\Fixable" namespace="global">
+        <metrics complexity="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="0" elements="2" coveredelements="0"/>
+      </class>
+      <line num="11" type="method" name="isFixable" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="13" type="stmt" count="0"/>
+      <metrics loc="15" ncloc="15" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="0" elements="2" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Util/Formater.php">
+      <class name="EasyAudit\Core\Scan\Util\Formater" namespace="global">
+        <metrics complexity="3" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="10" coveredstatements="10" elements="11" coveredelements="11"/>
+      </class>
+      <line num="9" type="method" name="formatError" visibility="public" complexity="3" crap="3" count="43"/>
+      <line num="17" type="stmt" count="43"/>
+      <line num="18" type="stmt" count="43"/>
+      <line num="19" type="stmt" count="43"/>
+      <line num="20" type="stmt" count="43"/>
+      <line num="21" type="stmt" count="43"/>
+      <line num="22" type="stmt" count="43"/>
+      <line num="23" type="stmt" count="43"/>
+      <line num="25" type="stmt" count="43"/>
+      <line num="26" type="stmt" count="16"/>
+      <line num="29" type="stmt" count="43"/>
+      <metrics loc="31" ncloc="31" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="10" coveredstatements="10" elements="11" coveredelements="11"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Core/Scan/Util/Functions.php">
+      <class name="EasyAudit\Core\Scan\Util\Functions" namespace="global">
+        <metrics complexity="22" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="52" coveredstatements="47" elements="55" coveredelements="47"/>
+      </class>
+      <line num="15" type="method" name="getFunctionContent" visibility="public" complexity="9" crap="9" count="3"/>
+      <line num="17" type="stmt" count="3"/>
+      <line num="18" type="stmt" count="3"/>
+      <line num="19" type="stmt" count="3"/>
+      <line num="20" type="stmt" count="3"/>
+      <line num="22" type="stmt" count="3"/>
+      <line num="23" type="stmt" count="3"/>
+      <line num="24" type="stmt" count="3"/>
+      <line num="27" type="stmt" count="3"/>
+      <line num="28" type="stmt" count="3"/>
+      <line num="32" type="stmt" count="3"/>
+      <line num="33" type="stmt" count="3"/>
+      <line num="36" type="stmt" count="3"/>
+      <line num="37" type="stmt" count="3"/>
+      <line num="40" type="stmt" count="3"/>
+      <line num="41" type="stmt" count="3"/>
+      <line num="46" type="stmt" count="3"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="50" type="stmt" count="3"/>
+      <line num="51" type="stmt" count="3"/>
+      <line num="52" type="stmt" count="3"/>
+      <line num="53" type="stmt" count="3"/>
+      <line num="56" type="method" name="getFunctionInnerContent" visibility="public" complexity="10" crap="10.15" count="3"/>
+      <line num="58" type="stmt" count="3"/>
+      <line num="59" type="stmt" count="3"/>
+      <line num="60" type="stmt" count="3"/>
+      <line num="61" type="stmt" count="3"/>
+      <line num="62" type="stmt" count="3"/>
+      <line num="64" type="stmt" count="3"/>
+      <line num="66" type="stmt" count="3"/>
+      <line num="71" type="stmt" count="3"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="74" type="stmt" count="3"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="78" type="stmt" count="3"/>
+      <line num="79" type="stmt" count="3"/>
+      <line num="82" type="stmt" count="3"/>
+      <line num="83" type="stmt" count="3"/>
+      <line num="84" type="stmt" count="3"/>
+      <line num="85" type="stmt" count="3"/>
+      <line num="86" type="stmt" count="3"/>
+      <line num="90" type="stmt" count="3"/>
+      <line num="91" type="stmt" count="3"/>
+      <line num="92" type="stmt" count="3"/>
+      <line num="93" type="stmt" count="3"/>
+      <line num="97" type="stmt" count="3"/>
+      <line num="98" type="stmt" count="3"/>
+      <line num="102" type="stmt" count="3"/>
+      <line num="105" type="method" name="getOccuringLineInFunction" visibility="public" complexity="3" crap="3.07" count="3"/>
+      <line num="107" type="stmt" count="3"/>
+      <line num="108" type="stmt" count="3"/>
+      <line num="109" type="stmt" count="3"/>
+      <line num="110" type="stmt" count="0"/>
+      <line num="113" type="stmt" count="3"/>
+      <metrics loc="115" ncloc="98" classes="1" methods="3" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="52" coveredstatements="47" elements="55" coveredelements="47"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Service/Api.php">
+      <class name="EasyAudit\Service\Api" namespace="global">
+        <metrics complexity="28" methods="6" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="135" coveredstatements="0" elements="141" coveredelements="0"/>
+      </class>
+      <line num="21" type="method" name="__construct" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="23" type="stmt" count="0"/>
+      <line num="37" type="method" name="requestFilefix" visibility="public" complexity="6" crap="42" count="0"/>
+      <line num="39" type="stmt" count="0"/>
+      <line num="41" type="stmt" count="0"/>
+      <line num="44" type="stmt" count="0"/>
+      <line num="45" type="stmt" count="0"/>
+      <line num="46" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="0"/>
+      <line num="48" type="stmt" count="0"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="50" type="stmt" count="0"/>
+      <line num="51" type="stmt" count="0"/>
+      <line num="52" type="stmt" count="0"/>
+      <line num="53" type="stmt" count="0"/>
+      <line num="54" type="stmt" count="0"/>
+      <line num="55" type="stmt" count="0"/>
+      <line num="56" type="stmt" count="0"/>
+      <line num="59" type="stmt" count="0"/>
+      <line num="60" type="stmt" count="0"/>
+      <line num="61" type="stmt" count="0"/>
+      <line num="64" type="stmt" count="0"/>
+      <line num="65" type="stmt" count="0"/>
+      <line num="66" type="stmt" count="0"/>
+      <line num="68" type="stmt" count="0"/>
+      <line num="69" type="stmt" count="0"/>
+      <line num="70" type="stmt" count="0"/>
+      <line num="71" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="73" type="stmt" count="0"/>
+      <line num="74" type="stmt" count="0"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="78" type="stmt" count="0"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="86" type="stmt" count="0"/>
+      <line num="88" type="stmt" count="0"/>
+      <line num="89" type="stmt" count="0"/>
+      <line num="90" type="stmt" count="0"/>
+      <line num="91" type="stmt" count="0"/>
+      <line num="92" type="stmt" count="0"/>
+      <line num="104" type="method" name="getRemainingCredits" visibility="public" complexity="3" crap="12" count="0"/>
+      <line num="106" type="stmt" count="0"/>
+      <line num="108" type="stmt" count="0"/>
+      <line num="110" type="stmt" count="0"/>
+      <line num="111" type="stmt" count="0"/>
+      <line num="113" type="stmt" count="0"/>
+      <line num="114" type="stmt" count="0"/>
+      <line num="115" type="stmt" count="0"/>
+      <line num="118" type="stmt" count="0"/>
+      <line num="119" type="stmt" count="0"/>
+      <line num="120" type="stmt" count="0"/>
+      <line num="122" type="stmt" count="0"/>
+      <line num="123" type="stmt" count="0"/>
+      <line num="124" type="stmt" count="0"/>
+      <line num="125" type="stmt" count="0"/>
+      <line num="126" type="stmt" count="0"/>
+      <line num="127" type="stmt" count="0"/>
+      <line num="128" type="stmt" count="0"/>
+      <line num="129" type="stmt" count="0"/>
+      <line num="130" type="stmt" count="0"/>
+      <line num="132" type="stmt" count="0"/>
+      <line num="134" type="stmt" count="0"/>
+      <line num="135" type="stmt" count="0"/>
+      <line num="136" type="stmt" count="0"/>
+      <line num="137" type="stmt" count="0"/>
+      <line num="138" type="stmt" count="0"/>
+      <line num="139" type="stmt" count="0"/>
+      <line num="148" type="method" name="getAllowedType" visibility="public" complexity="6" crap="42" count="0"/>
+      <line num="150" type="stmt" count="0"/>
+      <line num="152" type="stmt" count="0"/>
+      <line num="154" type="stmt" count="0"/>
+      <line num="155" type="stmt" count="0"/>
+      <line num="156" type="stmt" count="0"/>
+      <line num="159" type="stmt" count="0"/>
+      <line num="161" type="stmt" count="0"/>
+      <line num="162" type="stmt" count="0"/>
+      <line num="163" type="stmt" count="0"/>
+      <line num="164" type="stmt" count="0"/>
+      <line num="165" type="stmt" count="0"/>
+      <line num="166" type="stmt" count="0"/>
+      <line num="167" type="stmt" count="0"/>
+      <line num="168" type="stmt" count="0"/>
+      <line num="170" type="stmt" count="0"/>
+      <line num="172" type="stmt" count="0"/>
+      <line num="173" type="stmt" count="0"/>
+      <line num="174" type="stmt" count="0"/>
+      <line num="175" type="stmt" count="0"/>
+      <line num="178" type="stmt" count="0"/>
+      <line num="179" type="stmt" count="0"/>
+      <line num="180" type="stmt" count="0"/>
+      <line num="183" type="stmt" count="0"/>
+      <line num="192" type="method" name="buildHeaders" visibility="private" complexity="2" crap="6" count="0"/>
+      <line num="194" type="stmt" count="0"/>
+      <line num="195" type="stmt" count="0"/>
+      <line num="196" type="stmt" count="0"/>
+      <line num="197" type="stmt" count="0"/>
+      <line num="198" type="stmt" count="0"/>
+      <line num="199" type="stmt" count="0"/>
+      <line num="202" type="stmt" count="0"/>
+      <line num="203" type="stmt" count="0"/>
+      <line num="204" type="stmt" count="0"/>
+      <line num="207" type="stmt" count="0"/>
+      <line num="220" type="method" name="manageResponse" visibility="private" complexity="10" crap="110" count="0"/>
+      <line num="222" type="stmt" count="0"/>
+      <line num="223" type="stmt" count="0"/>
+      <line num="225" type="stmt" count="0"/>
+      <line num="226" type="stmt" count="0"/>
+      <line num="227" type="stmt" count="0"/>
+      <line num="228" type="stmt" count="0"/>
+      <line num="230" type="stmt" count="0"/>
+      <line num="233" type="stmt" count="0"/>
+      <line num="234" type="stmt" count="0"/>
+      <line num="235" type="stmt" count="0"/>
+      <line num="236" type="stmt" count="0"/>
+      <line num="237" type="stmt" count="0"/>
+      <line num="241" type="stmt" count="0"/>
+      <line num="242" type="stmt" count="0"/>
+      <line num="243" type="stmt" count="0"/>
+      <line num="244" type="stmt" count="0"/>
+      <line num="245" type="stmt" count="0"/>
+      <line num="248" type="stmt" count="0"/>
+      <line num="249" type="stmt" count="0"/>
+      <line num="250" type="stmt" count="0"/>
+      <line num="251" type="stmt" count="0"/>
+      <line num="252" type="stmt" count="0"/>
+      <line num="253" type="stmt" count="0"/>
+      <line num="254" type="stmt" count="0"/>
+      <line num="255" type="stmt" count="0"/>
+      <line num="256" type="stmt" count="0"/>
+      <line num="257" type="stmt" count="0"/>
+      <line num="260" type="stmt" count="0"/>
+      <line num="261" type="stmt" count="0"/>
+      <line num="262" type="stmt" count="0"/>
+      <line num="265" type="stmt" count="0"/>
+      <line num="266" type="stmt" count="0"/>
+      <line num="268" type="stmt" count="0"/>
+      <line num="269" type="stmt" count="0"/>
+      <line num="270" type="stmt" count="0"/>
+      <line num="273" type="stmt" count="0"/>
+      <metrics loc="275" ncloc="223" classes="1" methods="6" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="135" coveredstatements="0" elements="141" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Service/CiEnvironmentDetector.php">
+      <class name="EasyAudit\Service\CiEnvironmentDetector" namespace="global">
+        <metrics complexity="20" methods="7" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="31" coveredstatements="31" elements="38" coveredelements="38"/>
+      </class>
+      <line num="54" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="18"/>
+      <line num="56" type="stmt" count="18"/>
+      <line num="62" type="method" name="isRunningInCi" visibility="public" complexity="1" crap="1" count="14"/>
+      <line num="64" type="stmt" count="14"/>
+      <line num="72" type="method" name="getProvider" visibility="public" complexity="1" crap="1" count="14"/>
+      <line num="74" type="stmt" count="14"/>
+      <line num="84" type="method" name="getIdentity" visibility="public" complexity="6" crap="6" count="14"/>
+      <line num="86" type="stmt" count="14"/>
+      <line num="87" type="stmt" count="1"/>
+      <line num="90" type="stmt" count="13"/>
+      <line num="91" type="stmt" count="13"/>
+      <line num="93" type="stmt" count="13"/>
+      <line num="94" type="stmt" count="13"/>
+      <line num="95" type="stmt" count="13"/>
+      <line num="96" type="stmt" count="11"/>
+      <line num="100" type="stmt" count="13"/>
+      <line num="108" type="method" name="getHeaders" visibility="public" complexity="4" crap="4" count="3"/>
+      <line num="110" type="stmt" count="3"/>
+      <line num="111" type="stmt" count="1"/>
+      <line num="114" type="stmt" count="2"/>
+      <line num="116" type="stmt" count="2"/>
+      <line num="117" type="stmt" count="2"/>
+      <line num="120" type="stmt" count="2"/>
+      <line num="121" type="stmt" count="2"/>
+      <line num="122" type="stmt" count="1"/>
+      <line num="125" type="stmt" count="2"/>
+      <line num="131" type="method" name="detect" visibility="private" complexity="5" crap="5" count="18"/>
+      <line num="133" type="stmt" count="18"/>
+      <line num="134" type="stmt" count="18"/>
+      <line num="136" type="stmt" count="18"/>
+      <line num="137" type="stmt" count="10"/>
+      <line num="142" type="stmt" count="17"/>
+      <line num="143" type="stmt" count="15"/>
+      <line num="144" type="stmt" count="15"/>
+      <line num="145" type="stmt" count="15"/>
+      <line num="156" type="method" name="getEnv" visibility="private" complexity="2" crap="2" count="18"/>
+      <line num="158" type="stmt" count="18"/>
+      <line num="159" type="stmt" count="18"/>
+      <metrics loc="162" ncloc="123" classes="1" methods="7" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="31" coveredstatements="31" elements="38" coveredelements="38"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Service/ClassToProxy.php">
+      <class name="EasyAudit\Service\ClassToProxy" namespace="global">
+        <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
+      </class>
+      <line num="230" type="method" name="isRequired" visibility="public" complexity="1" crap="1" count="10"/>
+      <line num="232" type="stmt" count="10"/>
+      <metrics loc="235" ncloc="235" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Service/Logger.php">
+      <class name="EasyAudit\Service\Logger" namespace="global">
+        <metrics complexity="5" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="18" coveredstatements="18" elements="20" coveredelements="20"/>
+      </class>
+      <line num="14" type="method" name="logErrors" visibility="public" complexity="3" crap="3" count="6"/>
+      <line num="16" type="stmt" count="6"/>
+      <line num="17" type="stmt" count="1"/>
+      <line num="20" type="stmt" count="6"/>
+      <line num="21" type="stmt" count="6"/>
+      <line num="22" type="stmt" count="6"/>
+      <line num="24" type="stmt" count="6"/>
+      <line num="25" type="stmt" count="5"/>
+      <line num="28" type="stmt" count="6"/>
+      <line num="39" type="method" name="logNoChanges" visibility="public" complexity="2" crap="2" count="8"/>
+      <line num="41" type="stmt" count="8"/>
+      <line num="42" type="stmt" count="1"/>
+      <line num="45" type="stmt" count="8"/>
+      <line num="46" type="stmt" count="8"/>
+      <line num="48" type="stmt" count="8"/>
+      <line num="49" type="stmt" count="8"/>
+      <line num="50" type="stmt" count="8"/>
+      <line num="51" type="stmt" count="8"/>
+      <line num="52" type="stmt" count="8"/>
+      <line num="54" type="stmt" count="8"/>
+      <metrics loc="57" ncloc="44" classes="1" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="18" coveredstatements="18" elements="20" coveredelements="20"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Service/PayloadPreparers/DiPreparer.php">
+      <class name="EasyAudit\Service\PayloadPreparers\DiPreparer" namespace="global">
+        <metrics complexity="19" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="42" coveredstatements="41" elements="44" coveredelements="42"/>
+      </class>
+      <line num="16" type="method" name="prepareFiles" visibility="public" complexity="15" crap="15" count="9"/>
+      <line num="18" type="stmt" count="9"/>
+      <line num="20" type="stmt" count="9"/>
+      <line num="21" type="stmt" count="8"/>
+      <line num="24" type="stmt" count="8"/>
+      <line num="25" type="stmt" count="2"/>
+      <line num="28" type="stmt" count="7"/>
+      <line num="29" type="stmt" count="1"/>
+      <line num="33" type="stmt" count="6"/>
+      <line num="34" type="stmt" count="0"/>
+      <line num="37" type="stmt" count="6"/>
+      <line num="38" type="stmt" count="6"/>
+      <line num="39" type="stmt" count="6"/>
+      <line num="40" type="stmt" count="6"/>
+      <line num="41" type="stmt" count="6"/>
+      <line num="42" type="stmt" count="6"/>
+      <line num="44" type="stmt" count="6"/>
+      <line num="45" type="stmt" count="1"/>
+      <line num="48" type="stmt" count="5"/>
+      <line num="49" type="stmt" count="5"/>
+      <line num="52" type="stmt" count="5"/>
+      <line num="53" type="stmt" count="5"/>
+      <line num="57" type="stmt" count="5"/>
+      <line num="58" type="stmt" count="5"/>
+      <line num="59" type="stmt" count="5"/>
+      <line num="64" type="stmt" count="9"/>
+      <line num="75" type="method" name="preparePayload" visibility="public" complexity="4" crap="4" count="4"/>
+      <line num="77" type="stmt" count="4"/>
+      <line num="78" type="stmt" count="4"/>
+      <line num="79" type="stmt" count="1"/>
+      <line num="83" type="stmt" count="3"/>
+      <line num="84" type="stmt" count="3"/>
+      <line num="85" type="stmt" count="2"/>
+      <line num="86" type="stmt" count="2"/>
+      <line num="87" type="stmt" count="2"/>
+      <line num="88" type="stmt" count="2"/>
+      <line num="89" type="stmt" count="2"/>
+      <line num="90" type="stmt" count="2"/>
+      <line num="94" type="stmt" count="3"/>
+      <line num="95" type="stmt" count="3"/>
+      <line num="96" type="stmt" count="3"/>
+      <line num="97" type="stmt" count="3"/>
+      <line num="98" type="stmt" count="3"/>
+      <line num="99" type="stmt" count="3"/>
+      <metrics loc="102" ncloc="81" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="42" coveredstatements="41" elements="44" coveredelements="42"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Service/PayloadPreparers/GeneralPreparer.php">
+      <class name="EasyAudit\Service\PayloadPreparers\GeneralPreparer" namespace="global">
+        <metrics complexity="12" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="34" coveredstatements="33" elements="36" coveredelements="34"/>
+      </class>
+      <line num="18" type="method" name="prepareFiles" visibility="public" complexity="8" crap="8" count="6"/>
+      <line num="20" type="stmt" count="6"/>
+      <line num="22" type="stmt" count="6"/>
+      <line num="23" type="stmt" count="5"/>
+      <line num="24" type="stmt" count="5"/>
+      <line num="25" type="stmt" count="2"/>
+      <line num="29" type="stmt" count="3"/>
+      <line num="30" type="stmt" count="0"/>
+      <line num="34" type="stmt" count="3"/>
+      <line num="35" type="stmt" count="1"/>
+      <line num="38" type="stmt" count="3"/>
+      <line num="39" type="stmt" count="3"/>
+      <line num="41" type="stmt" count="3"/>
+      <line num="42" type="stmt" count="3"/>
+      <line num="43" type="stmt" count="3"/>
+      <line num="44" type="stmt" count="3"/>
+      <line num="47" type="stmt" count="3"/>
+      <line num="48" type="stmt" count="3"/>
+      <line num="49" type="stmt" count="3"/>
+      <line num="50" type="stmt" count="3"/>
+      <line num="54" type="stmt" count="6"/>
+      <line num="65" type="method" name="preparePayload" visibility="public" complexity="4" crap="4" count="6"/>
+      <line num="67" type="stmt" count="6"/>
+      <line num="68" type="stmt" count="6"/>
+      <line num="69" type="stmt" count="1"/>
+      <line num="73" type="stmt" count="5"/>
+      <line num="74" type="stmt" count="5"/>
+      <line num="75" type="stmt" count="4"/>
+      <line num="76" type="stmt" count="4"/>
+      <line num="79" type="stmt" count="4"/>
+      <line num="80" type="stmt" count="4"/>
+      <line num="82" type="stmt" count="1"/>
+      <line num="86" type="stmt" count="5"/>
+      <line num="87" type="stmt" count="5"/>
+      <line num="88" type="stmt" count="5"/>
+      <line num="89" type="stmt" count="5"/>
+      <metrics loc="92" ncloc="71" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="34" coveredstatements="33" elements="36" coveredelements="34"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Service/PayloadPreparers/PreparerInterface.php">
+      <metrics loc="33" ncloc="15" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Support/Env.php">
+      <class name="EasyAudit\Support\Env" namespace="global">
+        <metrics complexity="22" methods="6" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="37" coveredstatements="35" elements="43" coveredelements="40"/>
+      </class>
+      <line num="18" type="method" name="getAuthHeader" visibility="public" complexity="8" crap="8" count="8"/>
+      <line num="20" type="stmt" count="8"/>
+      <line num="22" type="stmt" count="8"/>
+      <line num="23" type="stmt" count="6"/>
+      <line num="24" type="stmt" count="6"/>
+      <line num="25" type="stmt" count="2"/>
+      <line num="27" type="stmt" count="4"/>
+      <line num="28" type="stmt" count="1"/>
+      <line num="30" type="stmt" count="3"/>
+      <line num="31" type="stmt" count="2"/>
+      <line num="34" type="stmt" count="2"/>
+      <line num="35" type="stmt" count="2"/>
+      <line num="36" type="stmt" count="1"/>
+      <line num="38" type="stmt" count="1"/>
+      <line num="40" type="stmt" count="4"/>
+      <line num="49" type="method" name="storeCredentials" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="51" type="stmt" count="1"/>
+      <line num="52" type="stmt" count="1"/>
+      <line num="53" type="stmt" count="1"/>
+      <line num="54" type="stmt" count="1"/>
+      <line num="62" type="method" name="getStoredCredentials" visibility="public" complexity="7" crap="7.18" count="6"/>
+      <line num="64" type="stmt" count="6"/>
+      <line num="65" type="stmt" count="6"/>
+      <line num="66" type="stmt" count="2"/>
+      <line num="67" type="stmt" count="2"/>
+      <line num="69" type="stmt" count="4"/>
+      <line num="70" type="stmt" count="4"/>
+      <line num="71" type="stmt" count="0"/>
+      <line num="72" type="stmt" count="0"/>
+      <line num="74" type="stmt" count="4"/>
+      <line num="75" type="stmt" count="4"/>
+      <line num="76" type="stmt" count="2"/>
+      <line num="77" type="stmt" count="2"/>
+      <line num="79" type="stmt" count="2"/>
+      <line num="89" type="method" name="isSelfSigned" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="91" type="stmt" count="3"/>
+      <line num="100" type="method" name="isGithubActions" visibility="public" complexity="2" crap="2" count="11"/>
+      <line num="102" type="stmt" count="11"/>
+      <line num="110" type="method" name="getApiUrl" visibility="public" complexity="3" crap="3" count="4"/>
+      <line num="112" type="stmt" count="4"/>
+      <line num="113" type="stmt" count="4"/>
+      <line num="114" type="stmt" count="3"/>
+      <line num="116" type="stmt" count="1"/>
+      <metrics loc="119" ncloc="80" classes="1" methods="6" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="37" coveredstatements="35" elements="43" coveredelements="40"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Support/Paths.php">
+      <class name="EasyAudit\Support\Paths" namespace="global">
+        <metrics complexity="37" methods="6" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="51" coveredstatements="41" elements="57" coveredelements="43"/>
+      </class>
+      <line num="6" type="method" name="configDir" visibility="public" complexity="7" crap="7.39" count="25"/>
+      <line num="8" type="stmt" count="25"/>
+      <line num="9" type="stmt" count="25"/>
+      <line num="10" type="stmt" count="25"/>
+      <line num="11" type="stmt" count="0"/>
+      <line num="13" type="stmt" count="25"/>
+      <line num="16" type="method" name="configFile" visibility="public" complexity="2" crap="2" count="23"/>
+      <line num="18" type="stmt" count="23"/>
+      <line num="19" type="stmt" count="23"/>
+      <line num="20" type="stmt" count="1"/>
+      <line num="22" type="stmt" count="22"/>
+      <line num="25" type="method" name="updateConfigFile" visibility="public" complexity="4" crap="4.05" count="15"/>
+      <line num="27" type="stmt" count="15"/>
+      <line num="28" type="stmt" count="15"/>
+      <line num="29" type="stmt" count="15"/>
+      <line num="30" type="stmt" count="15"/>
+      <line num="31" type="stmt" count="15"/>
+      <line num="32" type="stmt" count="0"/>
+      <line num="34" type="stmt" count="15"/>
+      <line num="37" type="method" name="getConfig" visibility="public" complexity="8" crap="8.10" count="11"/>
+      <line num="39" type="stmt" count="11"/>
+      <line num="40" type="stmt" count="11"/>
+      <line num="41" type="stmt" count="3"/>
+      <line num="43" type="stmt" count="8"/>
+      <line num="44" type="stmt" count="8"/>
+      <line num="45" type="stmt" count="0"/>
+      <line num="47" type="stmt" count="8"/>
+      <line num="48" type="stmt" count="8"/>
+      <line num="49" type="stmt" count="0"/>
+      <line num="51" type="stmt" count="8"/>
+      <line num="52" type="stmt" count="1"/>
+      <line num="53" type="stmt" count="1"/>
+      <line num="54" type="stmt" count="1"/>
+      <line num="56" type="stmt" count="1"/>
+      <line num="58" type="stmt" count="7"/>
+      <line num="59" type="stmt" count="1"/>
+      <line num="61" type="stmt" count="6"/>
+      <line num="69" type="method" name="expandTilde" visibility="public" complexity="8" crap="35.00" count="53"/>
+      <line num="71" type="stmt" count="53"/>
+      <line num="72" type="stmt" count="53"/>
+      <line num="75" type="stmt" count="0"/>
+      <line num="76" type="stmt" count="0"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="82" type="stmt" count="0"/>
+      <line num="85" type="stmt" count="0"/>
+      <line num="96" type="method" name="getAbsolutePath" visibility="public" complexity="8" crap="8" count="53"/>
+      <line num="99" type="stmt" count="53"/>
+      <line num="101" type="stmt" count="53"/>
+      <line num="102" type="stmt" count="3"/>
+      <line num="105" type="stmt" count="50"/>
+      <line num="106" type="stmt" count="47"/>
+      <line num="110" type="stmt" count="3"/>
+      <line num="111" type="stmt" count="3"/>
+      <line num="112" type="stmt" count="1"/>
+      <line num="115" type="stmt" count="2"/>
+      <line num="116" type="stmt" count="2"/>
+      <metrics loc="119" ncloc="103" classes="1" methods="6" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="51" coveredstatements="41" elements="57" coveredelements="43"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Support/ProjectIdentifier.php">
+      <class name="EasyAudit\Support\ProjectIdentifier" namespace="global">
+        <metrics complexity="38" methods="7" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="75" coveredstatements="71" elements="82" coveredelements="75"/>
+      </class>
+      <line num="15" type="method" name="resolve" visibility="public" complexity="1" crap="1" count="19"/>
+      <line num="17" type="stmt" count="19"/>
+      <line num="18" type="stmt" count="19"/>
+      <line num="20" type="stmt" count="19"/>
+      <line num="26" type="method" name="resolveBaseName" visibility="private" complexity="5" crap="5" count="19"/>
+      <line num="29" type="stmt" count="19"/>
+      <line num="30" type="stmt" count="9"/>
+      <line num="34" type="stmt" count="11"/>
+      <line num="35" type="stmt" count="11"/>
+      <line num="36" type="stmt" count="5"/>
+      <line num="40" type="stmt" count="6"/>
+      <line num="41" type="stmt" count="6"/>
+      <line num="42" type="stmt" count="2"/>
+      <line num="46" type="stmt" count="4"/>
+      <line num="53" type="method" name="fromComposer" visibility="private" complexity="15" crap="15.08" count="11"/>
+      <line num="55" type="stmt" count="11"/>
+      <line num="58" type="stmt" count="11"/>
+      <line num="59" type="stmt" count="11"/>
+      <line num="60" type="stmt" count="6"/>
+      <line num="61" type="stmt" count="6"/>
+      <line num="62" type="stmt" count="4"/>
+      <line num="67" type="stmt" count="7"/>
+      <line num="68" type="stmt" count="7"/>
+      <line num="69" type="stmt" count="2"/>
+      <line num="70" type="stmt" count="2"/>
+      <line num="71" type="stmt" count="2"/>
+      <line num="72" type="stmt" count="2"/>
+      <line num="73" type="stmt" count="2"/>
+      <line num="75" type="stmt" count="2"/>
+      <line num="76" type="stmt" count="2"/>
+      <line num="77" type="stmt" count="0"/>
+      <line num="79" type="stmt" count="2"/>
+      <line num="80" type="stmt" count="2"/>
+      <line num="81" type="stmt" count="0"/>
+      <line num="83" type="stmt" count="2"/>
+      <line num="84" type="stmt" count="2"/>
+      <line num="85" type="stmt" count="2"/>
+      <line num="87" type="stmt" count="2"/>
+      <line num="88" type="stmt" count="2"/>
+      <line num="89" type="stmt" count="1"/>
+      <line num="90" type="stmt" count="1"/>
+      <line num="91" type="stmt" count="1"/>
+      <line num="99" type="stmt" count="6"/>
+      <line num="105" type="method" name="parseComposerName" visibility="private" complexity="5" crap="5.07" count="7"/>
+      <line num="107" type="stmt" count="7"/>
+      <line num="108" type="stmt" count="7"/>
+      <line num="109" type="stmt" count="0"/>
+      <line num="111" type="stmt" count="7"/>
+      <line num="112" type="stmt" count="7"/>
+      <line num="113" type="stmt" count="2"/>
+      <line num="115" type="stmt" count="5"/>
+      <line num="121" type="method" name="fromModuleXml" visibility="private" complexity="6" crap="6" count="6"/>
+      <line num="123" type="stmt" count="6"/>
+      <line num="126" type="stmt" count="6"/>
+      <line num="127" type="stmt" count="6"/>
+      <line num="128" type="stmt" count="6"/>
+      <line num="129" type="stmt" count="6"/>
+      <line num="131" type="stmt" count="6"/>
+      <line num="132" type="stmt" count="6"/>
+      <line num="133" type="stmt" count="6"/>
+      <line num="134" type="stmt" count="3"/>
+      <line num="135" type="stmt" count="3"/>
+      <line num="136" type="stmt" count="3"/>
+      <line num="137" type="stmt" count="2"/>
+      <line num="143" type="stmt" count="4"/>
+      <line num="149" type="method" name="parseModuleXml" visibility="private" complexity="3" crap="3.04" count="3"/>
+      <line num="151" type="stmt" count="3"/>
+      <line num="152" type="stmt" count="3"/>
+      <line num="153" type="stmt" count="0"/>
+      <line num="157" type="stmt" count="3"/>
+      <line num="158" type="stmt" count="2"/>
+      <line num="161" type="stmt" count="1"/>
+      <line num="168" type="method" name="slugify" visibility="private" complexity="3" crap="3" count="15"/>
+      <line num="171" type="stmt" count="15"/>
+      <line num="174" type="stmt" count="15"/>
+      <line num="177" type="stmt" count="15"/>
+      <line num="180" type="stmt" count="15"/>
+      <line num="183" type="stmt" count="15"/>
+      <line num="186" type="stmt" count="15"/>
+      <line num="187" type="stmt" count="2"/>
+      <line num="188" type="stmt" count="2"/>
+      <line num="191" type="stmt" count="15"/>
+      <metrics loc="194" ncloc="152" classes="1" methods="7" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="75" coveredstatements="71" elements="82" coveredelements="75"/>
+    </file>
+    <file name="/home/christophe/Public/packages/crealoz/easyaudit-cli/src/Version.php">
+      <class name="EasyAudit\Version" namespace="global">
+        <metrics complexity="3" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="7" coveredstatements="0" elements="9" coveredelements="0"/>
+      </class>
+      <line num="22" type="method" name="getVersionString" visibility="public" complexity="2" crap="6" count="0"/>
+      <line num="24" type="stmt" count="0"/>
+      <line num="25" type="stmt" count="0"/>
+      <line num="27" type="stmt" count="0"/>
+      <line num="28" type="stmt" count="0"/>
+      <line num="31" type="stmt" count="0"/>
+      <line num="32" type="stmt" count="0"/>
+      <line num="38" type="method" name="isReleaseBuild" visibility="public" complexity="1" crap="2" count="0"/>
+      <line num="40" type="stmt" count="0"/>
+      <metrics loc="43" ncloc="28" classes="1" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="7" coveredstatements="0" elements="9" coveredelements="0"/>
+    </file>
+    <metrics files="49" loc="7139" ncloc="5813" classes="45" methods="291" coveredmethods="148" conditionals="0" coveredconditionals="0" statements="2535" coveredstatements="1468" elements="2826" coveredelements="1616"/>
+  </project>
+</coverage>

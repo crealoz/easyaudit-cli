@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 jobs:
   test:
@@ -12,47 +11,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.head_ref || github.ref_name }}
+          php-version: '8.3'
+          coverage: pcov
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - run: composer install --prefer-dist --no-progress
+
+      - run: php vendor/bin/phpunit --coverage-clover coverage.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          php-version: '8.1'
-          extensions: curl, json
-          coverage: xdebug
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
-
-      - name: Run tests with coverage
-        run: vendor/bin/phpunit --coverage-clover coverage.xml
-
-      - name: Generate and commit coverage badge
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          COVERAGE=$(php -r "
-            \$xml = simplexml_load_file('coverage.xml');
-            \$metrics = \$xml->project->metrics;
-            \$covered = (int)\$metrics['coveredstatements'];
-            \$total = (int)\$metrics['statements'];
-            echo \$total > 0 ? round(\$covered / \$total * 100, 1) : 0;
-          ")
-
-          if [ "$(awk "BEGIN {print ($COVERAGE >= 80)}")" -eq 1 ]; then
-            COLOR="brightgreen"
-          elif [ "$(awk "BEGIN {print ($COVERAGE >= 60)}")" -eq 1 ]; then
-            COLOR="yellow"
-          else
-            COLOR="red"
-          fi
-
-          printf '{"schemaVersion":1,"label":"coverage","message":"%s%%","color":"%s"}\n' "$COVERAGE" "$COLOR" > coverage-badge.json
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add coverage-badge.json
-          git diff --staged --quiet || git commit -m "Update coverage badge [skip ci]"
-          git pull --rebase
-          git push
+          files: coverage.xml
