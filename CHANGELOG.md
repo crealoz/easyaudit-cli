@@ -21,9 +21,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.0] - 2025-01-27
+## [0.1.0] - 2026-01-27
 
 ### Added
+- **GitHub repository templates**:
+  - Bug report and feature request issue templates (YAML forms)
+  - Pull request template
+  - Issue template chooser with contact links
+  - Dependabot configuration for Composer and GitHub Actions
+- **Code coverage** with Codecov integration in CI workflow
+- **CI/CD documentation** for multiple platforms:
+  - GitHub Actions, GitLab CI, Azure DevOps
+  - Jenkins, CircleCI, Travis CI, Bitbucket Pipelines
+- **MIT License** file
+- **CI/CD environment detection** for API requests:
+  - New `CiEnvironmentDetector` service detects 7 CI providers
+  - `X-CI-Provider` and `X-CI-Identity` headers sent with API requests
+  - Supports GitHub Actions, GitLab CI, Azure DevOps, CircleCI, Jenkins, Travis CI, Bitbucket Pipelines
 - **Interactive `--fix-by-rule` mode** for fix-apply command:
   - Select which rule to fix via interactive menu
   - Patches organized into rule-specific subdirectories (`patches/{ruleId}/...`)
