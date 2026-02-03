@@ -27,7 +27,7 @@ jobs:
       image: ghcr.io/crealoz/easyaudit:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run EasyAudit
         run: |
@@ -70,7 +70,7 @@ jobs:
       image: ghcr.io/crealoz/easyaudit:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Scan changed code
         run: |
@@ -106,7 +106,7 @@ jobs:
       image: ghcr.io/crealoz/easyaudit:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Full codebase scan
         run: |
@@ -140,7 +140,7 @@ jobs:
       image: ghcr.io/crealoz/easyaudit:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run EasyAudit (fail on errors)
         run: |
@@ -178,7 +178,7 @@ jobs:
       image: ghcr.io/crealoz/easyaudit:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run EasyAudit
         run: |

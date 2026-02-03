@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2] - 2026-02-03
+
+### Added
+- Direct `curl` download command in README and CLI docs for easier PHAR installation
+
+### Changed
+- **Format validation**: `scan` command now validates `--format` option and shows error for unknown formats (only `json` and `sarif` are supported)
+- Updated `actions/checkout` from v4 to v6 in all documentation examples
+- Default format is now explicitly `json` (was implicitly text before)
+
+### Fixed
+- **Docker**: Added `easyaudit` wrapper script so the command works inside containers (CI/CD workflows using `container: image`)
+
+### Removed
+- `text` output format removed (console output is always displayed regardless of format)
+
+---
+
 ## [0.1.1] - 2026-02-03
 
 ### Added

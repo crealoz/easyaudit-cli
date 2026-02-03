@@ -14,12 +14,17 @@ Static analysis tool for Magento 2 codebases. Detects anti-patterns, security ri
 - **Zero dependencies** - standalone PHAR (~165KB)
 - **CI/CD ready** - SARIF output for GitHub Code Scanning
 - **Docker image** available
+- **Auto-fix** - Automatic patch generation via API
 
 ## Quick Start
 
 ### Using PHAR
 ```bash
-# Download from releases
+# Download latest PHAR
+curl -LO https://github.com/crealoz/easyaudit-cli/releases/latest/download/easyaudit.phar
+chmod +x easyaudit.phar
+
+# Run
 php easyaudit.phar scan /path/to/magento --format=sarif
 ```
 
@@ -37,11 +42,12 @@ php bin/easyaudit scan /path/to/magento
 
 ## Output Formats
 
-| Format  | Use Case                 |
-|---------|--------------------------|
-| `text`  | Console output (default) |
-| `json`  | Tooling and scripting    |
-| `sarif` | GitHub Code Scanning     |
+| Format  | Use Case                          |
+|---------|-----------------------------------|
+| `json`  | Tooling and scripting (default)   |
+| `sarif` | GitHub Code Scanning              |
+
+Console output is always displayed during scan.
 
 ## GitHub Actions
 
@@ -60,7 +66,7 @@ jobs:
     container:
       image: ghcr.io/crealoz/easyaudit:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: |
           mkdir -p report
           easyaudit scan --format=sarif --output=report/easyaudit.sarif \
@@ -71,6 +77,9 @@ jobs:
 ```
 
 ![GitHub Code Scanning](images/scanning-alert-terrible-module.png)
+
+> **💡 Found issues?**
+> EasyAudit can automatically fix many of them. [Set up automated PR →](docs/request-pr.md)
 
 ## Documentation
 

@@ -10,6 +10,10 @@ RUN apk add --no-cache \
 
 COPY easyaudit.phar /usr/local/bin/easyaudit.phar
 
+# Wrapper so 'easyaudit' command works inside the container
+RUN printf '#!/bin/sh\nphp /usr/local/bin/easyaudit.phar "$@"\n' > /usr/local/bin/easyaudit \
+    && chmod +x /usr/local/bin/easyaudit
+
 ENTRYPOINT ["php", "/usr/local/bin/easyaudit.phar"]
 
 CMD ["--help"]

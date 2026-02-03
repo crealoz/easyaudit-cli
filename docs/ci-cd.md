@@ -31,12 +31,14 @@ jobs:
     container:
       image: ghcr.io/crealoz/easyaudit:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: easyaudit scan --format=sarif --output=report.sarif .
       - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: report.sarif
 ```
+
+> **💡 Want automatic fixes?** See [Automated PR workflow](request-pr.md)
 
 ---
 

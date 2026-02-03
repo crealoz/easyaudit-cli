@@ -9,10 +9,10 @@ cd easyaudit-cli
 ```
 
 ### Using PHAR (recommended)
-Download the latest `easyaudit.phar` from [releases](https://github.com/crealoz/easyaudit-cli/releases).
 
 ```bash
-# Make it executable
+# Download latest PHAR
+curl -LO https://github.com/crealoz/easyaudit-cli/releases/latest/download/easyaudit.phar
 chmod +x easyaudit.phar
 
 # Optional: move to PATH
@@ -33,10 +33,10 @@ docker pull ghcr.io/crealoz/easyaudit:latest
 Run static analysis on a Magento codebase.
 
 ```bash
-# Basic scan (text output)
+# Basic scan (JSON output, default)
 php bin/easyaudit scan /path/to/magento
 
-# JSON output
+# Explicit JSON output
 php bin/easyaudit scan /path/to/magento --format=json
 
 # SARIF output (for GitHub Code Scanning)
@@ -56,7 +56,7 @@ php bin/easyaudit scan /path/to/magento --exclude-ext="js,css"
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--format` | Output format: `text`, `json`, `sarif` | `text` |
+| `--format` | Output format: `json`, `sarif` | `json` |
 | `--output` | Output file path | `report/easyaudit-report.(json\|sarif)` |
 | `--exclude` | Comma-separated directories to exclude | none |
 | `--exclude-ext` | Comma-separated file extensions to exclude | none |
@@ -78,7 +78,7 @@ php bin/easyaudit scan /path/to/magento/app/code --format=json
 
 ### Scan a single module
 ```bash
-php bin/easyaudit scan /path/to/magento/app/code/Vendor/Module --format=text
+php bin/easyaudit scan /path/to/magento/app/code/Vendor/Module --format=json
 ```
 
 ### Scan with all exclusions (production-like)
@@ -91,8 +91,19 @@ php bin/easyaudit scan /path/to/magento \
 
 ### Quick check before commit
 ```bash
-php bin/easyaudit scan . --format=text
+php bin/easyaudit scan . --format=json
 ```
+
+### Scan and fix workflow
+```bash
+# 1. Scan and generate report
+php bin/easyaudit scan /path/to/magento --format=json --output=report.json
+
+# 2. Apply fixes (requires API credits)
+php bin/easyaudit fix-apply report.json
+```
+
+Automated PR creation is available as a paid feature. See [Automated PR workflow](request-pr.md) for CI/CD integration.
 
 ---
 
@@ -101,7 +112,7 @@ php bin/easyaudit scan . --format=text
 ### Basic scan
 ```bash
 docker run --rm -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
-  scan /workspace --format=text
+  scan /workspace --format=json
 ```
 
 ### Generate SARIF report
@@ -140,17 +151,12 @@ php bin/easyaudit scan /path/to/magento --format=sarif || exit 1
 
 ## Output Examples
 
-### Text (default)
-```
-=== SameModulePlugins ===
-[WARNING] Plugin on same module class
-  File: app/code/Vendor/Module/Plugin/SomePlugin.php
-  Target: Vendor\Module\Model\SomeModel
+![cli-scanning.png](../images/cli-scanning.png)
 
-=== UseOfObjectManager ===
-[ERROR] Direct ObjectManager usage
-  File: app/code/Vendor/Module/Helper/Data.php:42
-```
+> **💡 Auto-fix available**
+> Many issues can be fixed automatically. Run `easyaudit fix-apply` or [set up automated PRs →](request-pr.md)
+![cli-fix-apply.png](../images/cli-fix-apply.png)
+ 
 
 ### JSON
 ```json

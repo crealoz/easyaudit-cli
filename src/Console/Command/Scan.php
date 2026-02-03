@@ -32,7 +32,7 @@ Arguments:
   <path>                       Path to scan (default: current directory)
 
 Options:
-  --format=<format>            Output format (json, sarif). Default: json
+  --format=<format>            Output format: json, sarif (default: json)
   --exclude=<patterns>         Comma-separated list of glob patterns to exclude
   --exclude-ext=<exts>         Comma-separated list of file extensions to exclude (e.g. .log,.tmp)
   --output=<file>              Output file path. Default: report/easyaudit-report.<format>
@@ -56,6 +56,13 @@ HELP;
 
         [$opts, $rest] = Args::parse($argv);
         $format      = strtolower(Args::optStr($opts, 'format', 'json')) ?? 'json';
+
+        $allowedFormats = ['json', 'sarif'];
+        if (!in_array($format, $allowedFormats, true)) {
+            fwrite(STDERR, RED . "Error: Unknown format '$format'. Allowed formats: " . implode(', ', $allowedFormats) . RESET . "\n");
+            return 1;
+        }
+
         $exclude     = Args::optStr($opts, 'exclude', '');
         $output      = Args::optStr($opts, 'output');
         $excludedExt = Args::optArr($opts, 'exclude-ext');

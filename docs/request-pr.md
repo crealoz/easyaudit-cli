@@ -59,7 +59,7 @@ jobs:
           [ "${{ inputs.ack_paid }}" = "true" ] || { echo "Rejected: ack_paid=false"; exit 1; }
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -223,6 +223,18 @@ Set `EASYAUDIT_SELF_SIGNED=false` to force reject self-signed certs.
 If unset, the auto-detection above applies.
 
 Recommendation: only allow self-signed certificates for local testing; keep strict verification on CI/GitHub Actions.
+
+### Local fix-apply setup
+
+To use `fix-apply` locally (outside CI/CD), you need a personal middleware configured for your environment.
+
+**Setup process:**
+1. Contact Crealoz at https://shop.crealoz.fr/contact
+2. Request local middleware access
+3. Receive your middleware configuration
+4. The self-signed certificate will then work for local development
+
+> **Note**: Without this setup, local `fix-apply` will fail due to certificate validation. The GitHub Actions workflow does not require this step.
 
 ---
 
