@@ -1,9 +1,7 @@
 <?php
 namespace EasyAudit\Core\Scan;
 
-use EasyAudit\Core\Scan\ExternalToolMapping;
 use EasyAudit\Service\Api;
-use EasyAudit\Support\Env;
 use EasyAudit\Support\Paths;
 
 class Scanner

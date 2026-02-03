@@ -24,6 +24,10 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
 
     private int $creditsRemaining = 0;
     private string $projectId = '';
+    /**
+     * @var array|mixed
+     */
+    private array $processErrors = [];
 
     public function __construct()
     {
@@ -109,8 +113,6 @@ HELP;
             fwrite(STDERR, "Failed to create patch directory: $patchOut\n");
             return 73;
         }
-
-        $logger = new Logger();
         $generalPreparer = new GeneralPreparer();
         $diPreparer = new DiPreparer();
 
@@ -199,9 +201,6 @@ HELP;
             echo YELLOW . "Warning: Could not check credit balance: " . $e->getMessage() . RESET . "\n";
         }
 
-        // Process files one by one to avoid heavy payloads
-        $processErrors = [];
-
         // Process regular PHP files
         $this->preparePayload($generalPreparer, $byFile);
 
@@ -215,9 +214,9 @@ HELP;
         echo "\n";
 
         // Log errors to file if any
-        if (!empty($processErrors)) {
-            $logger->logErrors($processErrors);
-            echo YELLOW . count($processErrors) . " file(s) failed. See logs/fix-apply-errors.log for details." . RESET . "\n";
+        if (!empty($this->processErrors)) {
+            $this->logger->logErrors($this->processErrors);
+            echo YELLOW . count($this->processErrors) . " file(s) failed. See logs/fix-apply-errors.log for details." . RESET . "\n";
         }
 
         if (empty($this->diffs)) {
@@ -295,7 +294,7 @@ HELP;
                 if (str_contains($errorMsg, 'No changes were generated')) {
                     $this->logger->logNoChanges($filePath, $payload['rules'], $payload['content']);
                 }
-                $processErrors[$filePath] = $errorMsg;
+                $this->processErrors[$filePath] = $errorMsg;
                 continue;
             }
         }

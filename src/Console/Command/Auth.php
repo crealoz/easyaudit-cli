@@ -2,7 +2,6 @@
 namespace EasyAudit\Console\Command;
 
 use EasyAudit\Console\Util\Args;
-use EasyAudit\Console\Util\Confirm;
 use EasyAudit\Support\Env;
 
 final class Auth implements \EasyAudit\Console\CommandInterface

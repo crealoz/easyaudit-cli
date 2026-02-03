@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.1.1] - 2026-02-03
+
 ### Added
 - **Version compatibility system** for CLI-Middleware communication:
   - New `Version` class with `VERSION` and `HASH` constants
@@ -18,6 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Webhook notification to middleware for version registration
   - Automatic GitHub Release creation with PHAR artifact
   - Docker image tagging with version numbers
+
+### Changed
+- **Dockerfile simplified**: Now uses PHAR distribution instead of copying source files
+- Removed unused imports and variables across multiple files
+- `FixApply` refactored to use instance property for error tracking
+
+### Removed
+- Deleted `src/Core/Scan/Util/Fixable.php` (unused)
+- Removed metadata section from `box.json`
 
 ---
 

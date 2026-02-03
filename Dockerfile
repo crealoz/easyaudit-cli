@@ -1,6 +1,5 @@
 FROM php:8.2-alpine
 
-# Install dependencies
 RUN apk add --no-cache \
       git \
       libxml2-dev \
@@ -9,13 +8,8 @@ RUN apk add --no-cache \
       bash \
     && docker-php-ext-install xml mbstring curl
 
+COPY easyaudit.phar /usr/local/bin/easyaudit.phar
 
-#Copy the application files
-COPY bin/easyaudit /usr/local/bin/easyaudit
-COPY src /usr/local/src
-
-# Make file executable
-RUN chmod +x /usr/local/bin/easyaudit && sed -i 's/\r$//' /usr/local/bin/easyaudit
-ENTRYPOINT ["php","/usr/local/bin/easyaudit"]
+ENTRYPOINT ["php", "/usr/local/bin/easyaudit.phar"]
 
 CMD ["--help"]

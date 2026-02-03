@@ -25,8 +25,6 @@ class ProxyForHeavyClasses extends AbstractProcessor
         'Collection',
     ];
 
-    private array $processedFiles = [];
-
     private ClassToProxy $classToProxy;
 
     public function __construct()
