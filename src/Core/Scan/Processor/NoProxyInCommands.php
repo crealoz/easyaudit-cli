@@ -30,7 +30,10 @@ class NoProxyInCommands extends AbstractProcessor
                 continue;
             }
             $this->diFile = $file;
-            $commandsListNode = $content->xpath('//type[@name=\'Magento\Framework\Console\CommandList\']//item');
+            // Check both CommandList and CommandListInterface (both are valid for registering commands)
+            $commandsListNode = $content->xpath(
+                '//type[@name=\'Magento\Framework\Console\CommandList\' or @name=\'Magento\Framework\Console\CommandListInterface\']//item'
+            );
             foreach ($commandsListNode as $commandNode) {
                 $this->manageCommandNode($commandNode, $content);
             }
@@ -39,16 +42,6 @@ class NoProxyInCommands extends AbstractProcessor
         if (!empty($this->results)) {
             echo "  \033[33m!\033[0m Commands without proxy: \033[1;33m" . count($this->results) . "\033[0m\n";
         }
-    }
-
-    private function getFilePath(string $className): ?string
-    {
-        $classPath = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-        $fullPath = EA_SCAN_PATH . DIRECTORY_SEPARATOR . $classPath;
-        if (file_exists($fullPath)) {
-            return $fullPath;
-        }
-        return null;
     }
 
     /**
@@ -62,7 +55,7 @@ class NoProxyInCommands extends AbstractProcessor
     private function manageCommandNode(\SimpleXMLElement $commandNode, \SimpleXMLElement $input): void
     {
         $commandClassName = (string)$commandNode;
-        $filePath = $this->getFilePath($commandClassName);
+        $filePath = Classes::resolveClassToFile($commandClassName);
         if ($filePath === null) {
             return ;
         }
