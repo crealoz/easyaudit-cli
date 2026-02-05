@@ -31,9 +31,9 @@ class NoProxyInCommands extends AbstractProcessor
             }
             $this->diFile = $file;
             // Check both CommandList and CommandListInterface (both are valid for registering commands)
-            $commandsListNode = $content->xpath(
-                '//type[@name=\'Magento\Framework\Console\CommandList\' or @name=\'Magento\Framework\Console\CommandListInterface\']//item'
-            );
+            $xpath = '//type[@name=\'Magento\Framework\Console\CommandList\' '
+                . 'or @name=\'Magento\Framework\Console\CommandListInterface\']//item';
+            $commandsListNode = $content->xpath($xpath);
             foreach ($commandsListNode as $commandNode) {
                 $this->manageCommandNode($commandNode, $content);
             }
@@ -47,8 +47,8 @@ class NoProxyInCommands extends AbstractProcessor
     /**
      * Manage each command node, check if it has proxies in its constructor
      *
-     * @param \SimpleXMLElement $commandNode
-     * @param \SimpleXMLElement $input
+     * @param  \SimpleXMLElement $commandNode
+     * @param  \SimpleXMLElement $input
      * @return array
      * @throws \ReflectionException
      */
@@ -69,19 +69,23 @@ class NoProxyInCommands extends AbstractProcessor
         $consolidatedParameters = Classes::consolidateParameters($constructorParameters, $importedClasses);
         if (empty($proxies) || count($proxies) < count($constructorParameters) - 1) {
             foreach ($consolidatedParameters as $paramName => $parameterClassName) {
-                if (!str_contains($parameterClassName, 'Factory') && !in_array($parameterClassName . '\Proxy', $proxies)) {
+                $proxyClass = $parameterClassName . '\Proxy';
+                if (!str_contains($parameterClassName, 'Factory') && !in_array($proxyClass, $proxies)) {
                     $this->foundCount++;
+                    $msg = "Command $commandClassName should use a Proxy for "
+                        . "$parameterClassName (parameter $paramName in constructor). "
+                        . "Change it in " . $this->diFile;
                     $this->results[] = Formater::formatError(
                         $filePath,
                         Content::getLineNumber($fileContent, $paramName),
-                        "Command $commandClassName should use a Proxy for $parameterClassName (parameter $paramName in constructor). Change it in " . $this->diFile,
+                        $msg,
                         'warning',
                         0,
                         [
                             'diFile' => $this->diFile,
                             'type' => $commandClassName,
                             'argument' => ltrim($paramName, '$'),
-                            'proxy' => $parameterClassName . '\Proxy',
+                            'proxy' => $proxyClass,
                         ]
                     );
                 }
@@ -92,8 +96,8 @@ class NoProxyInCommands extends AbstractProcessor
     /**
      * Get all proxies used in the command class
      *
-     * @param \SimpleXMLElement $input
-     * @param string $commandClass
+     * @param  \SimpleXMLElement $input
+     * @param  string            $commandClass
      * @return array
      */
     private function getCommandProxies($input, $commandClass)
@@ -123,7 +127,7 @@ class NoProxyInCommands extends AbstractProcessor
     public function getLongDescription(): string
     {
         return 'Commands should use proxies for their injections. Doing so improves performances especially for crons.
-        When a command is executed, not all dependencies are always needed. Using proxies allows to delay the 
+        When a command is executed, not all dependencies are always needed. Using proxies allows to delay the
         instantiation of these dependencies until they are actually used, which can significantly reduce memory
          usage and execution time.';
     }

@@ -2,6 +2,8 @@
 
 namespace EasyAudit\Tests\Service\PayloadPreparers;
 
+use EasyAudit\Exception\Fixer\CouldNotPreparePayloadException;
+use EasyAudit\Service\PayloadPreparers\AbstractPreparer;
 use EasyAudit\Service\PayloadPreparers\GeneralPreparer;
 use EasyAudit\Service\PayloadPreparers\PreparerInterface;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +20,11 @@ class GeneralPreparerTest extends TestCase
     public function testImplementsPreparerInterface(): void
     {
         $this->assertInstanceOf(PreparerInterface::class, $this->preparer);
+    }
+
+    public function testExtendsAbstractPreparer(): void
+    {
+        $this->assertInstanceOf(AbstractPreparer::class, $this->preparer);
     }
 
     public function testPrepareFilesGroupsByPath(): void
@@ -202,7 +209,7 @@ class GeneralPreparerTest extends TestCase
 
     public function testPreparePayloadThrowsOnMissingFile(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(CouldNotPreparePayloadException::class);
         $this->expectExceptionMessage('Failed to read file');
 
         $this->preparer->preparePayload('/nonexistent/file.php', ['issues' => []]);
@@ -242,5 +249,61 @@ class GeneralPreparerTest extends TestCase
         } finally {
             @unlink($tempFile);
         }
+    }
+
+    public function testCanFixExcludesSpecificRules(): void
+    {
+        // GeneralPreparer should NOT handle rules that are in SPECIFIC_RULES
+        $findings = [
+            [
+                'ruleId' => 'noProxyUsedForHeavyClasses',  // This is a SPECIFIC_RULES rule for DiPreparer
+                'files' => [
+                    [
+                        'file' => '/tmp/test/Model/Product.php',
+                        'metadata' => [
+                            'diFile' => '/tmp/test/etc/di.xml',
+                            'type' => 'Vendor\\Module\\Model\\Product',
+                            'argument' => 'customerSession',
+                            'proxy' => 'Magento\\Customer\\Model\\Session\\Proxy',
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'ruleId' => 'noProxyUsedInCommands',  // Another SPECIFIC_RULES rule for DiPreparer
+                'files' => [
+                    [
+                        'file' => '/tmp/test/Console/Command.php',
+                        'metadata' => [
+                            'diFile' => '/tmp/test/etc/di.xml',
+                            'type' => 'Vendor\\Module\\Console\\Command',
+                            'argument' => 'productRepository',
+                            'proxy' => 'Magento\\Catalog\\Api\\ProductRepositoryInterface\\Proxy',
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'ruleId' => 'replaceObjectManager',  // This is NOT a SPECIFIC_RULES rule
+                'files' => [
+                    ['file' => '/tmp/test/Model/Other.php', 'metadata' => ['line' => 10]],
+                ],
+            ],
+        ];
+
+        $fixables = [
+            'proxyConfiguration' => 1,
+            'replaceObjectManager' => 1,
+        ];
+
+        $result = $this->preparer->prepareFiles($findings, $fixables);
+
+        // Should only contain replaceObjectManager files, not proxy rules
+        $this->assertCount(1, $result);
+        $this->assertArrayHasKey('/tmp/test/Model/Other.php', $result);
+
+        // Should not have proxy rule files
+        $this->assertArrayNotHasKey('/tmp/test/Model/Product.php', $result);
+        $this->assertArrayNotHasKey('/tmp/test/Console/Command.php', $result);
     }
 }

@@ -4,8 +4,6 @@ namespace EasyAudit\Core\Report;
 
 class SarifReporter implements ReporterInterface
 {
-
-
     public function generate(array $findings): string
     {
         $results = [];

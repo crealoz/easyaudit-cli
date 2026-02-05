@@ -2,8 +2,8 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
-use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Service\CliWriter;
 
 /**
  * Class HardWrittenSQL
@@ -33,7 +33,11 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-select',
             'name' => 'Hard Written SQL SELECT',
             'shortDescription' => 'SELECT queries must be avoided',
-            'longDescription' => 'SELECT queries must be avoided. Use the Magento Framework methods instead or a custom repository with getList() and/or getById() methods. Raw SQL queries bypass Magento\'s data abstraction layer, events, and can lead to security vulnerabilities.',
+            'longDescription' => 'SELECT queries must be avoided. Use the Magento Framework '
+                . 'methods instead or a custom repository with getList() and/or getById() '
+                . 'methods. Raw SQL queries bypass Magento\'s data abstraction layer, events, '
+                . 'and can lead to security vulnerabilities.',
+            'recommendation' => 'Use a repository with getList() or getById() methods, or a collection with addFieldToFilter().',
         ],
         'DELETE' => [
             'pattern' => '/DELETE\s+.*?\s+FROM/is',
@@ -41,7 +45,11 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-delete',
             'name' => 'Hard Written SQL DELETE',
             'shortDescription' => 'DELETE queries must be avoided',
-            'longDescription' => 'DELETE queries must be avoided. Use the Magento Framework methods instead or a custom repository with delete() and/or deleteById() methods. Raw SQL deletion bypasses Magento\'s event system and can lead to referential integrity issues.',
+            'longDescription' => 'DELETE queries must be avoided. Use the Magento Framework '
+                . 'methods instead or a custom repository with delete() and/or deleteById() '
+                . 'methods. Raw SQL deletion bypasses Magento\'s event system and can lead to '
+                . 'referential integrity issues.',
+            'recommendation' => 'Use a repository with delete() or deleteById() methods.',
         ],
         'INSERT' => [
             'pattern' => '/INSERT\s+.*?\s+INTO/is',
@@ -49,7 +57,11 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-insert',
             'name' => 'Hard Written SQL INSERT',
             'shortDescription' => 'INSERT queries should be avoided',
-            'longDescription' => 'INSERT queries should be avoided. Use the Magento Framework methods instead or a custom repository with a save() method. While it can be faster for large amounts of data, it bypasses Magento\'s validation and event system.',
+            'longDescription' => 'INSERT queries should be avoided. Use the Magento Framework '
+                . 'methods instead or a custom repository with a save() method. While it can be '
+                . 'faster for large amounts of data, it bypasses Magento\'s validation and '
+                . 'event system.',
+            'recommendation' => 'Use a repository with save() method or the resource model\'s save() method.',
         ],
         'UPDATE' => [
             'pattern' => '/UPDATE\s+.*?\s+SET/is',
@@ -57,7 +69,11 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-update',
             'name' => 'Hard Written SQL UPDATE',
             'shortDescription' => 'UPDATE queries should be avoided',
-            'longDescription' => 'UPDATE queries should be avoided. Use the Magento Framework methods instead or a custom repository with a save() method. While it can be faster for large amounts of data, it can lead to data loss and bypasses Magento\'s event system.',
+            'longDescription' => 'UPDATE queries should be avoided. Use the Magento Framework '
+                . 'methods instead or a custom repository with a save() method. While it can be '
+                . 'faster for large amounts of data, it can lead to data loss and bypasses '
+                . 'Magento\'s event system.',
+            'recommendation' => 'Use a repository with save() method or the resource model\'s save() method.',
         ],
         'JOIN' => [
             'pattern' => '/\s+JOIN\s+.*?\s+ON/is',
@@ -65,18 +81,18 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-join',
             'name' => 'Hard Written SQL JOIN',
             'shortDescription' => 'JOIN queries should be avoided',
-            'longDescription' => 'JOIN queries should be avoided. Use the Magento Framework collection methods instead, such as addFieldToFilter() or join() methods on collections. This ensures better performance optimization and database abstraction.',
+            'longDescription' => 'JOIN queries should be avoided. Use the Magento Framework '
+                . 'collection methods instead, such as addFieldToFilter() or join() methods on '
+                . 'collections. This ensures better performance optimization and database '
+                . 'abstraction.',
+            'recommendation' => 'Use collection join() methods or addFieldToFilter() with proper table relations.',
         ],
     ];
 
     /**
-     * Results organized by SQL type and severity
+     * Results organized by SQL type
      */
-    private array $selectResults = [];
-    private array $deleteResults = [];
-    private array $insertResults = [];
-    private array $updateResults = [];
-    private array $joinResults = [];
+    private array $resultsByType = [];
 
     public function getIdentifier(): string
     {
@@ -100,13 +116,15 @@ class HardWrittenSQL extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor detects raw SQL queries written directly in PHP code. In Magento 2, raw SQL queries are considered bad practice as they bypass the framework\'s database abstraction layer, event system, plugins, and can lead to security vulnerabilities like SQL injection. Developers should use repositories, resource models, and collections instead.';
+        return 'This processor detects raw SQL queries written directly in PHP code. In '
+            . 'Magento 2, raw SQL queries are considered bad practice as they bypass the '
+            . 'framework\'s database abstraction layer, event system, plugins, and can lead '
+            . 'to security vulnerabilities like SQL injection. Developers should use '
+            . 'repositories, resource models, and collections instead.';
     }
 
     /**
      * Process PHP files to detect hard-written SQL queries
-     *
-     * @param array $files Array of files grouped by type
      */
     public function process(array $files): void
     {
@@ -115,7 +133,6 @@ class HardWrittenSQL extends AbstractProcessor
         }
 
         foreach ($files['php'] as $file) {
-            // Skip Setup directories (install scripts, patches, migrations)
             if ($this->isSetupDirectory($file)) {
                 continue;
             }
@@ -125,36 +142,15 @@ class HardWrittenSQL extends AbstractProcessor
                 continue;
             }
 
-            // Remove comments and docblocks to avoid false positives
             $cleanedContent = $this->removeComments($fileContent);
-
-            // Check for each SQL pattern
             $this->detectSQL($cleanedContent, $file, $fileContent);
         }
 
-        // Output counts for each SQL type
-        if (!empty($this->selectResults)) {
-            echo "  \033[31m✗\033[0m Hard-written SELECT queries: \033[1;31m" . count($this->selectResults) . "\033[0m\n";
-        }
-        if (!empty($this->deleteResults)) {
-            echo "  \033[31m✗\033[0m Hard-written DELETE queries: \033[1;31m" . count($this->deleteResults) . "\033[0m\n";
-        }
-        if (!empty($this->insertResults)) {
-            echo "  \033[33m!\033[0m Hard-written INSERT queries: \033[1;33m" . count($this->insertResults) . "\033[0m\n";
-        }
-        if (!empty($this->updateResults)) {
-            echo "  \033[33m!\033[0m Hard-written UPDATE queries: \033[1;33m" . count($this->updateResults) . "\033[0m\n";
-        }
-        if (!empty($this->joinResults)) {
-            echo "  \033[34mi\033[0m Hard-written JOIN queries: \033[1;34m" . count($this->joinResults) . "\033[0m\n";
-        }
+        $this->reportResults();
     }
 
     /**
      * Check if file is in a Setup directory (should be excluded from SQL checks)
-     *
-     * @param string $filePath
-     * @return bool
      */
     private function isSetupDirectory(string $filePath): bool
     {
@@ -164,129 +160,92 @@ class HardWrittenSQL extends AbstractProcessor
 
     /**
      * Remove comments and docblocks from code to avoid false positives
-     *
-     * @param string $content
-     * @return string
      */
     private function removeComments(string $content): string
     {
-        // Remove multi-line comments /* ... */
         $content = preg_replace('/\/\*.*?\*\//s', '', $content);
-
-        // Remove single-line comments //
-        $content = preg_replace('/\/\/.*?$/m', '', $content);
-
-        // Remove hash comments #
-        $content = preg_replace('/#.*?$/m', '', $content);
+        $content = preg_replace('/\/\/.*$/m', '', $content);
+        $content = preg_replace('/#.*$/m', '', $content);
 
         return $content;
     }
 
     /**
      * Detect SQL patterns in the cleaned content
-     *
-     * @param string $cleanedContent Content with comments removed
-     * @param string $file File path
-     * @param string $originalContent Original file content for line number extraction
      */
     private function detectSQL(string $cleanedContent, string $file, string $originalContent): void
     {
         foreach (self::SQL_PATTERNS as $sqlType => $config) {
             if (preg_match_all($config['pattern'], $cleanedContent, $matches, PREG_OFFSET_CAPTURE)) {
-                foreach ($matches[0] as $match) {
-                    $matchedText = $match[0];
-                    $offset = $match[1];
-
-                    // Calculate line number from offset
-                    $lineNumber = substr_count(substr($cleanedContent, 0, $offset), "\n") + 1;
-
-                    // Get the actual line number in the original file
-                    // We need to find the matched text in the original content to get accurate line numbers
-                    $actualLineNumber = $this->findLineNumber($originalContent, $matchedText, $lineNumber);
-
-                    // Create detailed message
-                    $message = $this->createMessage($sqlType, $matchedText);
-
-                    // Format error
-                    $error = Formater::formatError(
-                        $file,
-                        $actualLineNumber,
-                        $message,
-                        $config['severity']
-                    );
-
-                    // Store result in appropriate array
-                    $this->storeResult($sqlType, $error);
-                    $this->foundCount++;
-                }
+                $this->processMatches($matches[0], $sqlType, $config, $cleanedContent, $file, $originalContent);
             }
+        }
+    }
+
+    /**
+     * Process regex matches for a SQL type
+     */
+    private function processMatches(
+        array $matches,
+        string $sqlType,
+        array $config,
+        string $cleanedContent,
+        string $file,
+        string $originalContent
+    ): void {
+        foreach ($matches as $match) {
+            $matchedText = $match[0];
+            $offset = $match[1];
+
+            $lineNumber = substr_count(substr($cleanedContent, 0, $offset), "\n") + 1;
+            $actualLineNumber = $this->findLineNumber($originalContent, $matchedText, $lineNumber);
+
+            $message = $this->createMessage($sqlType, $matchedText, $config['recommendation']);
+
+            $error = Formater::formatError($file, $actualLineNumber, $message, $config['severity']);
+            $this->storeResult($sqlType, $error);
+            $this->foundCount++;
         }
     }
 
     /**
      * Find the actual line number in the original content
-     * This is needed because we removed comments, which shifts line numbers
-     *
-     * @param string $originalContent
-     * @param string $matchedText
-     * @param int $approximateLine
-     * @return int
      */
     private function findLineNumber(string $originalContent, string $matchedText, int $approximateLine): int
     {
-        // Try to find the exact match in the original content
         $lines = explode("\n", $originalContent);
-
-        // Search around the approximate line (within a range of +/- 10 lines)
         $searchStart = max(0, $approximateLine - 10);
         $searchEnd = min(count($lines), $approximateLine + 10);
 
         for ($i = $searchStart; $i < $searchEnd; $i++) {
-            // Remove extra whitespace for comparison
             $normalizedLine = preg_replace('/\s+/', ' ', $lines[$i]);
             $normalizedMatch = preg_replace('/\s+/', ' ', $matchedText);
 
             if (str_contains($normalizedLine, trim($normalizedMatch))) {
-                return $i + 1; // Line numbers start at 1
+                return $i + 1;
             }
         }
 
-        // If we can't find it, return the approximate line
         return $approximateLine;
     }
 
     /**
      * Create a descriptive message for the detected SQL
-     *
-     * @param string $sqlType
-     * @param string $matchedText
-     * @return string
      */
-    private function createMessage(string $sqlType, string $matchedText): string
+    private function createMessage(string $sqlType, string $matchedText, string $recommendation): string
     {
         $snippet = $this->truncateSQL($matchedText);
-
-        $recommendations = [
-            'SELECT' => 'Use a repository with getList() or getById() methods, or a collection with addFieldToFilter().',
-            'DELETE' => 'Use a repository with delete() or deleteById() methods.',
-            'INSERT' => 'Use a repository with save() method or the resource model\'s save() method.',
-            'UPDATE' => 'Use a repository with save() method or the resource model\'s save() method.',
-            'JOIN' => 'Use collection join() methods or addFieldToFilter() with proper table relations.',
-        ];
 
         return sprintf(
             'Hard-written %s query detected: "%s". %s',
             $sqlType,
             $snippet,
-            $recommendations[$sqlType] ?? 'Use Magento\'s database abstraction layer.'
+            $recommendation
         );
     }
 
     /**
      * Truncate long SQL for display in messages
-     *
-     * @param string $sql
-     * @return string
      */
     private function truncateSQL(string $sql): string
     {
@@ -300,89 +259,46 @@ class HardWrittenSQL extends AbstractProcessor
     }
 
     /**
-     * Store result in the appropriate array based on SQL type
-     *
-     * @param string $sqlType
-     * @param array $error
+     * Store result in the appropriate category
      */
     private function storeResult(string $sqlType, array $error): void
     {
-        switch ($sqlType) {
-            case 'SELECT':
-                $this->selectResults[] = $error;
-                break;
-            case 'DELETE':
-                $this->deleteResults[] = $error;
-                break;
-            case 'INSERT':
-                $this->insertResults[] = $error;
-                break;
-            case 'UPDATE':
-                $this->updateResults[] = $error;
-                break;
-            case 'JOIN':
-                $this->joinResults[] = $error;
-                break;
+        $this->resultsByType[$sqlType][] = $error;
+    }
+
+    /**
+     * Output counts for each SQL type found
+     */
+    private function reportResults(): void
+    {
+        foreach (self::SQL_PATTERNS as $sqlType => $config) {
+            if (!empty($this->resultsByType[$sqlType])) {
+                CliWriter::resultLine(
+                    'Hard-written ' . $sqlType . ' queries',
+                    count($this->resultsByType[$sqlType]),
+                    $config['severity']
+                );
+            }
         }
     }
 
     /**
      * Generate report with separate entries for each SQL type
-     *
-     * @return array
      */
     public function getReport(): array
     {
         $report = [];
 
-        if (!empty($this->selectResults)) {
-            $report[] = [
-                'ruleId' => self::SQL_PATTERNS['SELECT']['ruleId'],
-                'name' => self::SQL_PATTERNS['SELECT']['name'],
-                'shortDescription' => self::SQL_PATTERNS['SELECT']['shortDescription'],
-                'longDescription' => self::SQL_PATTERNS['SELECT']['longDescription'],
-                'files' => $this->selectResults,
-            ];
-        }
-
-        if (!empty($this->deleteResults)) {
-            $report[] = [
-                'ruleId' => self::SQL_PATTERNS['DELETE']['ruleId'],
-                'name' => self::SQL_PATTERNS['DELETE']['name'],
-                'shortDescription' => self::SQL_PATTERNS['DELETE']['shortDescription'],
-                'longDescription' => self::SQL_PATTERNS['DELETE']['longDescription'],
-                'files' => $this->deleteResults,
-            ];
-        }
-
-        if (!empty($this->insertResults)) {
-            $report[] = [
-                'ruleId' => self::SQL_PATTERNS['INSERT']['ruleId'],
-                'name' => self::SQL_PATTERNS['INSERT']['name'],
-                'shortDescription' => self::SQL_PATTERNS['INSERT']['shortDescription'],
-                'longDescription' => self::SQL_PATTERNS['INSERT']['longDescription'],
-                'files' => $this->insertResults,
-            ];
-        }
-
-        if (!empty($this->updateResults)) {
-            $report[] = [
-                'ruleId' => self::SQL_PATTERNS['UPDATE']['ruleId'],
-                'name' => self::SQL_PATTERNS['UPDATE']['name'],
-                'shortDescription' => self::SQL_PATTERNS['UPDATE']['shortDescription'],
-                'longDescription' => self::SQL_PATTERNS['UPDATE']['longDescription'],
-                'files' => $this->updateResults,
-            ];
-        }
-
-        if (!empty($this->joinResults)) {
-            $report[] = [
-                'ruleId' => self::SQL_PATTERNS['JOIN']['ruleId'],
-                'name' => self::SQL_PATTERNS['JOIN']['name'],
-                'shortDescription' => self::SQL_PATTERNS['JOIN']['shortDescription'],
-                'longDescription' => self::SQL_PATTERNS['JOIN']['longDescription'],
-                'files' => $this->joinResults,
-            ];
+        foreach (self::SQL_PATTERNS as $sqlType => $config) {
+            if (!empty($this->resultsByType[$sqlType])) {
+                $report[] = [
+                    'ruleId' => $config['ruleId'],
+                    'name' => $config['name'],
+                    'shortDescription' => $config['shortDescription'],
+                    'longDescription' => $config['longDescription'],
+                    'files' => $this->resultsByType[$sqlType],
+                ];
+            }
         }
 
         return $report;

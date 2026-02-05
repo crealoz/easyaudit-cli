@@ -38,7 +38,9 @@ class UnusedModules extends AbstractProcessor
                 'ruleId' => 'unusedModules',
                 'name' => 'Unused Modules',
                 'shortDescription' => 'Modules present in codebase but disabled in configuration.',
-                'longDescription' => 'The following modules are present in the codebase but are disabled in app/etc/config.php. Consider removing them to reduce disk space usage and avoid confusion. Disabled modules do not load but still consume storage and may contain security vulnerabilities.',
+                'longDescription' => 'The following modules are present in the codebase but are disabled in '
+                    . 'app/etc/config.php. Consider removing them to reduce disk space usage and avoid confusion. '
+                    . 'Disabled modules do not load but still consume storage and may contain security vulnerabilities.',
                 'files' => $this->disabledModules,
             ];
         }
@@ -119,29 +121,21 @@ class UnusedModules extends AbstractProcessor
 
     /**
      * Find the config.php file path
-     * Tries multiple common locations relative to scan path
+     * Traverses up from scan path until config.php is found or root is reached
      *
      * @return string|null
      */
     private function findConfigPath(): ?string
     {
-        // Get scan path from constant or current directory
         $scanPath = defined('EA_SCAN_PATH') ? EA_SCAN_PATH : getcwd();
+        $currentPath = realpath($scanPath);
 
-        // Possible locations for config.php
-        $possiblePaths = [
-            $scanPath . '/app/etc/config.php',                    // Root of Magento
-            $scanPath . '/../app/etc/config.php',                 // Scanning vendor or app/code
-            $scanPath . '/../../app/etc/config.php',              // Deeper in directory
-            $scanPath . '/../../../app/etc/config.php',           // Even deeper
-            dirname($scanPath) . '/app/etc/config.php',           // Parent directory
-            dirname(dirname($scanPath)) . '/app/etc/config.php',  // Two levels up
-        ];
-
-        foreach ($possiblePaths as $path) {
-            if (file_exists($path)) {
-                return $path;
+        while ($currentPath && $currentPath !== dirname($currentPath)) {
+            $configPath = $currentPath . '/app/etc/config.php';
+            if (file_exists($configPath)) {
+                return $configPath;
             }
+            $currentPath = dirname($currentPath);
         }
 
         return null;
@@ -150,7 +144,7 @@ class UnusedModules extends AbstractProcessor
     /**
      * Extract module name from module.xml file
      *
-     * @param string $filePath
+     * @param  string $filePath
      * @return string|null
      */
     private function extractModuleName(string $filePath): ?string

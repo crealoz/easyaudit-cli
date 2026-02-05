@@ -2,17 +2,18 @@
 
 namespace EasyAudit\Service\PayloadPreparers;
 
+use EasyAudit\Exception\Fixer\CouldNotPreparePayloadException;
 use EasyAudit\Support\Paths;
 
-class GeneralPreparer implements PreparerInterface
+class GeneralPreparer extends AbstractPreparer
 {
     /**
      * Group findings by file path instead of by ruleId.
      * Separates proxy rules (which modify di.xml) from regular file fixes.
      *
-     * @param array $findings Report findings (grouped by ruleId)
-     * @param array $fixables List of fixable ruleIds
-     * @param string|null $selectedRule Optional rule filter (only process this rule)
+     * @param  array       $findings     Report findings (grouped by ruleId)
+     * @param  array       $fixables     List of fixable ruleIds
+     * @param  string|null $selectedRule Optional rule filter (only process this rule)
      * @return array Files grouped by path with their issues (excludes proxy rules)
      */
     public function prepareFiles(array $findings, array $fixables, ?string $selectedRule = null): array
@@ -20,22 +21,12 @@ class GeneralPreparer implements PreparerInterface
         $byFile = [];
 
         foreach ($findings as $finding) {
-            $ruleId = $finding['ruleId'] ?? '';
-            if (!array_key_exists($ruleId, $fixables)) {
+            if (empty($finding['ruleId']) || !$this->canFix($finding['ruleId'], $fixables, $selectedRule) || empty($finding['files'])) {
                 continue;
             }
+            $ruleId = $finding['ruleId'];
 
-            // Filter by selected rule if specified
-            if ($selectedRule !== null && $ruleId !== $selectedRule) {
-                continue;
-            }
-
-            // Skip proxy rules - they are handled by DiPreparer
-            if (array_key_exists($ruleId, self::SPECIFIC_RULES)) {
-                continue;
-            }
-
-            foreach ($finding['files'] ?? [] as $file) {
+            foreach ($finding['files'] as $file) {
                 $filePath = Paths::getAbsolutePath($file['file']);
 
                 if (!isset($byFile[$filePath])) {
@@ -54,19 +45,24 @@ class GeneralPreparer implements PreparerInterface
         return $byFile;
     }
 
+    protected function canFix($ruleId, array $fixables, ?string $selectedRule = null): bool
+    {
+        return !$this->isSpecificRule($ruleId) && $this->isRuleFixable($ruleId, $fixables, $selectedRule);
+    }
+
     /**
      * Prepare payload for a single file in the API expected format.
      * Transforms issues array to rules object with metadata.
      *
-     * @param string $filePath Path to the file
-     * @param array $data File data with issues
+     * @param  string $filePath Path to the file
+     * @param  array  $data     File data with issues
      * @return array Payload with 'content' and 'rules' keys
      */
     public function preparePayload(string $filePath, array $data): array
     {
         $fileContent = @file_get_contents($filePath);
         if ($fileContent === false) {
-            throw new \RuntimeException("Failed to read file: $filePath");
+            throw new CouldNotPreparePayloadException("Failed to read file: $filePath");
         }
 
         // Transform issues array to rules object

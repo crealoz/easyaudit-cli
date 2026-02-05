@@ -7,7 +7,7 @@ class Filenames
     /**
      * Sanitize a file path to create a valid patch filename.
      *
-     * @param string $filePath Original file path
+     * @param  string $filePath Original file path
      * @return string Sanitized filename (without extension)
      */
     public static function sanitize(string $filePath): string
@@ -28,8 +28,8 @@ class Filenames
      * Example: "/var/www/magento/app/code/Vendor/Module/Model/MyClass.php"
      *       -> "app/code/Vendor/Module/Model/MyClass"
      *
-     * @param string $filePath Absolute file path
-     * @param string $projectRoot Project root path
+     * @param  string $filePath    Absolute file path
+     * @param  string $projectRoot Project root path
      * @return string Relative path without extension
      */
     public static function getRelativePath(string $filePath, string $projectRoot): string
@@ -55,8 +55,8 @@ class Filenames
      *
      * Example: "MyClass" + existing ["MyClass.patch"] -> "MyClass-2.patch"
      *
-     * @param string $basePath Base path without .patch extension
-     * @param string $targetDir Target directory where patches are saved
+     * @param  string $basePath  Base path without .patch extension
+     * @param  string $targetDir Target directory where patches are saved
      * @return string Path with sequence suffix if needed (includes .patch extension)
      */
     public static function getSequencedPath(string $basePath, string $targetDir): string

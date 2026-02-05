@@ -36,12 +36,19 @@ class Cacheable extends AbstractProcessor
     {
         $report = [];
         if (!empty($this->results)) {
-            echo "  \033[31m✗\033[0m Cacheable=\"false\" blocks: \033[1;31m" . count($this->results) . "\033[0m\n";
+            $cnt = count($this->results);
+            echo "  \033[31m✗\033[0m Cacheable=\"false\" blocks: \033[1;31m" . $cnt . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'useCacheable',
                 'name' => 'Use of cacheable="false"',
                 'shortDescription' => 'Block with cacheable="false" found in layout XML.',
-                'longDescription' => 'Using cacheable="false" is not recommended for blocks and should be avoided. This attribute prevents the block from being cached, which can significantly impact performance. Only use cacheable="false" if the block must display dynamic, user-specific data (e.g., customer information, cart contents, sales data). For most cases, consider alternative approaches like using customer sections (private content) or ESI (Edge Side Includes).',
+                'longDescription' => 'Using cacheable="false" is not recommended for blocks and '
+                    . 'should be avoided. This attribute prevents the block from being cached, '
+                    . 'which can significantly impact performance. Only use cacheable="false" '
+                    . 'if the block must display dynamic, user-specific data (e.g., customer '
+                    . 'information, cart contents, sales data). For most cases, consider '
+                    . 'alternative approaches like using customer sections (private content) or '
+                    . 'ESI (Edge Side Includes).',
                 'files' => $this->results,
             ];
         }
@@ -81,37 +88,35 @@ class Cacheable extends AbstractProcessor
 
             if (count($blocksNotCached) > 0) {
                 foreach ($blocksNotCached as $block) {
-                    $blockName = (string)$block->attributes()->name;
-
-                    // Skip if block name contains allowed areas
-                    $isAllowed = false;
-                    foreach ($this->allowedAreas as $area) {
-                        if (stripos($blockName, $area) !== false) {
-                            $isAllowed = true;
-                            break;
-                        }
-                    }
-
-                    if ($isAllowed) {
-                        continue;
-                    }
-
-                    $this->foundCount++;
-                    if (empty($fileContent)) {
-                        $fileContent = file_get_contents($file);
-                    }
-
-                    $lineNumber = Content::getLineNumber($fileContent, $blockName);
-
-                    $this->results[] = Formater::formatError(
-                        $file,
-                        $lineNumber,
-                        "Block '$blockName' uses cacheable=\"false\", which can impact performance. Consider using customer sections or ESI instead.",
-                        'note'
-                    );
+                    $fileContent = $this->checkBlock($block, $file, $fileContent);
                 }
             }
         }
+    }
+
+    private function checkBlock($block, $file, $fileContent): string
+    {
+
+        $blockName = (string)$block->attributes()->name;
+
+        // Skip if block name contains allowed areas
+        foreach ($this->allowedAreas as $area) {
+            if (stripos($blockName, $area) !== false) {
+                return $fileContent;
+            }
+        }
+
+        $this->foundCount++;
+        if (empty($fileContent)) {
+            $fileContent = file_get_contents($file);
+        }
+
+        $lineNumber = Content::getLineNumber($fileContent, $blockName);
+
+        $msg = "Block '$blockName' uses cacheable=\"false\", which can impact "
+            . "performance. Consider using customer sections or ESI instead.";
+        $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'note');
+        return $fileContent;
     }
 
     public function getName(): string
@@ -121,12 +126,15 @@ class Cacheable extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Blocks marked with cacheable="false" in layout XML files prevent Magento from caching those blocks, ' .
-               'which can significantly degrade page load times and server performance. Full Page Cache (FPC) is one of ' .
-               'Magento\'s most important performance features. When a block is not cacheable, the entire page often becomes ' .
-               'uncacheable as well. For dynamic, user-specific content, use Magento\'s customer section (private content) ' .
-               'mechanism or Edge Side Includes (ESI) instead. These approaches allow the page to remain cacheable while ' .
-               'still providing personalized content through AJAX requests. Only use cacheable="false" when absolutely ' .
-               'necessary, such as for checkout, cart, or customer account-specific blocks.';
+        return 'Blocks marked with cacheable="false" in layout XML files prevent Magento from '
+            . 'caching those blocks, which can significantly degrade page load times and server '
+            . 'performance. Full Page Cache (FPC) is one of Magento\'s most important '
+            . 'performance features. When a block is not cacheable, the entire page often '
+            . 'becomes uncacheable as well. For dynamic, user-specific content, use Magento\'s '
+            . 'customer section (private content) mechanism or Edge Side Includes (ESI) '
+            . 'instead. These approaches allow the page to remain cacheable while still '
+            . 'providing personalized content through AJAX requests. Only use cacheable="false" '
+            . 'when absolutely necessary, such as for checkout, cart, or customer '
+            . 'account-specific blocks.';
     }
 }

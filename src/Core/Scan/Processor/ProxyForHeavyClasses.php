@@ -47,12 +47,18 @@ class ProxyForHeavyClasses extends AbstractProcessor
         $report = [];
 
         if (!empty($this->results)) {
-            echo "  \033[33m!\033[0m Classes without proxy for heavy dependencies: \033[1;33m" . count($this->results) . "\033[0m\n";
+            $cnt = count($this->results);
+            echo "  \033[33m!\033[0m Classes without proxy for heavy dependencies: ";
+            echo "\033[1;33m" . $cnt . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'noProxyUsedForHeavyClasses',
                 'name' => 'No Proxy for Heavy Classes',
                 'shortDescription' => 'Heavy classes injected without proxy configuration.',
-                'longDescription' => 'Some classes such as Session, Collection, and ResourceModel are heavy and should be injected through a proxy. This avoids performance issues when the class is instantiated. Using proxies improves performance especially when the class is not necessarily used, as the proxy delays instantiation until the first method call.',
+                'longDescription' => 'Some classes such as Session, Collection, and ResourceModel '
+                    . 'are heavy and should be injected through a proxy. This avoids performance '
+                    . 'issues when the class is instantiated. Using proxies improves performance '
+                    . 'especially when the class is not necessarily used, as the proxy delays '
+                    . 'instantiation until the first method call.',
                 'files' => $this->results,
             ];
         }
@@ -122,10 +128,13 @@ class ProxyForHeavyClasses extends AbstractProcessor
                     $lineNumber = Content::getLineNumber($fileContent, $paramName);
                     $diFile = $this->findDiXmlForFile($file);
 
+                    $msg = "Class '$className' injects heavy class '$paramClassName' "
+                        . "(parameter \$$paramName) without a proxy. Consider configuring a "
+                        . "proxy in di.xml to improve performance.";
                     $this->results[] = Formater::formatError(
                         $file,
                         $lineNumber,
-                        "Class '$className' injects heavy class '$paramClassName' (parameter \$$paramName) without a proxy. Consider configuring a proxy in di.xml to improve performance.",
+                        $msg,
                         'error',
                         0,
                         [
@@ -184,7 +193,7 @@ class ProxyForHeavyClasses extends AbstractProcessor
      * Find the di.xml file for a given PHP file path.
      * Looks for etc/di.xml in the module root directory.
      *
-     * @param string $phpFile Path to PHP file
+     * @param  string $phpFile Path to PHP file
      * @return string|null Path to di.xml or null if not found
      */
     private function findDiXmlForFile(string $phpFile): ?string
@@ -259,15 +268,18 @@ class ProxyForHeavyClasses extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor checks if heavy classes are injected without proxy configuration in di.xml. ' .
-               'Heavy classes include Session classes (customer sessions, backend sessions, etc.), Collection classes ' .
-               '(database query collections), and ResourceModel classes (database access layers). These classes are ' .
-               'expensive to instantiate because they may: (1) Initialize database connections, (2) Load configuration, ' .
-               '(3) Start sessions, (4) Query the database. When a heavy class is injected directly, it is instantiated ' .
-               'every time the parent class is created, even if the heavy class is never used. Proxies solve this by ' .
-               'creating a lightweight wrapper that delays instantiation until the first method call. This can ' .
-               'significantly improve performance, especially for classes that are created frequently but don\'t always ' .
-               'use all their dependencies. To fix: add proxy configuration in di.xml like: ' .
-               '<type name="Your\\Class"><arguments><argument name="paramName" xsi:type="object">Heavy\\Class\\Proxy</argument></arguments></type>';
+        return 'This processor checks if heavy classes are injected without proxy configuration '
+            . 'in di.xml. Heavy classes include Session classes (customer sessions, backend '
+            . 'sessions, etc.), Collection classes (database query collections), and ResourceModel '
+            . 'classes (database access layers). These classes are expensive to instantiate '
+            . 'because they may: (1) Initialize database connections, (2) Load configuration, '
+            . '(3) Start sessions, (4) Query the database. When a heavy class is injected '
+            . 'directly, it is instantiated every time the parent class is created, even if '
+            . 'the heavy class is never used. Proxies solve this by creating a lightweight '
+            . 'wrapper that delays instantiation until the first method call. This can '
+            . 'significantly improve performance, especially for classes that are created '
+            . 'frequently but don\'t always use all their dependencies. To fix: add proxy '
+            . 'configuration in di.xml like: <type name="Your\\Class"><arguments><argument '
+            . 'name="paramName" xsi:type="object">Heavy\\Class\\Proxy</argument></arguments></type>';
     }
 }

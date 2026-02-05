@@ -1,4 +1,5 @@
 <?php
+
 namespace EasyAudit\Console\Command;
 
 use EasyAudit\Console\CommandInterface;
@@ -7,6 +8,7 @@ use EasyAudit\Core\Scan\ExternalToolMapping;
 use EasyAudit\Core\Scan\Scanner;
 use EasyAudit\Core\Report\JsonReporter;
 use EasyAudit\Core\Report\SarifReporter;
+use EasyAudit\Service\CliWriter;
 use EasyAudit\Support\ProjectIdentifier;
 
 final class Scan implements CommandInterface
@@ -59,7 +61,7 @@ HELP;
 
         $allowedFormats = ['json', 'sarif'];
         if (!in_array($format, $allowedFormats, true)) {
-            fwrite(STDERR, RED . "Error: Unknown format '$format'. Allowed formats: " . implode(', ', $allowedFormats) . RESET . "\n");
+            CliWriter::errorToStderr("Error: Unknown format '$format'. Allowed formats: " . implode(', ', $allowedFormats));
             return 1;
         }
 
@@ -96,15 +98,15 @@ HELP;
             @mkdir('report', 0775, true);
             file_put_contents('report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json'), $payload);
         }
-        echo "Report was written to " . ($output ?: 'report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json')) . "\n";
+        CliWriter::line("Report was written to " . ($output ?: 'report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json')));
 
         // Print tool suggestions for issues that can be fixed by external tools
         if (!empty($toolSuggestions)) {
-            echo "\n" . YELLOW . "External tool suggestions:" . RESET . "\n";
+            CliWriter::section("External tool suggestions:");
             foreach ($toolSuggestions as $ruleId => $count) {
                 $description = ExternalToolMapping::getDescription($ruleId) ?? $ruleId;
                 $command = ExternalToolMapping::getCommand($ruleId);
-                echo "  $count $description found - run: " . GREEN . "$command" . RESET . "\n";
+                CliWriter::line("  $count $description found - run: " . CliWriter::green($command));
             }
         }
 

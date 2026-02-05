@@ -4,15 +4,16 @@ namespace EasyAudit\Core\Scan;
 
 interface ProcessorInterface
 {
-
     /**
      * Get a unique identifier for the processor. It should be a lowercase string with words separated by hyphens.
+     *
      * @return string
      */
     public function getIdentifier(): string;
 
     /**
      * Process the given files and populate internal state with findings.
+     *
      * @param array $files List of file paths to process.
      */
     public function process(array $files): void;

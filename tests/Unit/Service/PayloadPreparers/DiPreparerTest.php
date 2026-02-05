@@ -2,6 +2,8 @@
 
 namespace EasyAudit\Tests\Service\PayloadPreparers;
 
+use EasyAudit\Exception\Fixer\CouldNotPreparePayloadException;
+use EasyAudit\Service\PayloadPreparers\AbstractPreparer;
 use EasyAudit\Service\PayloadPreparers\DiPreparer;
 use EasyAudit\Service\PayloadPreparers\PreparerInterface;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +20,11 @@ class DiPreparerTest extends TestCase
     public function testImplementsPreparerInterface(): void
     {
         $this->assertInstanceOf(PreparerInterface::class, $this->preparer);
+    }
+
+    public function testExtendsAbstractPreparer(): void
+    {
+        $this->assertInstanceOf(AbstractPreparer::class, $this->preparer);
     }
 
     public function testPrepareFilesHandlesProxyConfiguration(): void
@@ -39,7 +46,8 @@ class DiPreparerTest extends TestCase
             ],
         ];
 
-        $fixables = ['noProxyUsedForHeavyClasses' => 1];
+        // Rules are mapped: noProxyUsedForHeavyClasses -> proxyConfiguration
+        $fixables = ['proxyConfiguration' => 1];
 
         $result = $this->preparer->prepareFiles($findings, $fixables);
 
@@ -84,7 +92,8 @@ class DiPreparerTest extends TestCase
             ],
         ];
 
-        $fixables = ['noProxyUsedForHeavyClasses' => 1];
+        // Rules are mapped: noProxyUsedForHeavyClasses -> proxyConfiguration
+        $fixables = ['proxyConfiguration' => 1];
 
         $result = $this->preparer->prepareFiles($findings, $fixables);
 
@@ -158,7 +167,8 @@ class DiPreparerTest extends TestCase
             ],
         ];
 
-        $fixables = ['noProxyUsedForHeavyClasses' => 1];
+        // Rules are mapped: noProxyUsedForHeavyClasses -> proxyConfiguration
+        $fixables = ['proxyConfiguration' => 1];
 
         $result = $this->preparer->prepareFiles($findings, $fixables);
 
@@ -194,7 +204,8 @@ class DiPreparerTest extends TestCase
             ],
         ];
 
-        $fixables = ['noProxyUsedForHeavyClasses' => 1];
+        // Rules are mapped: noProxyUsedForHeavyClasses -> proxyConfiguration
+        $fixables = ['proxyConfiguration' => 1];
 
         $result = $this->preparer->prepareFiles($findings, $fixables);
 
@@ -222,7 +233,8 @@ class DiPreparerTest extends TestCase
             ],
         ];
 
-        $fixables = ['noProxyUsedInCommands' => 1];
+        // Rules are mapped: noProxyUsedInCommands -> proxyConfiguration
+        $fixables = ['proxyConfiguration' => 1];
 
         $result = $this->preparer->prepareFiles($findings, $fixables);
 
@@ -232,7 +244,8 @@ class DiPreparerTest extends TestCase
 
     public function testPrepareFilesHandlesEmptyFindings(): void
     {
-        $result = $this->preparer->prepareFiles([], ['noProxyUsedForHeavyClasses' => 1]);
+        // Rules are mapped: noProxyUsedForHeavyClasses -> proxyConfiguration
+        $result = $this->preparer->prepareFiles([], ['proxyConfiguration' => 1]);
         $this->assertEmpty($result);
     }
 
@@ -277,7 +290,7 @@ XML;
 
     public function testPreparePayloadThrowsOnMissingFile(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(CouldNotPreparePayloadException::class);
         $this->expectExceptionMessage('Failed to read di.xml file');
 
         $this->preparer->preparePayload('/nonexistent/di.xml', []);
@@ -327,5 +340,46 @@ XML;
         } finally {
             @unlink($tempFile);
         }
+    }
+
+    public function testCanFixOnlyAcceptsSpecificRulesForDiPreparer(): void
+    {
+        // DiPreparer should only handle rules defined in SPECIFIC_RULES that map to DiPreparer
+        $findings = [
+            [
+                'ruleId' => 'noProxyUsedForHeavyClasses',  // This IS a DiPreparer rule
+                'files' => [
+                    [
+                        'file' => '/tmp/test/Model/Product.php',
+                        'metadata' => [
+                            'diFile' => '/tmp/test/etc/di.xml',
+                            'type' => 'Vendor\\Module\\Model\\Product',
+                            'argument' => 'customerSession',
+                            'proxy' => 'Magento\\Customer\\Model\\Session\\Proxy',
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'ruleId' => 'replaceObjectManager',  // This is NOT a DiPreparer rule
+                'files' => [
+                    [
+                        'file' => '/tmp/test/Model/Other.php',
+                        'metadata' => ['line' => 10],
+                    ],
+                ],
+            ],
+        ];
+
+        $fixables = [
+            'proxyConfiguration' => 1,  // Mapped rule for proxy configs
+            'replaceObjectManager' => 1,
+        ];
+
+        $result = $this->preparer->prepareFiles($findings, $fixables);
+
+        // Should only contain proxy rule files grouped by di.xml
+        $this->assertCount(1, $result);
+        $this->assertArrayHasKey('/tmp/test/etc/di.xml', $result);
     }
 }

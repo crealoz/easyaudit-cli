@@ -5,35 +5,32 @@ namespace EasyAudit\Console\Command;
 use EasyAudit\Console\Util\Args;
 use EasyAudit\Console\Util\Confirm;
 use EasyAudit\Console\Util\Filenames;
+use EasyAudit\Exception\CliException;
+use EasyAudit\Exception\Fixer\RuleNotAppliedException;
 use EasyAudit\Service\Api;
+use EasyAudit\Service\CliWriter;
 use EasyAudit\Service\Logger;
 use EasyAudit\Service\PayloadPreparers\DiPreparer;
 use EasyAudit\Service\PayloadPreparers\GeneralPreparer;
 use EasyAudit\Service\PayloadPreparers\PreparerInterface;
+use EasyAudit\Support\Paths;
 use EasyAudit\Support\ProjectIdentifier;
 
 final class FixApply implements \EasyAudit\Console\CommandInterface
 {
     private int $currentFile = 0;
-
     private int $totalFiles = 0;
-
     private Logger $logger;
     private Api $api;
-    private array $diffs;
-
+    private array $diffs = [];
     private int $creditsRemaining = 0;
     private string $projectId = '';
-    /**
-     * @var array|mixed
-     */
     private array $processErrors = [];
 
     public function __construct()
     {
         $this->logger = new Logger();
         $this->api = new Api();
-        $this->diffs = [];
     }
 
     public function getDescription(): string
@@ -84,76 +81,190 @@ HELP;
     public function run(array $argv): int
     {
         [$opts, $rest] = Args::parse($argv);
-        $help      = Args::optBool($opts, 'help', false);
-        if ($help) {
+
+        if (Args::optBool($opts, 'help', false)) {
             fwrite(STDOUT, $this->getHelp() . "\n");
             return 0;
         }
-        $confirm     = Args::optBool($opts, 'confirm');
-        $patchOut    = \EasyAudit\Support\Paths::expandTilde(Args::optStr($opts, 'patch-out', 'patches'));
-        $format      = Args::optStr($opts, 'format', 'json');
-        $projectName = Args::optStr($opts, 'project-name');
-        $scanPath    = Args::optStr($opts, 'scan-path', '.');
-        $fixByRule   = Args::optBool($opts, 'fix-by-rule');
 
-        $source = $rest ?? '';
-        if ($source === '' && posix_isatty(STDIN)) {
-            fwrite(STDERR, "Error: No report file provided.\n");
-            fwrite(STDERR, "Usage: easyaudit fix-apply <path-to-report.json>\n");
-            fwrite(STDERR, "   or: cat report.json | easyaudit fix-apply\n");
-            return 64;
-        }
-        $json = $source === '' ? stream_get_contents(STDIN) : @file_get_contents($source);
-        if (!$json) {
-            fwrite(STDERR, "Invalid or empty report.\n");
-            return 65;
+        $options = $this->parseOptions($opts);
+        $errors = $this->loadReport($rest, $options['patchOut']);
+        $metaData = $errors['metadata'];
+        $scanPath = $this->resolveScanPath($options['scanPath'], $metaData);
+        unset($errors['metadata']);
+
+        $this->projectId = ProjectIdentifier::resolve($options['projectName'], $scanPath);
+        CliWriter::line("Project: " . CliWriter::blue($this->projectId));
+
+        $fixables = $this->api->getAllowedType();
+        $selectedRule = $options['fixByRule'] ? $this->handleRuleSelection($errors, $fixables) : null;
+
+        $prepared = $this->prepareFiles($errors, $fixables, $selectedRule);
+        if (empty($prepared['byFile']) && empty($prepared['byDiFile'])) {
+            throw new CliException("No fixable issues found in the report.");
         }
 
-        if (!is_dir($patchOut) && !@mkdir($patchOut, 0775, true)) {
-            fwrite(STDERR, "Failed to create patch directory: $patchOut\n");
-            return 73;
+        $cost = $this->calculateCost($prepared['byFile'], $prepared['byDiFile'], $fixables);
+        $this->totalFiles = count($prepared['byFile']) + count($prepared['byDiFile']);
+
+        $startingCredits = $this->checkCreditsAndConfirm($cost, $options['confirm']);
+        if ($startingCredits === false) {
+            throw new CliException('Aborted by user');
         }
+
+        $this->executeFixing($prepared);
+        $this->reportProcessingResults();
+
+        if (empty($this->diffs)) {
+            throw new CliException("No patches were generated.");
+        }
+
+        $savedCount = $this->savePatches($options['patchOut'], $scanPath, $options['fixByRule'], $selectedRule);
+        $this->showSummary($savedCount, $options['patchOut'], $startingCredits, $cost);
+
+        return 0;
+    }
+
+    /**
+     * Parse command line options into structured array.
+     */
+    private function parseOptions(array $opts): array
+    {
+        return [
+            'confirm' => Args::optBool($opts, 'confirm'),
+            'patchOut' => Paths::expandTilde(Args::optStr($opts, 'patch-out', 'patches')),
+            'projectName' => Args::optStr($opts, 'project-name'),
+            'scanPath' => Args::optStr($opts, 'scan-path', '.'),
+            'fixByRule' => Args::optBool($opts, 'fix-by-rule'),
+        ];
+    }
+
+    /**
+     * Resolve scan path from options or report metadata.
+     */
+    private function resolveScanPath(string $scanPath, array $metaData): string
+    {
+        if ($scanPath === '.' && isset($metaData['scan_path'])) {
+            return $metaData['scan_path'];
+        }
+        return $scanPath;
+    }
+
+    /**
+     * Prepare files for fixing using both preparers.
+     */
+    private function prepareFiles(array $errors, array $fixables, ?string $selectedRule = null): array
+    {
         $generalPreparer = new GeneralPreparer();
         $diPreparer = new DiPreparer();
 
-        $errors = json_decode($json, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            fwrite(STDERR, "Failed to parse JSON report: " . json_last_error_msg() . "\n");
-            return 65;
-        }
+        return [
+            'byFile' => $generalPreparer->prepareFiles($errors, $fixables, $selectedRule),
+            'byDiFile' => $diPreparer->prepareFiles($errors, $fixables, $selectedRule),
+            'generalPreparer' => $generalPreparer,
+            'diPreparer' => $diPreparer,
+        ];
+    }
 
-        // Try to get scan path from report metadata if not provided
-        if ($scanPath === '.' && isset($errors['metadata']['scan_path'])) {
-            $scanPath = $errors['metadata']['scan_path'];
-        }
+    /**
+     * Execute the fixing process.
+     */
+    private function executeFixing(array $prepared): void
+    {
+        CliWriter::line("Requesting patches from EasyAudit API...");
+        $this->processPayloads($prepared['generalPreparer'], $prepared['byFile']);
+        $this->processPayloads($prepared['diPreparer'], $prepared['byDiFile']);
+    }
 
-        // Resolve project identifier
-        $this->projectId = ProjectIdentifier::resolve($projectName, $scanPath);
-        echo "Project: " . BLUE . $this->projectId . RESET . "\n";
+    /**
+     * Report processing results to CLI.
+     */
+    private function reportProcessingResults(): void
+    {
+        CliWriter::clearLine();
+        CliWriter::line(CliWriter::green("Processed $this->totalFiles file(s)") . " | Credits remaining: " . CliWriter::green((string)$this->creditsRemaining));
 
-        $fixables = $this->api->getAllowedType();
-
-        // If --fix-by-rule, show interactive rule selection
-        $selectedRule = null;
-        if ($fixByRule) {
-            $selectedRule = $this->selectRule($errors, $fixables);
-            if ($selectedRule === null) {
-                fwrite(STDOUT, "No rule selected. Cancelled.\n");
-                return 0;
+        if (!empty($this->processErrors)) {
+            $cnt = count($this->processErrors);
+            if ($cnt <= 10) {
+                foreach ($this->processErrors as $error) {
+                    CliWriter::warning($error);
+                }
             }
-            echo "\n" . YELLOW . "Warning: Apply these patches before requesting another rule." . RESET . "\n\n";
+            $this->logger->logErrors($this->processErrors);
+            CliWriter::info("$cnt file(s) failed. Errors were saved in logs/fix-apply-errors.log.");
+        }
+    }
+
+    /**
+     * Load report from stdin or file, parse JSON, create output directory.
+     *
+     * @throws CliException
+     */
+    private function loadReport(?string $source, string $patchOut): array
+    {
+        $json = $this->readReportSource($source);
+
+        if ($json === false || $json === '') {
+            throw new CliException("Invalid or empty report.", 65);
         }
 
-        // Group findings by file (regular fixes), di.xml (proxy fixes), and duplicate preferences
-        $byFile = $generalPreparer->prepareFiles($errors, $fixables, $selectedRule);
-        $byDiFile = $diPreparer->prepareFiles($errors, $fixables, $selectedRule);
-
-        if (empty($byFile) && empty($byDiFile)) {
-            fwrite(STDOUT, "No fixable issues found in the report.\n");
-            return 0;
+        if (!is_dir($patchOut) && !@mkdir($patchOut, 0775, true)) {
+            throw new CliException("Failed to create patch directory: $patchOut", 73);
         }
 
-        // Count total cost based on issue types
+        $data = json_decode($json, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new CliException("Failed to parse JSON report: " . json_last_error_msg(), 65);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Read report content from file or stdin.
+     *
+     * @throws CliException
+     */
+    private function readReportSource(?string $source): string|false
+    {
+        $hasSource = $source !== null && $source !== '';
+
+        if (!$hasSource && stream_isatty(STDIN)) {
+            throw new CliException(
+                "No report file provided.\nUsage: easyaudit fix-apply <path-to-report.json>\n   or: cat report.json | easyaudit fix-apply",
+                64
+            );
+        }
+
+        return $hasSource ? @file_get_contents($source) : stream_get_contents(STDIN);
+    }
+
+    /**
+     * Handle --fix-by-rule interactive selection with output messages.
+     */
+    private function handleRuleSelection(array $errors, array $fixables): ?string
+    {
+        try {
+            $selectedRule = $this->selectRule($errors, $fixables);
+        } catch (RuleNotAppliedException $e) {
+            CliWriter::line();
+            CliWriter::error($e->getMessage());
+            $selectedRule = null;
+        }
+
+        CliWriter::line();
+        CliWriter::warning("Warning: Apply these patches before requesting another rule.");
+        CliWriter::line();
+
+        return $selectedRule;
+    }
+
+    /**
+     * Calculate total credit cost for all fixes.
+     */
+    private function calculateCost(array $byFile, array $byDiFile, array $fixables): int
+    {
         $cost = 0;
         foreach ($byFile as $data) {
             foreach ($data['issues'] as $issue) {
@@ -163,93 +274,75 @@ HELP;
         // Proxy fixes: 1 credit per di.xml file
         $cost += count($byDiFile);
 
-        // Check remaining credits before requesting PR
+        return $cost;
+    }
+
+    /**
+     * Check credit balance and confirm with user.
+     *
+     * @return int|false Starting credits or false if cancelled
+     */
+    private function checkCreditsAndConfirm(int $cost, bool $confirm): int|false
+    {
         $startingCredits = null;
 
-        // Total items to process (individual files + di.xml files + duplicate groups)
-        $this->totalFiles = count($byFile) + count($byDiFile);
         try {
             $creditInfo = $this->api->getRemainingCredits($this->projectId);
             $startingCredits = $this->creditsRemaining = $creditInfo['credits'];
-            // Use validated project_id from middleware if available
+
             if (isset($creditInfo['project_id'])) {
                 $this->projectId = $creditInfo['project_id'];
             }
-            echo "Your balance: " . ($this->creditsRemaining >= $cost ? GREEN : YELLOW) . $this->creditsRemaining . RESET . " credits\n";
-            $msg = "Apply fixes to $this->totalFiles file(s)";
-            if (!empty($byDiFile)) {
-                $msg .= " (" . count($byDiFile) . " di.xml)";
-            }
-            $msg .= " and consume $cost credits?";
 
+            $color = $this->creditsRemaining >= $cost ? 'green' : 'yellow';
+            CliWriter::labelValue("Your balance", $this->creditsRemaining . " credits", $color);
+
+            $msg = "Apply fixes to $this->totalFiles file(s) and consume $cost credits?";
             if (!$confirm && !Confirm::confirm($msg)) {
-                fwrite(STDOUT, "Cancelled.\n");
-                return 0;
+                return false;
             }
-
-            echo "Requesting patches from EasyAudit API...\n";
 
             if ($this->creditsRemaining < $cost) {
-                echo YELLOW . "Warning: Insufficient credits. A partial patch will be generated if possible." . RESET . "\n";
-                echo "Purchase more credits at: " . BLUE . "https://shop.crealoz.fr/shop/credits-for-easyaudit-fixer/" . RESET . "\n";
+                CliWriter::warning("Warning: Insufficient credits. A partial patch will be generated if possible.");
+                $url = "https://shop.crealoz.fr/shop/credits-for-easyaudit-fixer/";
+                CliWriter::line("Purchase more credits at: " . CliWriter::blue($url));
                 if (!$confirm && !Confirm::confirm("Continue anyway?")) {
-                    fwrite(STDOUT, "Cancelled.\n");
-                    return 0;
+                    return false;
                 }
             }
         } catch (\Exception $e) {
-            echo YELLOW . "Warning: Could not check credit balance: " . $e->getMessage() . RESET . "\n";
+            CliWriter::warning("Warning: Could not check credit balance: " . $e->getMessage());
         }
 
-        // Process regular PHP files
-        $this->preparePayload($generalPreparer, $byFile);
+        return $startingCredits ?? 0;
+    }
 
-        // Process di.xml files for proxy configurations
-        $this->preparePayload($diPreparer, $byDiFile);
-
-        // Clear the progress bar line and show summary
-        echo "\r" . str_repeat(' ', 100) . "\r";
-        echo GREEN . "Processed $this->totalFiles file(s)" . RESET;
-        echo " | Credits remaining: " . GREEN . $this->creditsRemaining . RESET;
-        echo "\n";
-
-        // Log errors to file if any
-        if (!empty($this->processErrors)) {
-            $this->logger->logErrors($this->processErrors);
-            echo YELLOW . count($this->processErrors) . " file(s) failed. See logs/fix-apply-errors.log for details." . RESET . "\n";
-        }
-
-        if (empty($this->diffs)) {
-            echo YELLOW . "No patches were generated." . RESET . "\n";
-            return 0;
-        }
-
-        // Resolve scan path to absolute for relative path calculation
+    /**
+     * Save patch files to output directory.
+     */
+    private function savePatches(string $patchOut, string $scanPath, bool $fixByRule, ?string $selectedRule): int
+    {
         $scanPathAbsolute = realpath($scanPath) ?: $scanPath;
-
-        // Save patches using new path structure
         $savedCount = 0;
+
         foreach ($this->diffs as $filePath => $diffContent) {
             if (empty($diffContent)) {
                 continue;
             }
 
-            // Get relative path (e.g., "app/code/Vendor/Module/Model/MyClass")
             $relativePath = Filenames::getRelativePath($filePath, $scanPathAbsolute);
 
             if ($fixByRule && $selectedRule !== null) {
-                // Per-rule mode: patches/{ruleId}/{relativePath}.patch (with sequencing)
                 $targetDir = rtrim($patchOut, '/') . '/' . $selectedRule;
                 $patchFilename = Filenames::getSequencedPath($relativePath, $targetDir);
             } else {
-                // Default mode: patches/{relativePath}.patch
                 $targetDir = rtrim($patchOut, '/');
                 $patchFilename = $relativePath . '.patch';
             }
 
-            // Create nested directories if needed
             $patchPath = $targetDir . '/' . $patchFilename;
             $patchDir = dirname($patchPath);
+
             if (!is_dir($patchDir) && !@mkdir($patchDir, 0775, true)) {
                 fwrite(STDERR, "Failed to create directory: $patchDir\n");
                 continue;
@@ -259,23 +352,32 @@ HELP;
             $savedCount++;
         }
 
-        echo GREEN . "Saved $savedCount patch file(s) to $patchOut." . RESET . "\n";
-
-        // Calculate and display real cost from actual credits consumed
-        if ($startingCredits !== null) {
-            $realCost = $startingCredits - $this->creditsRemaining;
-            echo "Total real cost: " . GREEN . $realCost . RESET . " credits\n";
-        } else {
-            echo "Estimated cost: $cost credits\n";
-        }
-
-        return 0;
+        return $savedCount;
     }
 
-    private function preparePayload(PreparerInterface $preparer, $files)
+    /**
+     * Display final summary with saved patches and cost.
+     */
+    private function showSummary(int $savedCount, string $patchOut, ?int $startingCredits, int $cost): void
+    {
+        CliWriter::success("Saved $savedCount patch file(s) to $patchOut.");
+
+        if ($startingCredits !== null && $startingCredits > 0) {
+            $realCost = $startingCredits - $this->creditsRemaining;
+            CliWriter::labelValue("Total real cost", $realCost . " credits");
+        } else {
+            CliWriter::line("Estimated cost: $cost credits");
+        }
+    }
+
+    /**
+     * Process files through API and collect diffs.
+     */
+    private function processPayloads(PreparerInterface $preparer, array $files): void
     {
         foreach ($files as $filePath => $data) {
-            $this->renderProgressBar(basename($filePath), 'processing');
+            CliWriter::progressBar($this->currentFile, $this->totalFiles, basename($filePath), 'processing', $this->creditsRemaining);
+            $this->currentFile++;
 
             try {
                 $payload = $preparer->preparePayload($filePath, $data);
@@ -290,54 +392,21 @@ HELP;
                 }
             } catch (\Exception $e) {
                 $errorMsg = $e->getMessage();
-                // Log payload when "no changes" error occurs
                 if (str_contains($errorMsg, 'No changes were generated')) {
                     $this->logger->logNoChanges($filePath, $payload['rules'], $payload['content']);
                 }
                 $this->processErrors[$filePath] = $errorMsg;
-                continue;
             }
         }
     }
 
     /**
-     * Render a progress bar with status.
-     *
-     * @param string $filename Current file being processed
-     * @param string $status Status text
-     */
-    private function renderProgressBar(string $filename, string $status): void
-    {
-        $barWidth = 30;
-        $progress = $this->currentFile / $this->totalFiles;
-        $filled = (int) round($barWidth * $progress);
-        $empty = $barWidth - $filled;
-
-        $bar = GREEN . str_repeat('█', $filled) . RESET . str_repeat('░', $empty);
-        $percent = str_pad((int) ($progress * 100), 3, ' ', STR_PAD_LEFT);
-
-        // Truncate filename if too long
-        $maxFilenameLen = 25;
-        if (strlen($filename) > $maxFilenameLen) {
-            $filename = '...' . substr($filename, -($maxFilenameLen - 3));
-        }
-        $filename = str_pad($filename, $maxFilenameLen);
-
-        $line = "\r[$bar] {$percent}% | $this->currentFile/$this->totalFiles | $filename | $status";
-        if ($this->creditsRemaining !== null) {
-            $line .= " | {$this->creditsRemaining} credits";
-        }
-        $this->currentFile++;
-
-        echo $line;
-    }
-
-    /**
      * Display interactive rule selection menu.
      *
-     * @param array $errors Parsed report data (array of findings)
-     * @param array $fixables Fixable rule types
+     * @param  array $errors   Parsed report data (array of findings)
+     * @param  array $fixables Fixable rule types
      * @return string|null Selected rule ID or null if cancelled
+     * @throws RuleNotAppliedException
      */
     private function selectRule(array $errors, array $fixables): ?string
     {
@@ -352,36 +421,35 @@ HELP;
         }
 
         if (empty($ruleCounts)) {
-            return null;
+            throw new RuleNotAppliedException('No rules were found.');
         }
 
         // Display menu
-        echo "\nWhich rule do you want to fix?\n";
+        CliWriter::line("\nWhich rule do you want to fix?");
         $index = 1;
         $ruleMap = [];
         foreach ($ruleCounts as $ruleId => $count) {
             $ruleMap[$index] = $ruleId;
-            echo "[" . BLUE . $index . RESET . "] " . $ruleId . " (" . $count . " issue" . ($count > 1 ? 's' : '') . ")\n";
+            CliWriter::menuItem($index, $ruleId, $count);
             $index++;
         }
-        echo "[" . BLUE . "0" . RESET . "] Cancel\n";
+        CliWriter::menuItem(0, "Cancel");
         echo "> ";
 
         // Read user input
         $input = trim(fgets(STDIN));
 
         if ($input === '0' || $input === '') {
-            return null;
+            throw new RuleNotAppliedException('User did not choose any rule.');
         }
 
         $selection = (int) $input;
         if (!isset($ruleMap[$selection])) {
-            echo YELLOW . "Invalid selection." . RESET . "\n";
-            return null;
+            throw new RuleNotAppliedException('User selection does not exist.');
         }
 
         $selectedRule = $ruleMap[$selection];
-        echo "Selected: " . GREEN . $selectedRule . RESET . "\n";
+        CliWriter::line("Selected: " . CliWriter::green($selectedRule));
 
         return $selectedRule;
     }

@@ -9,6 +9,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-02-05
+
+### Added
+- **`CliWriter` service** for centralized CLI output formatting:
+  - Colored output methods: `success()`, `error()`, `warning()`, `info()`
+  - Inline color helpers: `green()`, `blue()`, `bold()`
+  - Progress bar with credits display
+  - Menu item rendering for interactive selection
+  - Result line with severity icons
+- **New exceptions** for better error handling:
+  - `CliException` with exit code support
+  - `CouldNotPreparePayloadException` for payload preparation failures
+  - `CurlResponseException` for API response errors
+  - `RuleNotAppliedException` for rule selection errors
+  - `NoChildrenException` for class hierarchy queries
+- **`AbstractPreparer`** base class for payload preparers with shared logic
+- **Rule mapping** via `MAPPED_RULES` constant for proxy configuration rules
+- `phpcs.xml` configuration for PSR-12 code style enforcement
+- Required PHP extensions declared in `composer.json`: `ext-curl`, `ext-libxml`, `ext-simplexml`
+- Codecov token authentication in GitHub Actions workflow
+
+### Changed
+- **`FixApply` command** completely refactored:
+  - Extracted into smaller focused methods
+  - Uses `CliWriter` for all output
+  - Proper exception handling instead of exit codes
+  - Better separation of concerns
+- **`UseOfObjectManager` processor** improved detection:
+  - Now correctly identifies useless imports vs actual usage
+  - Won't false-positive on unrelated `->get()` or `->create()` calls
+  - Uses class constants for ObjectManager patterns
+  - Leverages `Classes` utility for constructor analysis
+- **`SpecificClassInjection` processor** simplified:
+  - Consolidated 7 result arrays into `resultsByCategory` with `RULE_CONFIGS`
+  - Single `addViolation()` method replaces multiple add methods
+  - Uses `CliWriter::resultLine()` for output
+- **Payload preparers** now extend `AbstractPreparer`:
+  - `GeneralPreparer` and `DiPreparer` share common logic
+  - Throws typed exceptions instead of `RuntimeException`
+- **`UnusedModules` processor** improved config.php detection:
+  - Now traverses up from scan path until config.php is found
+  - Removed hardcoded relative path guessing
+- **`Auth` command** simplified option parsing using `Args` utility
+- **`Args` utility** refactored with `parseLongOption()` and `parseShortFlags()` methods
+- Exit code now respects exception code via `$e->getCode() ?: 1`
+- All processors updated for PSR-12 compliance (line length ≤150)
+
+### Removed
+- **`credits` command** (unused, stub only)
+- **`fix-plan` command** (unused, stub only)
+- Redundant checks like `hasChildren()` and `getChildren()` in SpecificClassInjection (uses `Classes::getChildren()`)
+- Removed implicit `EnvAuthException` throw when credentials are empty
+
+### Fixed
+- ObjectManager useless import detection no longer triggers API fix attempts
+- PSR-12 violations across all source files
+- Missing newlines at end of files
+
+---
+
 ## [0.1.2] - 2026-02-03
 
 ### Added

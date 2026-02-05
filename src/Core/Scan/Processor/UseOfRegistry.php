@@ -59,7 +59,10 @@ class UseOfRegistry extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'The Registry pattern is deprecated in Magento 2 and should not be used. It acts as a global object holder that bypasses dependency injection, creates hidden dependencies, and makes code harder to test. Use constructor injection for explicit dependencies or data persistors for session-like storage instead.';
+        return 'The Registry pattern is deprecated in Magento 2 and should not be used. It acts as a global '
+            . 'object holder that bypasses dependency injection, creates hidden dependencies, and makes code harder '
+            . 'to test. Use constructor injection for explicit dependencies or data persistors for session-like '
+            . 'storage instead.';
     }
 
     /**
@@ -95,7 +98,7 @@ class UseOfRegistry extends AbstractProcessor
     /**
      * Analyze a single file for Registry usage
      *
-     * @param string $file File path
+     * @param string $file        File path
      * @param string $fileContent File contents
      */
     private function analyzeFile(string $file, string $fileContent): void
@@ -130,7 +133,7 @@ class UseOfRegistry extends AbstractProcessor
     /**
      * Extract the class name from file content
      *
-     * @param string $fileContent
+     * @param  string $fileContent
      * @return string
      */
     private function extractClassName(string $fileContent): string
@@ -147,10 +150,10 @@ class UseOfRegistry extends AbstractProcessor
     /**
      * Record a Registry usage
      *
-     * @param string $file File path
+     * @param string $file        File path
      * @param string $fileContent File content
-     * @param string $className Class name
-     * @param string $paramName Parameter name containing Registry
+     * @param string $className   Class name
+     * @param string $paramName   Parameter name containing Registry
      */
     private function addRegistryUsage(
         string $file,
@@ -187,7 +190,9 @@ class UseOfRegistry extends AbstractProcessor
             'ruleId' => 'magento.code.use-of-registry',
             'name' => 'Use of Registry',
             'shortDescription' => 'Magento\Framework\Registry is deprecated',
-            'longDescription' => 'The Registry pattern is deprecated in Magento 2. It bypasses dependency injection, creates hidden dependencies, makes code harder to test, and can lead to unexpected state mutations. Use constructor injection for explicit dependencies or data persistors for session-like storage instead.',
+            'longDescription' => 'The Registry pattern is deprecated in Magento 2. It bypasses dependency injection, '
+                . 'creates hidden dependencies, makes code harder to test, and can lead to unexpected state mutations. '
+                . 'Use constructor injection for explicit dependencies or data persistors for session-like storage instead.',
             'files' => $this->registryUsages,
         ]];
     }

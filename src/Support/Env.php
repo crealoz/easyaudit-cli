@@ -1,4 +1,5 @@
 <?php
+
 namespace EasyAudit\Support;
 
 use EasyAudit\Exception\EnvAuthException;
@@ -32,9 +33,6 @@ final class Env
             }
         } else {
             $token = Env::getStoredCredentials();
-            if ($token === null || $token === '') {
-                throw new EnvAuthException('No API credential found.');
-            }
             $authHeader = 'Bearer ' . $token;
         }
         return $authHeader;
@@ -48,33 +46,36 @@ final class Env
      */
     public static function storeCredentials(string $key, string $hash): void
     {
-        Paths::updateConfigFile([
+        Paths::updateConfigFile(
+            [
             'key'  => $key,
             'hash' => $hash,
-        ]);
+            ]
+        );
     }
 
     /**
      * Retrieve stored API credentials from the config file.
      *
-     * @return string|null The credentials in "key:hash" format or null if not found or malformed.
+     * @return string The credentials in "key:hash" format or null if not found or malformed.
+     * @throws EnvAuthException
      */
-    public static function getStoredCredentials(): ?string
+    public static function getStoredCredentials(): string
     {
         $f = Paths::configFile();
         if (!is_file($f) || !is_readable($f)) {
-            echo RED . "Config file not found or not readable: $f ". RESET ." \n";
-            return null;
+            echo RED . "Config file not found or not readable: $f " . RESET . " \n";
+            throw new EnvAuthException('No API credential found.');
         }
         $content = file_get_contents($f);
         if ($content === false) {
-            echo RED . "Failed to read config file: $f". RESET ."\n";
-            return null;
+            echo RED . "Failed to read config file: $f" . RESET . "\n";
+            throw new EnvAuthException('No API credential found.');
         }
         $data = json_decode($content, true);
         if (!is_array($data) || !isset($data['key']) || !isset($data['hash'])) {
-            echo RED . "Config file is malformed: $f". RESET ."\n";
-            return null;
+            echo RED . "Config file is malformed: $f" . RESET . "\n";
+            throw new EnvAuthException('No API credential found.');
         }
         return $data['key'] . ':' . $data['hash'];
     }

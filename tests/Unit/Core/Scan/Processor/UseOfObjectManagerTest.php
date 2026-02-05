@@ -112,13 +112,79 @@ class UseOfObjectManagerTest extends TestCase
         $report = $this->processor->getReport();
 
         $this->assertIsArray($report);
-        if (!empty($report)) {
-            $firstRule = $report[0];
-            $this->assertArrayHasKey('ruleId', $firstRule);
-            $this->assertArrayHasKey('name', $firstRule);
-            $this->assertArrayHasKey('shortDescription', $firstRule);
-            $this->assertArrayHasKey('files', $firstRule);
-        }
+        $this->assertNotEmpty($report);
+
+        $firstRule = $report[0];
+        $this->assertArrayHasKey('ruleId', $firstRule);
+        $this->assertArrayHasKey('name', $firstRule);
+        $this->assertArrayHasKey('shortDescription', $firstRule);
+        $this->assertArrayHasKey('files', $firstRule);
+    }
+
+    public function testGetReportReturnsSeparateRulesForUsageAndImport(): void
+    {
+        // Process both bad usage file AND useless import file
+        $badFile = $this->fixturesPath . '/BadObjectManagerUsage.php';
+        $uselessImportFile = $this->fixturesPath . '/UselessImport.php';
+        $files = ['php' => [$badFile, $uselessImportFile]];
+
+        ob_start();
+        $this->processor->process($files);
+        ob_end_clean();
+
+        $report = $this->processor->getReport();
+
+        // Should have 2 separate rule entries
+        $this->assertCount(2, $report, 'Report should contain 2 separate rules (usage error + useless import warning)');
+
+        // Collect rule IDs
+        $ruleIds = array_column($report, 'ruleId');
+
+        // Should have both rule types
+        $this->assertContains('replaceObjectManager', $ruleIds, 'Should have replaceObjectManager rule for usage errors');
+        $this->assertContains('magento.code.useless-object-manager-import', $ruleIds, 'Should have useless import rule');
+    }
+
+    public function testUselessImportRuleIdIsCorrect(): void
+    {
+        $uselessImportFile = $this->fixturesPath . '/UselessImport.php';
+        $files = ['php' => [$uselessImportFile]];
+
+        ob_start();
+        $this->processor->process($files);
+        ob_end_clean();
+
+        $report = $this->processor->getReport();
+
+        $this->assertCount(1, $report, 'Should have exactly 1 rule for useless import');
+        $this->assertEquals('magento.code.useless-object-manager-import', $report[0]['ruleId']);
+        $this->assertEquals('Useless ObjectManager Import', $report[0]['name']);
+
+        // Check that files have warning severity
+        $this->assertNotEmpty($report[0]['files']);
+        $this->assertEquals('warning', $report[0]['files'][0]['severity']);
+    }
+
+    public function testBadUsageOnlyReturnsErrorRule(): void
+    {
+        // When only processing the bad usage file (has import + usage)
+        $badFile = $this->fixturesPath . '/BadObjectManagerUsage.php';
+        $files = ['php' => [$badFile]];
+
+        ob_start();
+        $this->processor->process($files);
+        ob_end_clean();
+
+        $report = $this->processor->getReport();
+
+        // Should only have the error rule (usage), not warning (useless import)
+        // because the import IS used in the bad file
+        $this->assertCount(1, $report, 'Should have exactly 1 rule for bad usage');
+        $this->assertEquals('replaceObjectManager', $report[0]['ruleId']);
+
+        // Check that files have error severity
+        $this->assertNotEmpty($report[0]['files']);
+        $this->assertEquals('error', $report[0]['files'][0]['severity']);
     }
 
     public function testProcessWithEmptyFilesArray(): void

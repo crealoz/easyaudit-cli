@@ -13,7 +13,7 @@ define('BOLD', "\033[1m");
 
 set_exception_handler(function (Throwable $e) {
     fwrite(STDERR, RED . "Error: " . $e->getMessage() . RESET . "\n");
-    exit(1);
+    exit($e->getCode() ?: 1);
 });
 
 set_error_handler(function ($severity, $message, $file, $line) {
@@ -40,8 +40,6 @@ spl_autoload_register(function ($class) {
 $commands = [
     'scan' => fn() => new \EasyAudit\Console\Command\Scan(),
     'auth' => fn() => new \EasyAudit\Console\Command\Auth(),
-    'credits' => fn() => new \EasyAudit\Console\Command\Credits(),
-    'fix-plan' => fn() => new \EasyAudit\Console\Command\FixPlan(),
     'fix-apply' => fn() => new \EasyAudit\Console\Command\FixApply(),
     'activate-self-signed' => fn() => new \EasyAudit\Console\Command\ActivateSelfSigned(),
 ];

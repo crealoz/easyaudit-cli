@@ -32,8 +32,8 @@ class Logger
      * Log when API returns no changes for a file.
      * Saves the request payload for debugging.
      *
-     * @param string $filePath Path to the file
-     * @param array $rules Rules that were sent to API
+     * @param string $filePath    Path to the file
+     * @param array  $rules       Rules that were sent to API
      * @param string $fileContent Content that was sent to API
      */
     public function logNoChanges(string $filePath, array $rules, string $fileContent): void

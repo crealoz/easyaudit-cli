@@ -1,7 +1,9 @@
 <?php
+
 namespace EasyAudit\Core\Scan;
 
 use EasyAudit\Service\Api;
+use EasyAudit\Service\CliWriter;
 use EasyAudit\Support\Paths;
 
 class Scanner
@@ -61,10 +63,8 @@ class Scanner
         foreach ($this->allowedExtensions as $ext) {
             $files[$ext] = [];
         }
-        echo "\n\033[1;35m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n";
-        echo "\033[1;35m  EasyAudit Scan\033[0m\n";
-        echo "\033[1;35m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n";
-        echo "  Path: \033[1;37m$path\033[0m\n";
+        CliWriter::header("EasyAudit Scan");
+        CliWriter::line("  Path: " . CliWriter::bold($path));
         if (!is_dir($path) && !is_file($path)) {
             $findings[] = "Path '$path' is not a valid directory or file.";
         }
@@ -83,19 +83,20 @@ class Scanner
             /** @var ProcessorInterface $processor */
             foreach ($processors as $processor) {
                 if ($onlyFixable && !in_array($processor, $fixableTypes)) {
-                    echo "\033[2m  ○ Skipping " . $processor->getName() . " (not fixable)\033[0m\n";
+                    CliWriter::skipped("Skipping " . $processor->getName() . " (not fixable)");
                     continue;
                 }
 
                 if (!isset($files[$processor->getFileType()])) {
-                    echo "\033[2m  ○ Skipping " . $processor->getName() . " (file type " . $processor->getFileType() . " excluded)\033[0m\n";
+                    $fileType = $processor->getFileType();
+                    CliWriter::skipped("Skipping " . $processor->getName() . " (file type $fileType excluded)");
                     continue;
                 }
                 if (empty($files[$processor->getFileType()])) {
-                    echo "\033[2m  ○ Skipping " . $processor->getName() . " (no " . $processor->getFileType() . " files)\033[0m\n";
+                    CliWriter::skipped("Skipping " . $processor->getName() . " (no " . $processor->getFileType() . " files)");
                     continue;
                 }
-                echo "\n\033[1;36m▶ " . $processor->getName() . "\033[0m\n";
+                CliWriter::processorHeader($processor->getName());
                 $processor->process($files);
                 if ($processor->getFoundCount() > 0) {
                     foreach ($processor->getReport() as $report) {
@@ -121,8 +122,9 @@ class Scanner
 
     /**
      * Recursively scan paths and return list of files to scan. Exclude dirs, files and extensions as configured.
-     * @param string $path
-     * @param array $files
+     *
+     * @param  string $path
+     * @param  array  $files
      * @return array
      */
     private function scanPaths(string $path, array $files): array
@@ -162,6 +164,7 @@ class Scanner
     /**
      * Get the list of processors to run on the files. Processors implement ProcessorInterface and are located in the
      * EasyAudit\Core\Scan\Processors namespace.
+     *
      * @return array
      */
     private function getProcessors(): array

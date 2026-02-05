@@ -50,7 +50,11 @@ class Helpers extends AbstractProcessor
                 'ruleId' => 'extensionOfAbstractHelper',
                 'name' => 'Extension of AbstractHelper',
                 'shortDescription' => 'Helper class extends deprecated AbstractHelper.',
-                'longDescription' => 'Helper classes should not extend Magento\\Framework\\App\\Helper\\AbstractHelper. This pattern is deprecated in Magento 2. Helpers should be simple utility classes without framework dependencies, or better yet, logic should be moved to ViewModels for presentation or to Service classes for business logic.',
+                'longDescription' => 'Helper classes should not extend Magento\\Framework\\App\\'
+                    . 'Helper\\AbstractHelper. This pattern is deprecated in Magento 2. Helpers '
+                    . 'should be simple utility classes without framework dependencies, or better '
+                    . 'yet, logic should be moved to ViewModels for presentation or to Service '
+                    . 'classes for business logic.',
                 'files' => $this->extensionOfAbstractHelper,
             ];
         }
@@ -60,7 +64,10 @@ class Helpers extends AbstractProcessor
                 'ruleId' => 'helpersInsteadOfViewModels',
                 'name' => 'Helpers Instead of ViewModels',
                 'shortDescription' => 'Template uses helper instead of ViewModel.',
-                'longDescription' => 'Templates should not use helpers for presentation logic. ViewModels provide a clearer separation of concerns, are more testable, and follow modern Magento 2 best practices. Move presentation logic from helpers to ViewModels.',
+                'longDescription' => 'Templates should not use helpers for presentation logic. '
+                    . 'ViewModels provide a clearer separation of concerns, are more testable, '
+                    . 'and follow modern Magento 2 best practices. Move presentation logic from '
+                    . 'helpers to ViewModels.',
                 'files' => $this->helpersInsteadOfViewModels,
             ];
         }
@@ -96,10 +103,14 @@ class Helpers extends AbstractProcessor
 
         // Output counts for each rule type
         if (!empty($this->extensionOfAbstractHelper)) {
-            echo "  \033[33m!\033[0m Helper classes extending AbstractHelper: \033[1;33m" . count($this->extensionOfAbstractHelper) . "\033[0m\n";
+            $cnt = count($this->extensionOfAbstractHelper);
+            echo "  \033[33m!\033[0m Helper classes extending AbstractHelper: ";
+            echo "\033[1;33m" . $cnt . "\033[0m\n";
         }
         if (!empty($this->helpersInsteadOfViewModels)) {
-            echo "  \033[31m✗\033[0m Helpers used in templates (use ViewModels): \033[1;31m" . count($this->helpersInsteadOfViewModels) . "\033[0m\n";
+            $cnt = count($this->helpersInsteadOfViewModels);
+            echo "  \033[31m✗\033[0m Helpers used in templates (use ViewModels): ";
+            echo "\033[1;31m" . $cnt . "\033[0m\n";
         }
     }
 
@@ -186,18 +197,23 @@ class Helpers extends AbstractProcessor
 
         if ($usedInPhtml) {
             // Helper extends AbstractHelper AND is used in phtml - worse violation
+            $cnt = count($phtmlFiles);
+            $msg = "Helper class '$className' extends AbstractHelper and is used in $cnt "
+                . "template(s). Move presentation logic to ViewModel instead.";
             $this->helpersInsteadOfViewModels[] = Formater::formatError(
                 $phpFile,
                 $lineNumber,
-                "Helper class '$className' extends AbstractHelper and is used in " . count($phtmlFiles) . " template(s). Move presentation logic to ViewModel instead.",
+                $msg,
                 'error'
             );
         } else {
             // Helper extends AbstractHelper but not used in templates - still bad but less severe
+            $msg = "Helper class '$className' extends deprecated AbstractHelper. Consider "
+                . "refactoring to a simple utility class or service.";
             $this->extensionOfAbstractHelper[] = Formater::formatError(
                 $phpFile,
                 $lineNumber,
-                "Helper class '$className' extends deprecated AbstractHelper. Consider refactoring to a simple utility class or service.",
+                $msg,
                 'warning'
             );
         }
@@ -252,16 +268,19 @@ class Helpers extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor identifies deprecated Helper patterns in Magento 2: (1) Helper classes extending ' .
-               'AbstractHelper - In Magento 1, helpers extended AbstractHelper to access framework functionality. ' .
-               'In Magento 2, this pattern is deprecated. Helpers should be lightweight utility classes with no ' .
-               'framework dependencies, or logic should be moved to appropriate layers (ViewModels for presentation, ' .
-               'Services for business logic). (2) Helpers used in phtml templates - Templates using $this->helper() ' .
-               'should migrate to ViewModels. ViewModels provide: better testability, clearer separation of concerns, ' .
-               'no template engine coupling, reusability across multiple templates, type safety. To modernize: ' .
-               'For presentation logic in templates: create ViewModels and inject them via layout XML. ' .
-               'For business logic: create Service classes in Model/Service directory. ' .
-               'For simple utilities: create standalone utility classes with static methods or injected dependencies. ' .
-               'Some core Magento helpers are exempted as they are still part of the public API.';
+        return 'This processor identifies deprecated Helper patterns in Magento 2: (1) Helper '
+            . 'classes extending AbstractHelper - In Magento 1, helpers extended AbstractHelper '
+            . 'to access framework functionality. In Magento 2, this pattern is deprecated. '
+            . 'Helpers should be lightweight utility classes with no framework dependencies, '
+            . 'or logic should be moved to appropriate layers (ViewModels for presentation, '
+            . 'Services for business logic). (2) Helpers used in phtml templates - Templates '
+            . 'using $this->helper() should migrate to ViewModels. ViewModels provide: better '
+            . 'testability, clearer separation of concerns, no template engine coupling, '
+            . 'reusability across multiple templates, type safety. To modernize: For '
+            . 'presentation logic in templates: create ViewModels and inject them via layout '
+            . 'XML. For business logic: create Service classes in Model/Service directory. '
+            . 'For simple utilities: create standalone utility classes with static methods or '
+            . 'injected dependencies. Some core Magento helpers are exempted as they are still '
+            . 'part of the public API.';
     }
 }

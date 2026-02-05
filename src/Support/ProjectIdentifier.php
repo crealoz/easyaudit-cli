@@ -8,8 +8,8 @@ final class ProjectIdentifier
      * Resolve project identifier with datetime suffix.
      * Priority: CLI argument → composer.json → module.xml → uniqid
      *
-     * @param string|null $cliArg Explicit project name from CLI
-     * @param string $scanPath Path to scan directory for auto-detection
+     * @param  string|null $cliArg   Explicit project name from CLI
+     * @param  string      $scanPath Path to scan directory for auto-detection
      * @return string Project identifier with datetime suffix (e.g., my-project-20260114-145655)
      */
     public static function resolve(?string $cliArg, string $scanPath): string

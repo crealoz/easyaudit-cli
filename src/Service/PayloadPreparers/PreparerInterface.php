@@ -12,21 +12,26 @@ interface PreparerInterface
         'noProxyUsedForHeavyClasses' => DiPreparer::class,
     ];
 
+    public const MAPPED_RULES = [
+        'noProxyUsedInCommands' => 'proxyConfiguration',
+        'noProxyUsedForHeavyClasses' => 'proxyConfiguration',
+    ];
+
     /**
      * Prepare files and sends the prepared array
      *
-     * @param array $errors
+     * @param array $findings
      * @param array $fixables
      * @param string|null $selectedRule Optional rule filter (only process this rule)
      * @return mixed
      */
-    public function prepareFiles(array $errors, array $fixables, ?string $selectedRule = null): array;
+    public function prepareFiles(array $findings, array $fixables, ?string $selectedRule = null): array;
 
     /**
      * Prepare payload that can be sent to easy audit fixer for a specific file.
      *
-     * @param string $filePath
-     * @param array $data
+     * @param  string $filePath
+     * @param  array  $data
      * @return array
      */
     public function preparePayload(string $filePath, array $data): array;

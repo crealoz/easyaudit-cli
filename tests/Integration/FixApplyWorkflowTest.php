@@ -203,8 +203,9 @@ class FixApplyWorkflowTest extends TestCase
             ],
         ];
 
+        // Rules are mapped: noProxyUsedForHeavyClasses -> proxyConfiguration
         $fixables = [
-            'noProxyUsedForHeavyClasses' => 1,
+            'proxyConfiguration' => 1,
             'replaceObjectManager' => 1,
         ];
 

@@ -1,4 +1,5 @@
 <?php
+
 namespace EasyAudit\Console\Command;
 
 use EasyAudit\Console\Util\Args;
@@ -57,43 +58,26 @@ HELP;
         [$opts, ] = Args::parse($argv);
         if (Args::optBool($opts, 'help')) {
             fwrite(STDOUT, $this->getHelp() . "\n");
-            return 0;
-        }
+        } else {
+            // non-interactive mode: --key=... --hash=...
+            $key = Args::optStr($opts, 'key');
+            $hash = Args::optStr($opts, 'hash');
 
-        // non-interactive mode: --key=... --hash=...
-        $key = null;
-        $hash = null;
-        foreach ($argv as $a) {
-            if (str_starts_with($a, '--key=')) {
-                $key = substr($a, 8);
-                if ($key === '') {
-                    fwrite(STDERR, "Empty token.\n");
-                    return 64;
-                }
+            if ($key === null && $hash === null) {
+                $credentials = $this->askSecret();
+                $key = $credentials['key'];
+                $hash = $credentials['hash'];
             }
-            if (str_starts_with($a, '--hash=')) {
-                $hash = substr($a, 7);
-                if ($hash === '') {
-                    fwrite(STDERR, "Empty hash.\n");
-                    return 64;
-                }
+
+            // interactive
+            try {
+                Env::storeCredentials($key, $hash);
+            } catch (\Exception $e) {
+                fwrite(STDERR, "Could not write ~/.config/easyaudit/config.json\n");
+                return 74;
             }
+            fwrite(STDOUT, "Auth saved.\n");
         }
-
-        if ($key === null && $hash === null) {
-            $credentials = $this->askSecret();
-            $key = $credentials['key'];
-            $hash = $credentials['hash'];
-        }
-
-        // interactive
-        try {
-            Env::storeCredentials($key, $hash);
-        } catch (\Exception $e) {
-            fwrite(STDERR, "Could not write ~/.config/easyaudit/config.json\n");
-            return 74;
-        }
-        fwrite(STDOUT, "Auth saved.\n");
         return 0;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace EasyAudit\Service;
 
+use EasyAudit\Exception\Fixer\CurlResponseException;
 use EasyAudit\Exception\GitHubAuthException;
 use EasyAudit\Exception\RateLimitedException;
 use EasyAudit\Exception\UpgradeRequiredException;
@@ -11,6 +12,7 @@ use RuntimeException;
 
 /**
  * Class Api will contain methods to interact with an external API. https://api.crealoz.fr
+ *
  * @package EasyAudit\Service
  */
 class Api
@@ -26,12 +28,12 @@ class Api
     /**
      * Request a fix for a single file from the API.
      *
-     * @param string $filePath Path to the file being fixed
-     * @param string $content File content
-     * @param array $rules Object of {ruleId: metadata}
-     * @param string $projectId Project identifier for grouping requests
+     * @param  string $filePath  Path to the file being fixed
+     * @param  string $content   File content
+     * @param  array  $rules     Object of {ruleId: metadata}
+     * @param  string $projectId Project identifier for grouping requests
      * @return array Response including 'diff' (string), 'status', 'credits_remaining'
-     * @throws RuntimeException
+     * @throws CurlResponseException
      * @throws GitHubAuthException
      */
     public function requestFilefix(string $filePath, string $content, array $rules, string $projectId): array
@@ -56,30 +58,20 @@ class Api
             throw new RuntimeException('Failed to encode request body.');
         }
 
-        $ch = curl_init(Env::getApiUrl() . $entryPoint);
-        if ($ch === false) {
-            throw new RuntimeException('Failed to initialize cURL.');
-        }
-
-        $headers = $this->buildHeaders([
-            'Content-Type: application/json',
-        ]);
-
-        curl_setopt_array($ch, [
-            CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => $headers,
-            CURLOPT_POSTFIELDS     => $json,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 120,
-            CURLOPT_SSL_VERIFYPEER => !$this->selfSigned,
-            CURLOPT_SSL_VERIFYHOST => $this->selfSigned ? 0 : 2,
-        ]);
+        $ch = $this->initCurl(
+            $entryPoint,
+            [
+                'Content-Type: application/json'
+            ],
+            $json,
+            120
+        );
 
         $data = $this->manageResponse($ch, allowPartial: true);
 
         // API returns diffs as object keyed by file path
         if (!isset($data['diffs']) || !is_array($data['diffs'])) {
-            throw new RuntimeException('Invalid response structure from API: missing diffs field.');
+            throw new CurlResponseException('Invalid response structure from API: missing diffs field.');
         }
 
         // Extract the diff for the single file we sent
@@ -96,7 +88,7 @@ class Api
      * Get remaining credits from the API.
      * Also validates the project_id with middleware.
      *
-     * @param string $projectId Project identifier for validation
+     * @param  string $projectId Project identifier for validation
      * @return array {credits: int, credit_expiration_date: string, licence_expiration_date: string, project_id: string}
      * @throws RuntimeException
      * @throws GitHubAuthException
@@ -110,24 +102,13 @@ class Api
         $body = ['project_id' => $projectId];
         $json = json_encode($body, JSON_UNESCAPED_SLASHES);
 
-        $ch = curl_init(Env::getApiUrl() . $entryPoint);
-        if ($ch === false) {
-            throw new RuntimeException('Failed to initialize cURL.');
-        }
-
-        $headers = $this->buildHeaders([
-            'Content-Type: application/json',
-        ]);
-
-        curl_setopt_array($ch, [
-            CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => $headers,
-            CURLOPT_POSTFIELDS     => $json,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 30,
-            CURLOPT_SSL_VERIFYPEER => !$this->selfSigned,
-            CURLOPT_SSL_VERIFYHOST => $this->selfSigned ? 0 : 2,
-        ]);
+        $ch = $this->initCurl(
+            $entryPoint,
+            [
+                'Content-Type: application/json'
+            ],
+            $json
+        );
 
         $data = $this->manageResponse($ch);
 
@@ -141,8 +122,9 @@ class Api
 
     /**
      * Fetch the allowed types from the API.
+     *
      * @return array
-     * @throws RuntimeException
+     * @throws CurlResponseException
      * @throws GitHubAuthException
      */
     public function getAllowedType(): array
@@ -151,28 +133,14 @@ class Api
 
         $entryPoint = 'api/allowed-types';
 
-        $ch = curl_init(Env::getApiUrl().$entryPoint);
-        if ($ch === false) {
-            throw new RuntimeException('Failed to initialize cURL.');
-        }
+        $ch = $this->initCurl($entryPoint);
 
-        $headers = $this->buildHeaders();
-
-        curl_setopt_array($ch, [
-            CURLOPT_POST            => true,
-            CURLOPT_HTTPHEADER      => $headers,
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_TIMEOUT         => 30,
-            CURLOPT_SSL_VERIFYPEER  => !$this->selfSigned,
-            CURLOPT_SSL_VERIFYHOST  => $this->selfSigned ? 0 : 2,
-        ]);
-
-        echo BLUE . "calling API at " . Env::getApiUrl().$entryPoint . RESET . "\n";
+        echo BLUE . "calling API at " . Env::getApiUrl() . $entryPoint . RESET . "\n";
 
         $data = $this->manageResponse($ch);
         $types = $data['types'] ?? null;
         if (!is_array($types)) {
-            throw new RuntimeException('Invalid response structure from API.');
+            throw new CurlResponseException('Invalid response structure from API.');
         }
 
         echo "EasyAudit can fix these types:\n";
@@ -183,10 +151,38 @@ class Api
         return $types;
     }
 
+    private function initCurl(string $entryPoint, array $additionalHeaders = [], ?string $postFields = null, int $timeout = 30): \CurlHandle
+    {
+        $ch = curl_init(Env::getApiUrl() . $entryPoint);
+        if ($ch === false) {
+            throw new RuntimeException('Failed to initialize cURL.');
+        }
+
+        $headers = $this->buildHeaders($additionalHeaders);
+
+        $optArray = [
+                CURLOPT_POST           => true,
+                CURLOPT_HTTPHEADER     => $headers,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => $timeout,
+                CURLOPT_SSL_VERIFYPEER => !$this->selfSigned,
+                CURLOPT_SSL_VERIFYHOST => $this->selfSigned ? 0 : 2,
+            ];
+        if ($postFields !== null) {
+            $optArray[CURLOPT_POSTFIELDS] = $postFields;
+        }
+
+        curl_setopt_array(
+            $ch,
+            $optArray
+        );
+        return $ch;
+    }
+
     /**
      * Build headers array with version information.
      *
-     * @param array $additionalHeaders Extra headers to include
+     * @param  array $additionalHeaders Extra headers to include
      * @return array Complete headers array
      */
     private function buildHeaders(array $additionalHeaders = []): array
@@ -210,8 +206,8 @@ class Api
     /**
      * Handle cURL response and validate status.
      *
-     * @param \CurlHandle $ch cURL handle
-     * @param bool $allowPartial When true, accepts "partial" status (insufficient credits)
+     * @param  \CurlHandle $ch           cURL handle
+     * @param  bool        $allowPartial When true, accepts "partial" status (insufficient credits)
      * @return array Decoded response data
      * @throws RuntimeException
      * @throws UpgradeRequiredException
@@ -225,7 +221,7 @@ class Api
         if ($responseBody === false) {
             $err = curl_error($ch);
             curl_close($ch);
-            throw new RuntimeException('cURL error: ' . ($err !== '' ? $err : 'unknown'));
+            throw new CurlResponseException('cURL error: ' . ($err !== '' ? $err : 'unknown'));
         }
         curl_close($ch);
 
@@ -254,12 +250,12 @@ class Api
                 500 => 'Internal server error',
             ];
             $label = $map[$httpCode] ?? 'Unknown error';
-            throw new RuntimeException("HTTP $httpCode: $label");
+            throw new CurlResponseException("HTTP $httpCode: $label");
         }
 
         $data = json_decode($responseBody, true);
         if (!is_array($data)) {
-            throw new RuntimeException('Invalid JSON from API.');
+            throw new CurlResponseException('Invalid JSON from API.');
         }
 
         $status = $data['status'] ?? '';
@@ -267,7 +263,7 @@ class Api
 
         if (!in_array($status, $validStatuses, true)) {
             $msg = (string) ($data['message'] ?? 'API error');
-            throw new RuntimeException($msg);
+            throw new CurlResponseException($msg);
         }
 
         return $data;

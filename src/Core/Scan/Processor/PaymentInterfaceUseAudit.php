@@ -4,6 +4,7 @@ namespace EasyAudit\Core\Scan\Processor;
 
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Service\CliWriter;
 
 /**
  * Class PaymentInterfaceUseAudit
@@ -33,12 +34,20 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
         $report = [];
 
         if (!empty($this->results)) {
-            echo "  \033[33m!\033[0m Deprecated payment method implementations: \033[1;33m" . count($this->results) . "\033[0m\n";
+            $cnt = count($this->results);
+            CliWriter::resultLine('Deprecated payment method implementations', $cnt, 'warning');
             $report[] = [
                 'ruleId' => 'extensionOfAbstractMethod',
                 'name' => 'Extension of Deprecated Payment AbstractMethod',
                 'shortDescription' => 'Payment method extends deprecated AbstractMethod class.',
-                'longDescription' => 'The class extends \\Magento\\Payment\\Model\\Method\\AbstractMethod which is deprecated in Magento 2. This approach to creating payment methods is no longer recommended. Modern payment methods should implement Magento\\Payment\\Api\\Data\\PaymentMethodInterface or extend one of the newer payment method base classes. Using the deprecated AbstractMethod can lead to compatibility issues with newer Magento versions and may not support newer payment features.',
+                'longDescription' => 'The class extends \\Magento\\Payment\\Model\\Method\\'
+                    . 'AbstractMethod which is deprecated in Magento 2. This approach to '
+                    . 'creating payment methods is no longer recommended. Modern payment '
+                    . 'methods should implement Magento\\Payment\\Api\\Data\\'
+                    . 'PaymentMethodInterface or extend one of the newer payment method base '
+                    . 'classes. Using the deprecated AbstractMethod can lead to compatibility '
+                    . 'issues with newer Magento versions and may not support newer payment '
+                    . 'features.',
                 'files' => $this->results,
             ];
         }
@@ -48,7 +57,8 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
 
     public function getMessage(): string
     {
-        return 'Detects payment methods that extend the deprecated AbstractMethod class instead of using PaymentMethodInterface.';
+        return 'Detects payment methods that extend the deprecated AbstractMethod class '
+            . 'instead of using PaymentMethodInterface.';
     }
 
     public function process(array $files): void
@@ -75,12 +85,10 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
                 // Find the line number of the class declaration
                 $lineNumber = $this->findClassDeclarationLine($content);
 
-                $this->results[] = Formater::formatError(
-                    $file,
-                    $lineNumber,
-                    'This payment method extends the deprecated \\Magento\\Payment\\Model\\Method\\AbstractMethod. Consider implementing PaymentMethodInterface or using a modern payment base class instead.',
-                    'error'
-                );
+                $msg = 'This payment method extends the deprecated '
+                    . '\\Magento\\Payment\\Model\\Method\\AbstractMethod. Consider implementing '
+                    . 'PaymentMethodInterface or using a modern payment base class instead.';
+                $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'error');
             }
         }
     }
@@ -109,8 +117,10 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
         }
 
         // Fallback: find first occurrence of "extends"
-        return Content::getLineNumber($content, 'extends \\Magento\\Payment\\Model\\Method\\AbstractMethod')
-            ?: Content::getLineNumber($content, 'extends Magento\\Payment\\Model\\Method\\AbstractMethod')
+        $search1 = 'extends \\Magento\\Payment\\Model\\Method\\AbstractMethod';
+        $search2 = 'extends Magento\\Payment\\Model\\Method\\AbstractMethod';
+        return Content::getLineNumber($content, $search1)
+            ?: Content::getLineNumber($content, $search2)
             ?: 1;
     }
 
@@ -121,18 +131,22 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor identifies payment methods that extend the deprecated AbstractMethod class. ' .
-               'In early versions of Magento 2, payment methods were created by extending ' .
-               '\\Magento\\Payment\\Model\\Method\\AbstractMethod. This approach is now deprecated and not recommended. ' .
-               'Modern Magento 2 payment methods should: (1) Implement Magento\\Payment\\Api\\Data\\PaymentMethodInterface ' .
-               'for better API compatibility, (2) Use adapter patterns for third-party payment gateways, (3) Leverage ' .
-               'newer payment method base classes that provide better separation of concerns. The deprecated AbstractMethod ' .
-               'class may not support newer payment features such as: GraphQL support, modern payment flows, improved ' .
-               'authorization and capture patterns, better vault (saved payment) support. Continuing to use AbstractMethod ' .
-               'can lead to: compatibility issues with future Magento versions, inability to use newer payment features, ' .
-               'difficulty integrating with modern payment service providers, maintenance challenges as the ecosystem moves ' .
-               'away from this pattern. To modernize: review the Magento DevDocs for current payment method implementation ' .
-               'patterns, consider using payment gateway adapters, implement PaymentMethodInterface, or extend from newer ' .
-               'base classes provided by Magento or reputable third-party libraries.';
+        return 'This processor identifies payment methods that extend the deprecated '
+            . 'AbstractMethod class. In early versions of Magento 2, payment methods were '
+            . 'created by extending \\Magento\\Payment\\Model\\Method\\AbstractMethod. This '
+            . 'approach is now deprecated and not recommended. Modern Magento 2 payment methods '
+            . 'should: (1) Implement Magento\\Payment\\Api\\Data\\PaymentMethodInterface for '
+            . 'better API compatibility, (2) Use adapter patterns for third-party payment '
+            . 'gateways, (3) Leverage newer payment method base classes that provide better '
+            . 'separation of concerns. The deprecated AbstractMethod class may not support '
+            . 'newer payment features such as: GraphQL support, modern payment flows, improved '
+            . 'authorization and capture patterns, better vault (saved payment) support. '
+            . 'Continuing to use AbstractMethod can lead to: compatibility issues with future '
+            . 'Magento versions, inability to use newer payment features, difficulty integrating '
+            . 'with modern payment service providers, maintenance challenges as the ecosystem '
+            . 'moves away from this pattern. To modernize: review the Magento DevDocs for '
+            . 'current payment method implementation patterns, consider using payment gateway '
+            . 'adapters, implement PaymentMethodInterface, or extend from newer base classes '
+            . 'provided by Magento or reputable third-party libraries.';
     }
 }

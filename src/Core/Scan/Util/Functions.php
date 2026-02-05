@@ -6,10 +6,10 @@ class Functions
 {
     /**
      * Returns the content of the function from the given code that starts at the specified line.
-     * @todo Maybe too greedy, needs more testing
      *
-     * @param string $code
-     * @param int $startLine
+     *
+     * @param  string $code
+     * @param  int    $startLine
      * @return array
      */
     public static function getFunctionContent(string $code, int $startLine): array
@@ -62,7 +62,6 @@ class Functions
         $firstBraceFound = false;
 
         foreach ($lines as $line) {
-
             if (preg_match('/^\s*(?:public|protected|private)?\s*function\s+\w+\s*\(/i', $line)) {
                 /**
                  * We are at the function declaration line let's check if the opening brace is on the same line and

@@ -150,7 +150,7 @@ class CiEnvironmentDetector
     /**
      * Get environment variable value.
      *
-     * @param string $name Environment variable name
+     * @param  string $name Environment variable name
      * @return string|null Value or null if not set
      */
     private function getEnv(string $name): ?string

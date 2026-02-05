@@ -1,4 +1,5 @@
 <?php
+
 namespace EasyAudit\Support;
 
 final class Paths
@@ -7,8 +8,8 @@ final class Paths
     {
         $xdg = getenv('XDG_CONFIG_HOME');
         $base = $xdg && $xdg !== '' ? $xdg : rtrim(getenv('HOME') ?: sys_get_temp_dir(), '/') . '/.config';
-        if (!is_dir($base. '/easyaudit') && !@mkdir($base. '/easyaudit', 0700, true) && !is_dir($base. '/easyaudit')) {
-            throw new \RuntimeException('Failed to create config directory: ' . $base. '/easyaudit');
+        if (!is_dir($base . '/easyaudit') && !@mkdir($base . '/easyaudit', 0700, true) && !is_dir($base . '/easyaudit')) {
+            throw new \RuntimeException('Failed to create config directory: ' . $base . '/easyaudit');
         }
         return $base . '/easyaudit';
     }
@@ -63,7 +64,8 @@ final class Paths
 
     /**
      * Expand tilde (~) to user's home directory.
-     * @param string $path
+     *
+     * @param  string $path
      * @return string
      */
     public static function expandTilde(string $path): string
@@ -90,7 +92,8 @@ final class Paths
      * If the path is already absolute, return it as is.
      * If the path contains ../ or ./, resolve it.
      * Expands ~ to home directory.
-     * @param string $path
+     *
+     * @param  string $path
      * @return string
      */
     public static function getAbsolutePath(string $path): string
@@ -113,6 +116,6 @@ final class Paths
         }
 
         $cwd = getcwd() ?: '/';
-        return rtrim($cwd, '/').'/'.ltrim($path, './');
+        return rtrim($cwd, '/') . '/' . ltrim($path, './');
     }
 }

@@ -32,12 +32,16 @@ class Preferences extends AbstractProcessor
     {
         $report = [];
         if (!empty($this->results)) {
-            echo "  \033[31m✗\033[0m Duplicate preferences: \033[1;31m" . count($this->results) . "\033[0m\n";
+            $cnt = count($this->results);
+            echo "  \033[31m✗\033[0m Duplicate preferences: \033[1;31m" . $cnt . "\033[0m\n";
             $report[] = [
                 'ruleId' => 'duplicatePreferences',
                 'name' => 'Duplicate Preferences',
                 'shortDescription' => 'Multiple preferences found for the same interface/class.',
-                'longDescription' => 'Multiple preferences found for the same interface/class. This can lead to unexpected behavior as only the last one will be applied, depending on module load sequence. Please remove duplicate preferences or check that sequence is done correctly in module declaration.',
+                'longDescription' => 'Multiple preferences found for the same interface/class. '
+                    . 'This can lead to unexpected behavior as only the last one will be '
+                    . 'applied, depending on module load sequence. Please remove duplicate '
+                    . 'preferences or check that sequence is done correctly in module declaration.',
                 'files' => $this->results,
             ];
         }
@@ -58,66 +62,111 @@ class Preferences extends AbstractProcessor
             return;
         }
 
-        // First pass: collect all preferences
-        foreach ($files['di'] as $file) {
-            $previousUseErrors = libxml_use_internal_errors(true);
-            $xml = simplexml_load_file($file);
-            libxml_clear_errors();
-            libxml_use_internal_errors($previousUseErrors);
+        $this->collectPreferences($files['di']);
+        $this->reportDuplicates();
+    }
 
+    /**
+     * First pass: collect all preferences from di.xml files
+     */
+    private function collectPreferences(array $diFiles): void
+    {
+        foreach ($diFiles as $file) {
+            $xml = $this->loadXml($file);
             if ($xml === false) {
                 continue;
             }
 
-            $preferences = $xml->xpath('//preference');
-            foreach ($preferences as $preference) {
-                $preferenceFor = (string)$preference['for'];
-                $preferenceType = (string)$preference['type'];
-
-                if (empty($preferenceFor) || empty($preferenceType)) {
-                    continue;
-                }
-
-                if (!isset($this->existingPreferences[$preferenceFor])) {
-                    $this->existingPreferences[$preferenceFor] = [];
-                }
-
-                $this->existingPreferences[$preferenceFor][] = [
-                    'type' => $preferenceType,
-                    'file' => $file
-                ];
+            foreach ($xml->xpath('//preference') as $preference) {
+                $this->addPreference($file, $preference);
             }
         }
+    }
 
-        // Second pass: report duplicates
+    /**
+     * Load XML file with error suppression
+     *
+     * @param string $file
+     * @return \SimpleXMLElement|false
+     */
+    private function loadXml(string $file): \SimpleXMLElement|false
+    {
+        $previousUseErrors = libxml_use_internal_errors(true);
+        $xml = simplexml_load_file($file);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousUseErrors);
+
+        return $xml;
+    }
+
+    /**
+     * Add a preference to the collection
+     */
+    private function addPreference(string $file, \SimpleXMLElement $preference): void
+    {
+        $preferenceFor = (string)$preference['for'];
+        $preferenceType = (string)$preference['type'];
+
+        if (empty($preferenceFor) || empty($preferenceType)) {
+            return;
+        }
+
+        if (!isset($this->existingPreferences[$preferenceFor])) {
+            $this->existingPreferences[$preferenceFor] = [];
+        }
+
+        $this->existingPreferences[$preferenceFor][] = [
+            'type' => $preferenceType,
+            'file' => $file
+        ];
+    }
+
+    /**
+     * Second pass: report interfaces with multiple preferences
+     */
+    private function reportDuplicates(): void
+    {
         foreach ($this->existingPreferences as $interface => $preferences) {
-            if (count($preferences) > 1) {
-                $this->foundCount++;
-
-                // Group by file for better reporting
-                $fileList = [];
-                foreach ($preferences as $pref) {
-                    $file = $pref['file'];
-                    $type = $pref['type'];
-
-                    if (!isset($fileList[$file])) {
-                        $fileContent = file_get_contents($file);
-                        $lineNumber = Content::getLineNumber($fileContent, $interface);
-
-                        $this->results[] = Formater::formatError(
-                            $file,
-                            $lineNumber,
-                            "Multiple preferences found for '$interface'. This preference uses '$type'. Total preferences: " . count($preferences),
-                            'error',
-                            0,
-                            [
-                                'interface' => $interface,
-                            ]
-                        );
-                        $fileList[$file] = true;
-                    }
-                }
+            if (count($preferences) <= 1) {
+                continue;
             }
+
+            $this->reportDuplicatePreference($interface, $preferences);
+        }
+    }
+
+    /**
+     * Report a single duplicate preference, one result per unique file
+     */
+    private function reportDuplicatePreference(string $interface, array $preferences): void
+    {
+        $this->foundCount++;
+        $totalCount = count($preferences);
+        $reportedFiles = [];
+
+        foreach ($preferences as $pref) {
+            $file = $pref['file'];
+
+            // Avoid reporting the same file twice for this interface
+            if (isset($reportedFiles[$file])) {
+                continue;
+            }
+            $reportedFiles[$file] = true;
+
+            $fileContent = file_get_contents($file);
+            $lineNumber = Content::getLineNumber($fileContent, $interface);
+
+            $msg = "Multiple preferences found for '$interface'. This preference "
+                . "uses '{$pref['type']}'. Total preferences: $totalCount";
+
+            $this->results[] = Formater::formatError(
+                $file,
+                $lineNumber,
+                $msg,
+                'error',
+                0,
+                ['interface' => $interface]
+            );
         }
     }
 
@@ -128,10 +177,12 @@ class Preferences extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Multiple preferences for the same interface or class can lead to unexpected behavior in Magento 2. ' .
-               'When multiple modules define preferences for the same interface, only the last one (based on module load sequence) ' .
-               'will be applied. This can cause hard-to-debug issues, especially when modules are loaded in a different order ' .
-               'in different environments. It is recommended to use a single preference per interface, or to carefully manage ' .
-               'module dependencies using the sequence tag in module.xml to ensure predictable behavior.';
+        return 'Multiple preferences for the same interface or class can lead to unexpected '
+            . 'behavior in Magento 2. When multiple modules define preferences for the same '
+            . 'interface, only the last one (based on module load sequence) will be applied. '
+            . 'This can cause hard-to-debug issues, especially when modules are loaded in a '
+            . 'different order in different environments. It is recommended to use a single '
+            . 'preference per interface, or to carefully manage module dependencies using the '
+            . 'sequence tag in module.xml to ensure predictable behavior.';
     }
 }

@@ -16,7 +16,7 @@ class RateLimitedException extends \RuntimeException
 
     /**
      * @param int|null $retryAfter Seconds to wait before retrying (from Retry-After header)
-     * @param string $message Error message from API
+     * @param string   $message    Error message from API
      */
     public function __construct(?int $retryAfter = null, string $message = '')
     {
