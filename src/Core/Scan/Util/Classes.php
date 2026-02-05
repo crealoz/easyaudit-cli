@@ -2,12 +2,18 @@
 
 namespace EasyAudit\Core\Scan\Util;
 
+use EasyAudit\Exception\Scanner\InstantiationNotFoundException;
 use EasyAudit\Exception\Scanner\NoChildrenException;
+use EasyAudit\Service\CliWriter;
 
 class Classes
 {
     private static array $hierarchy = ['children' => [], 'classToFile' => []];
     private static array $processedFiles = [];
+    /**
+     * Basic PHP types
+     */
+    public const BASIC_TYPES = ['string', 'int', 'float', 'bool', 'array', 'mixed'];
 
     public static function parseImportedClasses(string $fileContent): array
     {
@@ -24,6 +30,22 @@ class Classes
             }
         }
         return $importedClasses;
+    }
+
+    public static function hasImportedClass(string $class, string $fileContent): bool
+    {
+        $importedClasses = self::parseImportedClasses($fileContent);
+        return in_array($class, $importedClasses);
+    }
+
+    public static function hasImportedClasses(array $classes, string $fileContent): bool
+    {
+        foreach ($classes as $class) {
+            if (self::hasImportedClass($class, $fileContent)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static function parseConstructorParameters(string $fileContent): array
@@ -44,25 +66,35 @@ class Classes
      */
     public static function getConstructorParameterTypes(string $fileContent): array
     {
-        $types = [];
 
         $imports = self::parseImportedClasses($fileContent);
         $constructorParams = self::parseConstructorParameters($fileContent);
 
-        foreach ($constructorParams as $parameter) {
-            // Extract type from parameter like "private ?ProductFactory $factory"
-            if (preg_match('/(?:private|protected|public|readonly|\s)*\??(\w+)\s+\$/', $parameter, $match)) {
-                $typeName = $match[1];
-                $types[] = $typeName;
+        return self::consolidateParameters($constructorParams, $imports);
+    }
 
-                // Add FQN if available from imports
-                if (isset($imports[$typeName])) {
-                    $types[] = $imports[$typeName];
+    /**
+     * Checks for the instantiation of the param as promoted or not in constructor to retrieve class property
+     * @param string $param
+     * @return string
+     */
+    public static function getInstantiation(array $constructorParams, string $trackedParam, string $fileContent): ?string
+    {
+        foreach ($constructorParams as $constructorParam) {
+            if (str_contains($constructorParam, $trackedParam)) {
+                $cleanParam = ltrim($trackedParam, '$');
+                // The tracked param is promoted. Therefore, property is the same as param.
+                if (preg_match('/\b(private|protected|public)\b/', $constructorParam)) {
+                    return '$this->' . $cleanParam;
                 }
+                $pattern = '/\$this->(\w+)\s*=\s*\$' . preg_quote($cleanParam, '/') . '\s*[;,)]/';
+                if (preg_match($pattern, $fileContent, $match)) {
+                    return '$this->' . $match[1];
+                }
+                throw new InstantiationNotFoundException();
             }
         }
-
-        return $types;
+        return null;
     }
 
     public static function consolidateParameters(array $constructorParameters, array $importedClasses): array
@@ -82,9 +114,13 @@ class Classes
                 $paramClass = trim($part);
                 break;
             }
-            if (isset($importedClasses[$paramClass])) {
-                $consolidatedParameters[$paramName] = $importedClasses[$paramClass];
+            if (empty($paramClass) || in_array($paramClass, self::BASIC_TYPES, true)) {
+                continue;
             }
+            if (isset($importedClasses[$paramClass])) {
+                $paramClass = '\\' . $importedClasses[$paramClass];
+            }
+            $consolidatedParameters[$paramName] = $paramClass;
         }
         return $consolidatedParameters;
     }
@@ -157,6 +193,37 @@ class Classes
             throw new NoChildrenException();
         }
         return self::$hierarchy['children'][$className] ?? [];
+    }
+
+    /**
+     * Extract the fully qualified class name from file content
+     */
+    public static function extractClassName(string $fileContent): string
+    {
+        if (preg_match('/namespace\s+([^;]+);/', $fileContent, $namespaceMatch)) {
+            $namespace = trim($namespaceMatch[1]);
+            if (preg_match('/class\s+(\w+)/', $fileContent, $classMatch)) {
+                return $namespace . '\\' . $classMatch[1];
+            }
+        }
+        return 'UnknownClass';
+    }
+
+    /**
+     * Extract parameter names that are passed to parent::__construct()
+     */
+    public static function getParentConstructorParams(string $fileContent): array
+    {
+        if (!preg_match('/parent\s*::\s*__construct\s*\(([^)]*)\)/s', $fileContent, $match)) {
+            return [];
+        }
+
+        $params = [];
+        if (preg_match_all('/\$(\w+)/', $match[1], $varMatches)) {
+            $params = $varMatches[1];
+        }
+
+        return $params;
     }
 
     /**

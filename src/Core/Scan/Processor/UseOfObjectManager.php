@@ -5,6 +5,7 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use PHPUnit\Event\Runtime\PHP;
 
 /**
  * Class UseOfObjectManager
@@ -24,8 +25,6 @@ class UseOfObjectManager extends AbstractProcessor
     /**
      * ObjectManager class/interface constants
      */
-    private const OM_INTERFACE_IMPORT = 'use Magento\Framework\ObjectManagerInterface';
-    private const OM_CLASS_IMPORT = 'use Magento\Framework\App\ObjectManager';
     private const OM_INTERFACE = 'Magento\Framework\ObjectManagerInterface';
     private const OM_CLASS = 'Magento\Framework\App\ObjectManager';
 
@@ -34,6 +33,14 @@ class UseOfObjectManager extends AbstractProcessor
      */
     private array $objectManagerUsages = [];
     private array $uselessImports = [];
+
+    private string $fileContent = '';
+    private string $file = '';
+
+    /**
+     * Properties assigned via ObjectManager::getInstance()
+     */
+    private array $assignedProperties = [];
 
     public function getIdentifier(): string
     {
@@ -105,34 +112,103 @@ class UseOfObjectManager extends AbstractProcessor
     {
         // Check if ObjectManager is mentioned in the file
         if (
-            !str_contains($fileContent, self::OM_INTERFACE)
-            && !str_contains($fileContent, self::OM_CLASS)
+            $this->isFactory($fileContent) ||
+            (!str_contains($fileContent, self::OM_INTERFACE) &&
+            !str_contains($fileContent, self::OM_CLASS))
         ) {
             return;
         }
 
         // Find the import and its line number once
-        $lineNumber = 1;
-        $hasImport = false;
+        $lineNumber = 0;
+        $hasImport = Classes::hasImportedClasses([self::OM_INTERFACE, self::OM_CLASS], $fileContent);
 
-        if (str_contains($fileContent, self::OM_INTERFACE_IMPORT)) {
-            $lineNumber = Content::getLineNumber($fileContent, self::OM_INTERFACE_IMPORT);
-            $hasImport = true;
-        } elseif (str_contains($fileContent, self::OM_CLASS_IMPORT)) {
-            $lineNumber = Content::getLineNumber($fileContent, self::OM_CLASS_IMPORT);
-            $hasImport = true;
+        $constructorParameters = Classes::parseConstructorParameters($fileContent);
+        $imports = Classes::parseImportedClasses($fileContent);
+
+        $paramTypes = Classes::consolidateParameters($constructorParameters, $imports);
+
+        $directUsage = false;
+        $omProperty = null;
+        $localProperty = false;
+
+        if (preg_match('/(\$\w+)\s*=\s*\\\\?(?:Magento\\\\Framework\\\\App\\\\)?ObjectManager::getInstance/', $fileContent)) {
+            $localProperty = true;
         }
 
-        // Check for actual usage patterns (must be specific to ObjectManager)
-        $hasUsage = $this->hasActualObjectManagerUsage($fileContent);
+        // Check for property assignment: $this->property = ObjectManager::getInstance()
+        $this->assignedProperties = [];
+        if (preg_match_all('/\$this->(\w+)\s*=\s*\\\\?(?:Magento\\\\Framework\\\\App\\\\)?ObjectManager::getInstance/', $fileContent, $propMatches)) {
+            $this->assignedProperties = $propMatches[1];
+        }
+
+        if (empty($paramTypes)) {
+            $directUsage = true;
+        } else {
+            $omParam = array_filter($paramTypes, function ($paramType) {
+                return str_contains($paramType, self::OM_INTERFACE) || str_contains($paramType, self::OM_CLASS);
+            });
+            if (empty($omParam)) {
+                $directUsage = true;
+            } else {
+                $omParam = array_key_first($omParam);
+                try {
+                    $omProperty = Classes::getInstantiation($constructorParameters, $omParam, $fileContent);
+                } catch (\Exception $e) {
+                    $directUsage = true;
+                }
+            }
+        }
+
+        $this->fileContent = $fileContent;
+        $this->file = $file;
+
+        $hasUsage = $this->trackUsage($directUsage, $omProperty, $localProperty) > 0;
 
         // If imported but not used, it's a useless import
         if ($hasImport && !$hasUsage) {
             $this->addUselessImport($file, $lineNumber);
-        } elseif (!$this->isFactory($fileContent)) {
-            // If not a Factory class, it's a direct usage error
-            $this->addObjectManagerUsage($file, $fileContent, $lineNumber);
         }
+    }
+
+    private function trackUsage(bool $directUsage, ?string $property = null, bool $localProperty = false): int
+    {
+        $usageCount = 0;
+        $patterns = [];
+
+        if ($directUsage) {
+            $patterns[] = '/ObjectManager::getInstance\s*\(\s*\)\s*->(?:get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
+        }
+
+        if ($localProperty) {
+            preg_match_all('/(\$\w+)\s*=\s*\\\\?(?:Magento\\\\Framework\\\\App\\\\)?ObjectManager::getInstance/', $this->fileContent, $varMatches);
+            foreach ($varMatches[1] as $varName) {
+                $escapedVar = preg_quote($varName, '/');
+                $patterns[] = '/' . $escapedVar . '\s*->(?:get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
+            }
+        }
+
+        if ($property) {
+            $escapedProp = preg_quote($property, '/');
+            $patterns[] = '/' . $escapedProp . '\s*->(?:get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
+        }
+
+        // Track properties assigned via getInstance()
+        foreach ($this->assignedProperties as $propName) {
+            $patterns[] = '/\$this->' . preg_quote($propName, '/') . '\s*->(?:get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
+        }
+
+        foreach ($patterns as $pattern) {
+            preg_match_all($pattern, $this->fileContent, $matches, PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                $lineNumber = Content::getLineNumber($this->fileContent, $match[0]);
+                $className = $match[1];
+                $this->addObjectManagerUsage($this->file, $lineNumber, $className);
+                $usageCount++;
+            }
+        }
+
+        return $usageCount;
     }
 
     /**
@@ -151,13 +227,13 @@ class UseOfObjectManager extends AbstractProcessor
      * Record direct ObjectManager usage (ERROR)
      *
      * @param string $file File path
-     * @param string $fileContent File content
-     * @param int $lineNumber Line number of the import
+     * @param int $lineNumber Line number of the usage
+     * @param string $className Class being fetched via ObjectManager
      */
-    private function addObjectManagerUsage(string $file, string $fileContent, int $lineNumber): void
+    private function addObjectManagerUsage(string $file, int $lineNumber, string $className): void
     {
-        $injections = $this->extractInjections($fileContent);
-        $message = 'Direct use of ObjectManager detected. Use dependency injection instead.';
+        $propertyName = $this->derivePropertyName($className);
+        $message = "Direct use of ObjectManager to get '$className'. Use dependency injection instead.";
 
         $this->objectManagerUsages[] = Formater::formatError(
             $file,
@@ -166,129 +242,10 @@ class UseOfObjectManager extends AbstractProcessor
             'error',
             0,
             [
-                'injections' => $injections,
+                'injections' => [$className => $propertyName],
             ]
         );
         $this->foundCount++;
-    }
-
-    /**
-     * Extract class names from ObjectManager->get() and ->create() calls
-     *
-     * @param string $fileContent
-     * @return array Map of className => propertyName
-     */
-    private function extractInjections(string $fileContent): array
-    {
-        $injections = [];
-        $classNames = [];
-
-        // Get existing constructor parameter types to avoid adding duplicates
-        $existingTypes = Classes::getConstructorParameterTypes($fileContent);
-
-        // Pattern 1: $this->objectManager->get(ClassName::class) or ->create(ClassName::class)
-        $pattern1 = '/\$this->_?objectManager->(?:get|create)\s*\(\s*\\\\?([A-Za-z0-9_\\\\]+)::class\s*\)/';
-
-        // Pattern 2: $this->objectManager->get('ClassName') or ->create('ClassName')
-        $pattern2 = '/\$this->_?objectManager->(?:get|create)\s*\(\s*[\'"]\\\\?([A-Za-z0-9_\\\\]+)[\'"]\s*\)/';
-
-        // Pattern 3: ObjectManager::getInstance()->get(ClassName::class) - direct chained call
-        // Handles: ObjectManager::getInstance(), \ObjectManager::getInstance(),
-        // \Magento\Framework\App\ObjectManager::getInstance()
-        $pattern3 = '/\\\\?(?:Magento\\\\Framework\\\\App\\\\)?ObjectManager::getInstance\s*\(\s*\)'
-            . '\s*->(?:get|create)\s*\(\s*\\\\?([A-Za-z0-9_\\\\]+)::class\s*\)/s';
-
-        // Pattern 4: ObjectManager::getInstance()->get('ClassName') - direct chained call
-        // Handles: ObjectManager::getInstance(), \ObjectManager::getInstance(),
-        // \Magento\Framework\App\ObjectManager::getInstance()
-        $pattern4 = '/\\\\?(?:Magento\\\\Framework\\\\App\\\\)?ObjectManager::getInstance\s*\(\s*\)'
-            . '\s*->(?:get|create)\s*\(\s*[\'"]\\\\?([A-Za-z0-9_\\\\]+)[\'"]\s*\)/s';
-
-        if (preg_match_all($pattern1, $fileContent, $matches)) {
-            $classNames = array_merge($classNames, $matches[1]);
-        }
-
-        if (preg_match_all($pattern2, $fileContent, $matches)) {
-            $classNames = array_merge($classNames, $matches[1]);
-        }
-
-        if (preg_match_all($pattern3, $fileContent, $matches)) {
-            $classNames = array_merge($classNames, $matches[1]);
-        }
-
-        if (preg_match_all($pattern4, $fileContent, $matches)) {
-            $classNames = array_merge($classNames, $matches[1]);
-        }
-
-        // Pattern 5 & 6: ObjectManager::getInstance() assigned to local variable
-        $localVars = $this->findObjectManagerVariables($fileContent);
-
-        foreach ($localVars as $varName) {
-            $escapedVar = preg_quote($varName, '/');
-
-            // $localVar->get(ClassName::class) - may span multiple lines
-            $pattern5 = '/' . $escapedVar . '\s*->(?:get|create)\s*\(\s*\\\\?([A-Za-z0-9_\\\\]+)::class\s*\)/s';
-            if (preg_match_all($pattern5, $fileContent, $matches)) {
-                $classNames = array_merge($classNames, $matches[1]);
-            }
-
-            // $localVar->get('ClassName') - may span multiple lines
-            $pattern6 = '/' . $escapedVar . '\s*->(?:get|create)\s*\(\s*[\'"]\\\\?([A-Za-z0-9_\\\\]+)[\'"]\s*\)/s';
-            if (preg_match_all($pattern6, $fileContent, $matches)) {
-                $classNames = array_merge($classNames, $matches[1]);
-            }
-        }
-
-        // Deduplicate and build injections map
-        foreach (array_unique($classNames) as $className) {
-            // Skip if this type already exists in the constructor
-            // (ObjectManager is just a BC fallback, not a missing dependency)
-            if ($this->typeExistsInConstructor($className, $existingTypes)) {
-                continue;
-            }
-
-            $propertyName = $this->derivePropertyName($className);
-            $injections[$className] = $propertyName;
-        }
-
-        return $injections;
-    }
-
-    /**
-     * Check if a type (FQN or short name) already exists in constructor parameters
-     *
-     * @param string $className Full class name to check
-     * @param array $existingTypes List of existing type names
-     * @return bool
-     */
-    private function typeExistsInConstructor(string $className, array $existingTypes): bool
-    {
-        // Get short name for comparison
-        $parts = explode('\\', $className);
-        $shortName = end($parts);
-
-        // Check both FQN and short name
-        return in_array($className, $existingTypes, true)
-            || in_array($shortName, $existingTypes, true);
-    }
-
-    /**
-     * Find local variables that hold ObjectManager::getInstance()
-     *
-     * @param string $fileContent
-     * @return array List of variable names (e.g., ['$objectManager'])
-     */
-    private function findObjectManagerVariables(string $fileContent): array
-    {
-        $varNames = [];
-        // Match: $objectManager = ObjectManager::getInstance()
-        // or \Magento\...\ObjectManager::getInstance()
-        $pattern = '/(\$\w+)\s*=\s*\\\\?(?:Magento\\\\Framework\\\\App\\\\)?'
-            . 'ObjectManager::getInstance\s*\(\s*\)/';
-        if (preg_match_all($pattern, $fileContent, $matches)) {
-            $varNames = $matches[1];
-        }
-        return $varNames;
     }
 
     /**
@@ -306,28 +263,6 @@ class UseOfObjectManager extends AbstractProcessor
 
         // Convert to camelCase (first letter lowercase)
         return lcfirst($shortName);
-    }
-
-    /**
-     * Check if the file has actual ObjectManager usage (not just imports)
-     * Uses same patterns as extractInjections() for consistency
-     *
-     * @param string $fileContent
-     * @return bool
-     */
-    private function hasActualObjectManagerUsage(string $fileContent): bool
-    {
-        // Property usage: $this->objectManager or $this->_objectManager
-        if (preg_match('/\$this->_?objectManager\s*->/', $fileContent)) {
-            return true;
-        }
-
-        // Singleton access: ObjectManager::getInstance()
-        if (preg_match('/ObjectManager::getInstance\s*\(/', $fileContent)) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

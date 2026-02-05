@@ -124,7 +124,7 @@ class UseOfRegistry extends AbstractProcessor
 
         // Check each parameter for Registry
         foreach ($consolidatedParameters as $paramName => $paramClass) {
-            if ($paramClass === self::REGISTRY_CLASS) {
+            if (ltrim($paramClass, '\\') === self::REGISTRY_CLASS) {
                 $this->addRegistryUsage($file, $fileContent, $className, $paramName);
             }
         }

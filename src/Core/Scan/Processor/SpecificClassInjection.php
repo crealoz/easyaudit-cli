@@ -167,10 +167,6 @@ class SpecificClassInjection extends AbstractProcessor
      */
     private const LEGITIMATE_SUFFIXES = ['Interface', 'Factory', 'Provider', 'Resolver'];
 
-    /**
-     * Basic PHP types
-     */
-    private const BASIC_TYPES = ['string', 'int', 'float', 'bool', 'array', 'mixed'];
 
     /**
      * Results organized by violation type
@@ -249,8 +245,8 @@ class SpecificClassInjection extends AbstractProcessor
             return;
         }
 
-        $className = $this->extractClassName($fileContent);
-        $parentConstructorParams = $this->getParentConstructorParams($fileContent);
+        $className = Classes::extractClassName($fileContent);
+        $parentConstructorParams = Classes::getParentConstructorParams($fileContent);
 
         foreach ($consolidatedParameters as $paramName => $paramClass) {
             if (in_array($paramName, $parentConstructorParams, true)) {
@@ -258,37 +254,6 @@ class SpecificClassInjection extends AbstractProcessor
             }
             $this->analyzeParameter($file, $fileContent, $className, $paramName, $paramClass);
         }
-    }
-
-    /**
-     * Extract parameter names that are passed to parent::__construct()
-     */
-    private function getParentConstructorParams(string $fileContent): array
-    {
-        if (!preg_match('/parent\s*::\s*__construct\s*\(([^)]*)\)/s', $fileContent, $match)) {
-            return [];
-        }
-
-        $params = [];
-        if (preg_match_all('/\$(\w+)/', $match[1], $varMatches)) {
-            $params = $varMatches[1];
-        }
-
-        return $params;
-    }
-
-    /**
-     * Extract the class name from file content
-     */
-    private function extractClassName(string $fileContent): string
-    {
-        if (preg_match('/namespace\s+([^;]+);/', $fileContent, $namespaceMatch)) {
-            $namespace = trim($namespaceMatch[1]);
-            if (preg_match('/class\s+(\w+)/', $fileContent, $classMatch)) {
-                return $namespace . '\\' . $classMatch[1];
-            }
-        }
-        return 'UnknownClass';
     }
 
     /**
@@ -362,7 +327,7 @@ class SpecificClassInjection extends AbstractProcessor
     private function isArgumentIgnored(string $className): bool
     {
         if (
-            in_array($className, self::BASIC_TYPES, true) ||
+            in_array($className, Classes::BASIC_TYPES, true) ||
             $this->matchesSuffix($className, self::LEGITIMATE_SUFFIXES) ||
             $this->matchesSubstring($className, self::IGNORED_SUBSTRINGS)
         ) {
@@ -419,8 +384,9 @@ class SpecificClassInjection extends AbstractProcessor
 
     private function isNonMagentoLibrary(string $className): bool
     {
+        $normalizedClassName = ltrim($className, '\\');
         foreach (self::NON_MAGENTO_VENDORS as $vendor) {
-            if (str_starts_with($className, $vendor)) {
+            if (str_starts_with($normalizedClassName, $vendor)) {
                 return true;
             }
         }
