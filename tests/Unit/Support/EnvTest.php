@@ -183,41 +183,41 @@ class EnvTest extends TestCase
         $this->assertEquals('stored-key:stored-hash', $result);
     }
 
-    public function testGetStoredCredentialsReturnsNullWhenFileMissing(): void
+    public function testGetStoredCredentialsThrowsWhenFileMissing(): void
     {
         Paths::configDir();
         // Don't create config file
 
-        ob_start();
-        $result = Env::getStoredCredentials();
-        ob_end_clean();
+        $this->expectException(EnvAuthException::class);
+        $this->expectExceptionMessage('No API credential found');
 
-        $this->assertNull($result);
+        $this->expectOutputRegex('/Config file not found/');
+        Env::getStoredCredentials();
     }
 
-    public function testGetStoredCredentialsReturnsNullWhenMalformed(): void
+    public function testGetStoredCredentialsThrowsWhenMalformed(): void
     {
         Paths::configDir();
         // Write invalid JSON
         file_put_contents(Paths::configDir() . '/config.json', 'not valid json');
 
-        ob_start();
-        $result = Env::getStoredCredentials();
-        ob_end_clean();
+        $this->expectException(EnvAuthException::class);
+        $this->expectExceptionMessage('No API credential found');
 
-        $this->assertNull($result);
+        $this->expectOutputRegex('/Config file is malformed/');
+        Env::getStoredCredentials();
     }
 
-    public function testGetStoredCredentialsReturnsNullWhenMissingKeys(): void
+    public function testGetStoredCredentialsThrowsWhenMissingKeys(): void
     {
         Paths::configDir();
         Paths::updateConfigFile(['other' => 'data']);  // Missing key and hash
 
-        ob_start();
-        $result = Env::getStoredCredentials();
-        ob_end_clean();
+        $this->expectException(EnvAuthException::class);
+        $this->expectExceptionMessage('No API credential found');
 
-        $this->assertNull($result);
+        $this->expectOutputRegex('/Config file is malformed/');
+        Env::getStoredCredentials();
     }
 
     public function testIsSelfSignedReturnsFalseByDefault(): void
