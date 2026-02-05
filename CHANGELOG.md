@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Improved ObjectManager detection for fixing (better identification of actual usages vs imports)
+- Fixed class name comparison in `UseOfRegistry` and `SpecificClassInjection` processors (leading backslash normalization)
+
 ---
 
 ## [0.2.0] - 2026-02-05
