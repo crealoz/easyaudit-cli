@@ -42,6 +42,9 @@ php bin/easyaudit scan /path/to/magento --format=json
 # SARIF output (for GitHub Code Scanning)
 php bin/easyaudit scan /path/to/magento --format=sarif
 
+# HTML report (visual dashboard, print-to-PDF friendly)
+php bin/easyaudit scan /path/to/magento --format=html
+
 # Custom output file
 php bin/easyaudit scan /path/to/magento --format=sarif --output=report/scan.sarif
 
@@ -56,8 +59,8 @@ php bin/easyaudit scan /path/to/magento --exclude-ext="js,css"
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--format` | Output format: `json`, `sarif` | `json` |
-| `--output` | Output file path | `report/easyaudit-report.(json\|sarif)` |
+| `--format` | Output format: `json`, `sarif`, `html` | `json` |
+| `--output` | Output file path | `report/easyaudit-report.(json\|sarif\|html)` |
 | `--exclude` | Comma-separated directories to exclude | none |
 | `--exclude-ext` | Comma-separated file extensions to exclude | none |
 
@@ -174,6 +177,26 @@ php bin/easyaudit scan /path/to/magento --format=sarif || exit 1
 ]
 ```
 
+### HTML
+
+The HTML format produces a self-contained dashboard with:
+
+- **Summary cards** — color-coded counts for errors, warnings, and notes
+- **Collapsible rule sections** — one per processor, with a table of affected files, line numbers, and messages
+- **Print-to-PDF support** — `@media print` styles ensure clean output when printing from the browser
+
+```bash
+# Generate HTML report
+php bin/easyaudit scan /path/to/magento --format=html
+
+# Open in browser
+xdg-open report/easyaudit-report.html    # Linux
+open report/easyaudit-report.html         # macOS
+```
+
+The report is fully standalone (all CSS inline, no external dependencies) and can be shared as a single file or printed to PDF directly from the browser.
+
+![easyaudit-html-report.png](../images/easyaudit-html-report.png)
 ---
 
 [Back to README](../README.md)

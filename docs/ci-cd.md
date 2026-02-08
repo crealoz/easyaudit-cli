@@ -47,8 +47,8 @@ jobs:
 | Format | Use Case |
 |--------|----------|
 | `sarif` | GitHub Code Scanning, GitLab SAST |
-| `json` | Custom tooling, artifacts |
-| `text` | Console output, logs |
+| `json` | Custom tooling, artifacts, fix-apply input |
+| `html` | Visual report, shareable dashboards, upload as artifact |
 
 ---
 

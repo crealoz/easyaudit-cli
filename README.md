@@ -46,10 +46,13 @@ php bin/easyaudit scan /path/to/magento
 |---------|-----------------------------------|
 | `json`  | Tooling and scripting (default)   |
 | `sarif` | GitHub Code Scanning              |
+| `html`  | Visual report, shareable via browser or PDF |
 
 Console output is always displayed during scan.
 
 ## GitHub Actions
+
+### Scan & upload to Code Scanning
 
 ```yaml
 name: EasyAudit Scan
@@ -71,15 +74,68 @@ jobs:
           mkdir -p report
           easyaudit scan --format=sarif --output=report/easyaudit.sarif \
             --exclude="vendor,generated,var,pub/static,pub/media" "$GITHUB_WORKSPACE"
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report/easyaudit.sarif
 ```
 
+> **Private repos**: SARIF upload requires [GitHub Advanced Security](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security), which is a paid feature for private repositories. Use `--format=json` or `--format=html` with `upload-artifact` instead. See [GitHub Actions docs](docs/ci-cd/github-actions.md#private-repositories) for alternative workflows.
+
 ![GitHub Code Scanning](images/scanning-alert-terrible-module.png)
 
-> **💡 Found issues?**
-> EasyAudit can automatically fix many of them. [Set up automated PR →](docs/request-pr.md)
+### Scan, fix & create PR (paid)
+
+One-click workflow: scan, call the paid API for fixes, and open a PR with the patches.
+
+```yaml
+name: "EasyAudit - fix & PR (paid)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      ack_paid:
+        description: "I confirm this action is PAID and a PR will be billed"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  fix-and-pr:
+    if: ${{ inputs.ack_paid == true }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/crealoz/easyaudit:latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Scan
+        run: |
+          mkdir -p report
+          easyaudit scan --format=json --output=report/easyaudit-report.json \
+            --exclude="vendor,generated,var,pub/static,pub/media" "$GITHUB_WORKSPACE"
+      - name: Apply fixes (paid)
+        env:
+          EASYAUDIT_AUTH: ${{ secrets.EASYAUDIT_AUTH }}
+        run: easyaudit fix-apply report/easyaudit-report.json --confirm
+      - name: Apply patches & create PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref_name }}-easyaudit-fix
+          commit-message: "Apply EasyAudit fixes"
+          title: "EasyAudit automatic fixes"
+          body: |
+            Automatically generated fixes from branch `${{ github.ref_name }}`.
+```
+
+> Requires `EASYAUDIT_AUTH` secret. See [Automated PR docs](docs/request-pr.md) for full setup.
+
+> **Found issues?** EasyAudit can automatically fix many of them. [Set up automated PR →](docs/request-pr.md)
 
 ## Documentation
 

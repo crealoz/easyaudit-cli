@@ -8,6 +8,7 @@ use EasyAudit\Core\Scan\ExternalToolMapping;
 use EasyAudit\Core\Scan\Scanner;
 use EasyAudit\Core\Report\JsonReporter;
 use EasyAudit\Core\Report\SarifReporter;
+use EasyAudit\Core\Report\HtmlReporter;
 use EasyAudit\Service\CliWriter;
 use EasyAudit\Support\ProjectIdentifier;
 
@@ -34,7 +35,7 @@ Arguments:
   <path>                       Path to scan (default: current directory)
 
 Options:
-  --format=<format>            Output format: json, sarif (default: json)
+  --format=<format>            Output format: json, sarif, html (default: json)
   --exclude=<patterns>         Comma-separated list of glob patterns to exclude
   --exclude-ext=<exts>         Comma-separated list of file extensions to exclude (e.g. .log,.tmp)
   --output=<file>              Output file path. Default: report/easyaudit-report.<format>
@@ -59,7 +60,7 @@ HELP;
         [$opts, $rest] = Args::parse($argv);
         $format      = strtolower(Args::optStr($opts, 'format', 'json')) ?? 'json';
 
-        $allowedFormats = ['json', 'sarif'];
+        $allowedFormats = ['json', 'sarif', 'html'];
         if (!in_array($format, $allowedFormats, true)) {
             CliWriter::errorToStderr("Error: Unknown format '$format'. Allowed formats: " . implode(', ', $allowedFormats));
             return 1;
@@ -89,16 +90,20 @@ HELP;
 
         $payload = match ($format) {
             'sarif' => (new SarifReporter())->generate($findings),
+            'html' => (new HtmlReporter())->generate($findings),
             'json' => (new JsonReporter())->generate($findings),
         };
+
+        $ext = match ($format) { 'sarif' => 'sarif', 'html' => 'html', default => 'json' };
+        $defaultPath = "report/easyaudit-report.{$ext}";
 
         if ($output) {
             file_put_contents($output, $payload);
         } else {
             @mkdir('report', 0775, true);
-            file_put_contents('report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json'), $payload);
+            file_put_contents($defaultPath, $payload);
         }
-        CliWriter::line("Report was written to " . ($output ?: 'report/easyaudit-report.' . ($format === 'sarif' ? 'sarif' : 'json')));
+        CliWriter::line("Report was written to " . ($output ?: $defaultPath));
 
         // Print tool suggestions for issues that can be fixed by external tools
         if (!empty($toolSuggestions)) {
