@@ -1,21 +1,3 @@
----
----
-
-// Brand colors from report.css
-$brand-color:       #0d6efd;
-$brand-color-light: lighten($brand-color, 25%);
-$brand-color-dark:  darken($brand-color, 15%);
-
-$text-color:        #212529;
-$background-color:  #fff;
-$grey-color:        #6c757d;
-$grey-color-light:  #dee2e6;
-$grey-color-dark:   #343a40;
-
-$easyaudit-dark:    #142d37;
-
-@import "minima";
-
 // ── Site header ──────────────────────────────────────────────
 .site-header {
   background: $easyaudit-dark;
@@ -39,48 +21,29 @@ $easyaudit-dark:    #142d37;
       }
     }
 
-    // Hamburger icon lines
     .menu-icon > svg path {
       fill: rgba(255, 255, 255, 0.85);
     }
   }
 }
 
-// ── Links ────────────────────────────────────────────────────
-a {
-  color: $brand-color;
-
-  &:visited {
-    color: $brand-color-dark;
-  }
-
-  &:hover {
-    color: darken($brand-color, 10%);
-  }
-}
-
 // ── Code blocks ──────────────────────────────────────────────
-code {
-  background: #f8f9fa;
-  border: 1px solid $grey-color-light;
-  border-radius: 4px;
-  font-size: 0.875em;
-}
-
 pre {
   background: $easyaudit-dark;
   color: #e9ecef;
   border: none;
   border-radius: 8px;
   padding: 16px 20px;
-  overflow-x: auto;
 
   code {
     background: none;
     border: none;
     color: inherit;
-    font-size: 0.85em;
   }
+}
+
+code {
+  border-radius: 4px;
 }
 
 // ── Content ──────────────────────────────────────────────────
@@ -88,34 +51,15 @@ pre {
   padding-top: 40px;
 }
 
-h1, h2, h3, h4 {
-  color: $easyaudit-dark;
-}
-
 h2 {
-  border-bottom: 2px solid $grey-color-light;
+  border-bottom: 2px solid $lm-border-color-01;
   padding-bottom: 8px;
 }
 
 // ── Tables ───────────────────────────────────────────────────
 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 24px;
-  font-size: 14px;
-
   th {
-    background: #f8f9fa;
-    border-bottom: 2px solid $grey-color-light;
-    padding: 8px 12px;
-    text-align: left;
     font-weight: 600;
-  }
-
-  td {
-    padding: 8px 12px;
-    border-bottom: 1px solid #eee;
-    vertical-align: top;
   }
 
   tr:hover td {
@@ -123,16 +67,9 @@ table {
   }
 }
 
-// ── Badges / labels in docs ──────────────────────────────────
-// Reuse report severity colors for inline markup if needed
-.badge-error   { background: #f8d7da; color: #842029; }
-.badge-warning { background: #fff3cd; color: #664d03; }
-.badge-note    { background: #cfe2ff; color: #084298; }
-
 // ── Blockquotes ──────────────────────────────────────────────
 blockquote {
-  border-left: 4px solid $brand-color;
-  color: $grey-color;
+  border-left-color: $lm-link-base-color;
   background: #f8f9fa;
   padding: 12px 20px;
   border-radius: 0 8px 8px 0;

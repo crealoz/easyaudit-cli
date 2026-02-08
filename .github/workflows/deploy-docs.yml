@@ -9,6 +9,7 @@ on:
       - 'CHANGELOG.md'
       - 'images/**'
       - 'assets/**'
+      - '_sass/**'
       - '_config.yml'
   workflow_dispatch:
 
