@@ -776,6 +776,302 @@ PHP;
         rmdir($tempDir);
     }
 
+    public function testProcessSkipsSymfonyCommands(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Console\Command;
+
+use Symfony\Component\Console\Command\Command;
+use Vendor\Module\Model\SomeService;
+
+class MyCommand extends Command
+{
+    public function __construct(
+        private SomeService $service
+    ) {
+        parent::__construct();
+    }
+}
+PHP;
+        $file = $tempDir . '/MyCommand.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should skip Symfony console commands');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsGenericClassInjection(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\SomeConcreteClass;
+
+class ServiceModel
+{
+    public function __construct(
+        private SomeConcreteClass $concrete
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/ServiceModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('specificClassInjection', $ruleIds);
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresFrameworkClasses(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Magento\Framework classes should be ignored (via IGNORED_SUBSTRINGS containing 'Magento\Framework')
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\Event\ManagerInterface;
+
+class SomeModel
+{
+    public function __construct(
+        private ManagerInterface $eventManager
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Magento Framework classes');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresHelperClasses(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Helper\Data;
+
+class SomeModel
+{
+    public function __construct(
+        private Data $helper
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Helper classes');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresProviderSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\DataProvider;
+
+class SomeModel
+{
+    public function __construct(
+        private DataProvider $provider
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Provider suffix');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresResolverSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\StockResolver;
+
+class SomeModel
+{
+    public function __construct(
+        private StockResolver $resolver
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Resolver suffix');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessResourceModelNotFlaggedInsideResourceModel(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // A ResourceModel class injecting another ResourceModel is a common pattern
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model\ResourceModel;
+
+use Vendor\Module\Model\ResourceModel\Related;
+
+class ProductResourceModel
+{
+    public function __construct(
+        private Related $relatedResource
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/ProductResourceModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // ResourceModel injecting ResourceModel should not be flagged
+        $report = $processor->getReport();
+        $hasResourceModelRule = false;
+        foreach ($report as $entry) {
+            if ($entry['ruleId'] === 'noResourceModelInjection') {
+                $hasResourceModelRule = true;
+            }
+        }
+        $this->assertFalse($hasResourceModelRule, 'ResourceModel injecting ResourceModel should be allowed');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresBasicTypes(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+class SimpleModel
+{
+    public function __construct(
+        private string $name,
+        private int $count,
+        private array $data,
+        private bool $active
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SimpleModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore basic PHP types');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
     public function testChildrenDetectionAffectsSeverity(): void
     {
         // Test that collection/repository with children use warning severity

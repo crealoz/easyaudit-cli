@@ -221,7 +221,15 @@ class SpecificClassInjection extends AbstractProcessor
             $this->analyzeFile($file, $fileContent);
         }
 
-        $this->printResults();
+        foreach (self::RULE_CONFIGS as $category => $config) {
+            if (!empty($this->resultsByCategory[$category])) {
+                CliWriter::resultLine(
+                    $config['label'],
+                    count($this->resultsByCategory[$category]),
+                    $config['severity']
+                );
+            }
+        }
     }
 
     /**
@@ -277,7 +285,20 @@ class SpecificClassInjection extends AbstractProcessor
         }
 
         if (!$this->isNonMagentoLibrary($paramClass)) {
-            $this->addGenericClassWarning($file, $lineNumber, $paramName, $paramClass);
+            $message = sprintf(
+                'Specific class "%s" injected in %s. Consider using a factory, builder, or '
+                . 'interface instead. (Note: This is a suggestion - manual verification recommended)',
+                $paramClass,
+                $paramName
+            );
+            $this->addViolation(
+                'genericClass',
+                $file,
+                $lineNumber,
+                $message,
+                'warning',
+                ['specificClasses' => [$paramClass => $paramName]]
+            );
         }
     }
 
@@ -288,23 +309,49 @@ class SpecificClassInjection extends AbstractProcessor
     private function handleModelViolation(string $file, int $lineNumber, string $paramName, string $paramClass, string $className): bool
     {
         $handled = false;
+        try {
+            $children = Classes::getChildren($paramClass);
+        } catch (\Exception $e) {
+            $children = [];
+        }
         if (str_contains($className, 'Collection')) {
-            $this->addCollectionError($file, $lineNumber, $paramName, $paramClass);
+            $this->addCollectionError($file, $lineNumber, $paramName, $paramClass, $children);
             $handled = true;
         }
 
         if ($this->isRepository($paramClass)) {
-            $this->addRepositoryError($file, $lineNumber, $paramName, $paramClass);
+            $this->addRepositoryError($file, $lineNumber, $paramName, $paramClass, $children);
             $handled = true;
         }
 
         if ($this->hasApiInterface($paramClass)) {
-            $this->addModelWithInterfaceError($file, $lineNumber, $paramName, $paramClass);
+            $interfaceName = $this->getApiInterface($paramClass);
+            $message = sprintf(
+                'Model "%s" implements an API interface but is injected as concrete class in %s. '
+                . 'Inject the API interface instead to respect preferences and coding standards.',
+                $paramClass,
+                $paramName
+            );
+            $this->addViolation(
+                'modelWithInterface',
+                $file,
+                $lineNumber,
+                $message,
+                'error',
+                ['models' => [$paramClass => ['interface' => $interfaceName]]]
+            );
             $handled = true;
         }
 
         if ($this->isResourceModel($paramClass) && $this->shouldFlagResourceModel($paramClass, $className)) {
-            $this->addResourceModelError($file, $lineNumber, $paramName, $paramClass);
+            $message = sprintf(
+                'Resource Model "%s" injected in %s. Resource models should not be directly '
+                . 'injected. Use a repository instead for better separation of concerns. '
+                . '(Manual refactoring required - no auto-fix available)',
+                $paramClass,
+                $paramName
+            );
+            $this->addViolation('resourceModel', $file, $lineNumber, $message, 'warning');
             $handled = true;
         }
 
@@ -418,11 +465,10 @@ class SpecificClassInjection extends AbstractProcessor
         $this->foundCount++;
     }
 
-    private function addCollectionError(string $file, int $lineNumber, string $paramName, string $paramClass): void
+    private function addCollectionError(string $file, int $lineNumber, string $paramName, string $paramClass, array $children = []): void
     {
 
-        try {
-            $children = Classes::getChildren($paramClass);
+        if (!empty($children)) {
             $childNames = implode(', ', array_map(fn($c) => basename(str_replace('\\', '/', $c)), $children));
             $message = sprintf(
                 'Collection "%s" injected in %s. Collections must use Factory pattern. '
@@ -440,7 +486,7 @@ class SpecificClassInjection extends AbstractProcessor
                 'warning',
                 ['collections' => [$paramClass => $paramName], 'children' => $children]
             );
-        } catch (\Exception $e) {
+        } else {
             $message = sprintf(
                 'Collection "%s" injected in %s. Collections must use Factory pattern. Inject "%sFactory" instead.',
                 $paramClass,
@@ -458,12 +504,15 @@ class SpecificClassInjection extends AbstractProcessor
         }
     }
 
-    private function addRepositoryError(string $file, int $lineNumber, string $paramName, string $paramClass): void
+    private function addRepositoryError(string $file, int $lineNumber, string $paramName, string $paramClass, array $children): void
     {
-        $interfaceName = $this->guessInterfaceName($paramClass);
+        if (preg_match('/^(.+)\\\\Model\\\\(.+)Repository$/', $paramClass, $matches)) {
+            $interfaceName = $matches[1] . '\\Api\\' . $matches[2] . 'RepositoryInterface';
+        } else {
+            $interfaceName = $paramClass . 'Interface';
+        }
 
-        try {
-            $children = Classes::getChildren($paramClass);
+        if (!empty($children)) {
             $childNames = implode(', ', array_map(fn($c) => basename(str_replace('\\', '/', $c)), $children));
             $message = sprintf(
                 'Repository "%s" injected as concrete class in %s. Use interface "%s" instead. '
@@ -482,7 +531,7 @@ class SpecificClassInjection extends AbstractProcessor
                 'warning',
                 ['repositories' => [$paramClass => ['interface' => $interfaceName]], 'children' => $children]
             );
-        } catch (\Exception $e) {
+        } else {
             $message = sprintf(
                 'Repository "%s" injected as concrete class in %s. Use interface "%s" instead.',
                 $paramClass,
@@ -500,63 +549,6 @@ class SpecificClassInjection extends AbstractProcessor
         }
     }
 
-    private function addModelWithInterfaceError(string $file, int $lineNumber, string $paramName, string $paramClass): void
-    {
-        $interfaceName = $this->getApiInterface($paramClass);
-        $message = sprintf(
-            'Model "%s" implements an API interface but is injected as concrete class in %s. '
-                . 'Inject the API interface instead to respect preferences and coding standards.',
-            $paramClass,
-            $paramName
-        );
-        $this->addViolation(
-            'modelWithInterface',
-            $file,
-            $lineNumber,
-            $message,
-            'error',
-            ['models' => [$paramClass => ['interface' => $interfaceName]]]
-        );
-    }
-
-    private function addResourceModelError(string $file, int $lineNumber, string $paramName, string $paramClass): void
-    {
-        $message = sprintf(
-            'Resource Model "%s" injected in %s. Resource models should not be directly '
-                . 'injected. Use a repository instead for better separation of concerns. '
-                . '(Manual refactoring required - no auto-fix available)',
-            $paramClass,
-            $paramName
-        );
-        $this->addViolation('resourceModel', $file, $lineNumber, $message, 'warning');
-    }
-
-    private function addGenericClassWarning(string $file, int $lineNumber, string $paramName, string $paramClass): void
-    {
-        $message = sprintf(
-            'Specific class "%s" injected in %s. Consider using a factory, builder, or '
-                . 'interface instead. (Note: This is a suggestion - manual verification recommended)',
-            $paramClass,
-            $paramName
-        );
-        $this->addViolation(
-            'genericClass',
-            $file,
-            $lineNumber,
-            $message,
-            'warning',
-            ['specificClasses' => [$paramClass => $paramName]]
-        );
-    }
-
-    private function guessInterfaceName(string $className): string
-    {
-        if (preg_match('/^(.+)\\\\Model\\\\(.+)Repository$/', $className, $matches)) {
-            return $matches[1] . '\\Api\\' . $matches[2] . 'RepositoryInterface';
-        }
-        return $className . 'Interface';
-    }
-
     private function getApiInterface(string $className): string
     {
         try {
@@ -570,22 +562,6 @@ class SpecificClassInjection extends AbstractProcessor
             // Fallback below
         }
         return str_replace('Model\\', 'Api\\Data\\', $className) . 'Interface';
-    }
-
-    /**
-     * Print results summary
-     */
-    private function printResults(): void
-    {
-        foreach (self::RULE_CONFIGS as $category => $config) {
-            if (!empty($this->resultsByCategory[$category])) {
-                CliWriter::resultLine(
-                    $config['label'],
-                    count($this->resultsByCategory[$category]),
-                    $config['severity']
-                );
-            }
-        }
     }
 
     /**

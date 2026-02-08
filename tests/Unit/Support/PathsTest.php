@@ -244,4 +244,133 @@ class PathsTest extends TestCase
         // realpath will fail for nonexistent file, so it composes with CWD
         $this->assertStringNotContainsString('./', $result);
     }
+
+    // --- expandTilde() ---
+
+    public function testExpandTildeWithHomePath(): void
+    {
+        $home = getenv('HOME') ?: getenv('USERPROFILE');
+        $this->assertNotEmpty($home, 'HOME must be set for this test');
+
+        $result = Paths::expandTilde('~/Documents');
+        $this->assertEquals($home . '/Documents', $result);
+    }
+
+    public function testExpandTildeBareHome(): void
+    {
+        $home = getenv('HOME') ?: getenv('USERPROFILE');
+        $this->assertNotEmpty($home, 'HOME must be set for this test');
+
+        $result = Paths::expandTilde('~');
+        $this->assertEquals($home, $result);
+    }
+
+    public function testExpandTildeEmptyPath(): void
+    {
+        $result = Paths::expandTilde('');
+        $this->assertEquals('', $result);
+    }
+
+    public function testExpandTildeNoTilde(): void
+    {
+        $result = Paths::expandTilde('/absolute/path');
+        $this->assertEquals('/absolute/path', $result);
+    }
+
+    public function testExpandTildeWithUsername(): void
+    {
+        // ~username pattern (not ~/ or bare ~) is returned unchanged
+        $result = Paths::expandTilde('~otheruser/path');
+        $this->assertEquals('~otheruser/path', $result);
+    }
+
+    public function testExpandTildeWhenHomeNotSet(): void
+    {
+        $origHome = getenv('HOME');
+        $origUserProfile = getenv('USERPROFILE');
+
+        putenv('HOME');
+        putenv('USERPROFILE');
+
+        try {
+            $result = Paths::expandTilde('~/something');
+            $this->assertEquals('~/something', $result);
+        } finally {
+            if ($origHome !== false) {
+                putenv('HOME=' . $origHome);
+            }
+            if ($origUserProfile !== false) {
+                putenv('USERPROFILE=' . $origUserProfile);
+            }
+        }
+    }
+
+    // --- configDir() fallback to HOME ---
+
+    public function testConfigDirFallsBackToHome(): void
+    {
+        // Unset XDG_CONFIG_HOME so it falls back to HOME/.config
+        putenv('XDG_CONFIG_HOME');
+        putenv('HOME=' . $this->tempConfigDir);
+
+        $configDir = Paths::configDir();
+
+        $this->assertEquals($this->tempConfigDir . '/.config/easyaudit', $configDir);
+        $this->assertDirectoryExists($configDir);
+
+        // Cleanup the .config subdir
+        @rmdir($this->tempConfigDir . '/.config/easyaudit');
+        @rmdir($this->tempConfigDir . '/.config');
+    }
+
+    // --- getConfig() edge cases ---
+
+    public function testGetConfigReturnsEmptyForInvalidJson(): void
+    {
+        putenv('XDG_CONFIG_HOME=' . $this->tempConfigDir);
+        Paths::configDir();
+
+        $configFile = $this->tempConfigDir . '/easyaudit/config.json';
+        file_put_contents($configFile, 'not-valid-json{{{');
+
+        $result = Paths::getConfig('key');
+        $this->assertEquals('', $result);
+    }
+
+    public function testGetConfigArrayEntryWithInvalidJson(): void
+    {
+        putenv('XDG_CONFIG_HOME=' . $this->tempConfigDir);
+        Paths::configDir();
+
+        $configFile = $this->tempConfigDir . '/easyaudit/config.json';
+        file_put_contents($configFile, 'broken');
+
+        $result = Paths::getConfig(['key1', 'key2']);
+        $this->assertEquals('', $result);
+    }
+
+    // --- updateConfigFile() edge cases ---
+
+    public function testUpdateConfigFileThrowsOnJsonEncodeFailure(): void
+    {
+        putenv('XDG_CONFIG_HOME=' . $this->tempConfigDir);
+        Paths::configDir();
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Failed to write config data');
+
+        // Invalid UTF-8 causes json_encode to return false
+        Paths::updateConfigFile(['key' => "\xB1\x31"]);
+    }
+
+    // --- getAbsolutePath() with tilde ---
+
+    public function testGetAbsolutePathExpandsTilde(): void
+    {
+        $home = getenv('HOME') ?: getenv('USERPROFILE');
+        $this->assertNotEmpty($home, 'HOME must be set for this test');
+
+        $result = Paths::getAbsolutePath('~/somedir');
+        $this->assertEquals($home . '/somedir', $result);
+    }
 }

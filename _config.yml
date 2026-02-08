@@ -3,10 +3,7 @@ description: Static analysis tool for Magento 2 codebases
 url: https://shop.crealoz.fr
 baseurl: /documentation
 
-remote_theme: jekyll/minima
-
 plugins:
-  - jekyll-remote-theme
   - jekyll-relative-links
   - jekyll-optional-front-matter
 

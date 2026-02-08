@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/styles.css' | relative_url }}">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="site-title" href="{{ '/' | relative_url }}">EasyAudit</a>
+    <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav">
+      <a href="{{ '/' | relative_url }}">Home</a>
+      <a href="{{ '/docs/cli-usage' | relative_url }}">CLI Usage</a>
+      <a href="{{ '/docs/processors' | relative_url }}">Processors</a>
+      <a href="{{ '/docs/ci-cd' | relative_url }}">CI/CD</a>
+      <a href="{{ '/CHANGELOG' | relative_url }}">Changelog</a>
+      <a href="https://github.com/crealoz/easyaudit-cli">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-content">
+  <div class="container">
+    {{ content }}
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    EasyAudit &mdash; Static analysis for Magento 2
+  </div>
+</footer>
+
+<script>
+(function () {
+  var btn = document.querySelector('.menu-toggle');
+  var nav = document.querySelector('.site-nav');
+  if (!btn || !nav) return;
+  btn.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+})();
+</script>
+
+</body>
+</html>

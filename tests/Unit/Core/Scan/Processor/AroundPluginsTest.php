@@ -210,4 +210,202 @@ PHP;
 
         $this->assertEquals(0, $this->processor->getFoundCount());
     }
+
+    public function testProcessDetectsOverrideWhenNoCallableFound(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class OverridePlugin
+{
+    public function aroundGetValue($subject)
+    {
+        return 'overridden';
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $this->processor->process($files);
+        $report = $this->processor->getReport();
+        ob_end_clean();
+
+        $hasOverride = false;
+        foreach ($report as $rule) {
+            if ($rule['ruleId'] === 'overrideNotPlugin') {
+                $hasOverride = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($hasOverride, 'Should detect override pattern (no callable)');
+    }
+
+    public function testProcessDetectsProceedConvention(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class ProceedPlugin
+{
+    public function aroundSave($subject, $proceed)
+    {
+        $result = $proceed();
+        $this->log('saved');
+        return $result;
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+    }
+
+    public function testProcessHandlesMultipleAroundMethods(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class MultiPlugin
+{
+    public function aroundGetName($subject, callable $proceed)
+    {
+        $result = $proceed();
+        return strtoupper($result);
+    }
+
+    public function aroundSetName($subject, callable $proceed, $name)
+    {
+        $this->validate($name);
+        return $proceed();
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThanOrEqual(2, $processor->getFoundCount());
+    }
+
+    public function testReportContainsAllThreeCategories(): void
+    {
+        // Create files that trigger all three categories
+        $afterContent = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class AfterP
+{
+    public function aroundGetA($subject, callable $proceed)
+    {
+        $result = $proceed();
+        $this->doAfter($result);
+        return $result;
+    }
+}
+PHP;
+
+        $beforeContent = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class BeforeP
+{
+    public function aroundGetB($subject, callable $proceed)
+    {
+        $this->doBefore();
+        return $proceed();
+    }
+}
+PHP;
+
+        $overrideContent = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class OverrideP
+{
+    public function aroundGetC($subject)
+    {
+        return 'overridden';
+    }
+}
+PHP;
+
+        $file1 = $this->createTempFile($afterContent);
+        $file2 = $this->createTempFile($beforeContent);
+        $file3 = $this->createTempFile($overrideContent);
+
+        $processor = new AroundPlugins();
+        $files = ['php' => [$file1, $file2, $file3]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('aroundToAfterPlugin', $ruleIds);
+        $this->assertContains('aroundToBeforePlugin', $ruleIds);
+        $this->assertContains('overrideNotPlugin', $ruleIds);
+    }
+
+    public function testGetLongDescription(): void
+    {
+        $desc = $this->processor->getLongDescription();
+        $this->assertStringContainsString('around', strtolower($desc));
+        $this->assertStringContainsString('performance', strtolower($desc));
+    }
+
+    public function testProcessWithClosureTypeHint(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class ClosurePlugin
+{
+    public function aroundExecute($subject, \Closure $closure)
+    {
+        $this->before();
+        return $closure();
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+    }
 }
