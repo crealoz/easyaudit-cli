@@ -1,11 +1,21 @@
 # EasyAudit — Paid PR Request (GitHub Actions)
 
-This guide explains how to install and use the **EasyAudit – Automated PR (paid)** workflow in your repository.  
+This guide explains how to install and use the **EasyAudit – Automated PR (paid)** workflow in your repository.
 With one click, it runs `easyaudit-cli`, calls `easyaudit-api` for billing/authorization, and creates a Pull Request with the generated changes.
 
-> **Billing notice**  
-> Running this workflow will call the paid EasyAudit service and may incur charges. Make sure you have purchased credits before use.  
-> 👉 Purchase credits: https://shop.crealoz.fr/shop/credits-for-easyaudit-fixer/
+> **Billing notice**
+> Running this workflow will call the paid EasyAudit service and may incur charges. Make sure you have purchased credits before use.
+> Purchase credits: https://shop.crealoz.fr/shop/credits-for-easyaudit-fixer/
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [How to run](#how-to-run)
+- [Expected outputs](#expected-outputs)
+- [Troubleshooting](#troubleshooting)
+- [Credits & Billing](#credits--billing)
+- [TLS / self-signed certificates](#tls--self-signed-certificates)
 
 ---
 

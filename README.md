@@ -85,57 +85,9 @@ jobs:
 
 ### Scan, fix & create PR (paid)
 
-One-click workflow: scan, call the paid API for fixes, and open a PR with the patches.
+One-click workflow: scan, call the paid API for fixes, and open a PR with the patches. Requires `EASYAUDIT_AUTH` secret.
 
-```yaml
-name: "EasyAudit - fix & PR (paid)"
-
-on:
-  workflow_dispatch:
-    inputs:
-      ack_paid:
-        description: "I confirm this action is PAID and a PR will be billed"
-        required: true
-        type: boolean
-        default: false
-
-permissions:
-  contents: write
-  pull-requests: write
-
-jobs:
-  fix-and-pr:
-    if: ${{ inputs.ack_paid == true }}
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/crealoz/easyaudit:latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Scan
-        run: |
-          mkdir -p report
-          easyaudit scan --format=json --output=report/easyaudit-report.json \
-            --exclude="vendor,generated,var,pub/static,pub/media" "$GITHUB_WORKSPACE"
-      - name: Apply fixes (paid)
-        env:
-          EASYAUDIT_AUTH: ${{ secrets.EASYAUDIT_AUTH }}
-        run: easyaudit fix-apply report/easyaudit-report.json --confirm
-      - name: Apply patches & create PR
-        uses: peter-evans/create-pull-request@v8
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref_name }}-easyaudit-fix
-          commit-message: "Apply EasyAudit fixes"
-          title: "EasyAudit automatic fixes"
-          body: |
-            Automatically generated fixes from branch `${{ github.ref_name }}`.
-```
-
-> Requires `EASYAUDIT_AUTH` secret. See [Automated PR docs](docs/request-pr.md) for full setup.
-
-> **Found issues?** EasyAudit can automatically fix many of them. [Set up automated PR →](docs/request-pr.md)
+See [Automated PR docs](docs/request-pr.md) for the full workflow file and setup instructions.
 
 ## Documentation
 

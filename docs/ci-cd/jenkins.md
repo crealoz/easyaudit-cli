@@ -92,45 +92,6 @@ pipeline {
     stages {
         stage('EasyAudit Scan') {
             steps {
-                script {
-                    sh '''
-                        mkdir -p report
-                        easyaudit scan \
-                            --format=sarif \
-                            --output=report/easyaudit.sarif \
-                            --exclude="vendor,generated,var" \
-                            "$WORKSPACE"
-                    '''
-                    def exitCode = sh(script: 'echo $?', returnStdout: true).trim().toInteger()
-                    if (exitCode == 2) {
-                        error('EasyAudit found critical issues')
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: 'report/*', fingerprint: true
-        }
-    }
-}
-```
-
-Alternative approach using `returnStatus`:
-
-```groovy
-pipeline {
-    agent {
-        docker {
-            image 'ghcr.io/crealoz/easyaudit:latest'
-        }
-    }
-
-    stages {
-        stage('EasyAudit Scan') {
-            steps {
                 sh 'mkdir -p report'
                 script {
                     def exitCode = sh(
@@ -298,4 +259,4 @@ pipeline {
 
 ---
 
-[Back to README](../../README.md)
+[Back to CI/CD Overview](../ci-cd.md) | [Back to README](../../README.md)

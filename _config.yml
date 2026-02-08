@@ -1,0 +1,48 @@
+title: EasyAudit
+description: Static analysis tool for Magento 2 codebases
+url: https://shop.crealoz.fr
+baseurl: /documentation
+
+theme: minima
+
+plugins:
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+
+relative_links:
+  enabled: true
+  collections: true
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: "README.md"
+    values:
+      permalink: /
+
+exclude:
+  - src
+  - tests
+  - bin
+  - vendor
+  - .github
+  - .gitignore
+  - .claude
+  - .idea
+  - .phpunit.cache
+  - box.json
+  - composer.json
+  - composer.lock
+  - coverage.xml
+  - phpunit.xml
+  - phpcs.xml
+  - Dockerfile
+  - CLAUDE.md
+  - LICENSE
+  - "*.phar"
+  - patches
+  - logs
+  - report

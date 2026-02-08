@@ -73,12 +73,12 @@ before_install:
 script:
   - mkdir -p report
   - |
+    EXIT_CODE=0
     docker run --rm -v "$TRAVIS_BUILD_DIR:/workspace" ghcr.io/crealoz/easyaudit:latest scan \
       --format=sarif \
       --output=/workspace/report/easyaudit.sarif \
       --exclude="vendor,generated,var" \
-      /workspace
-    EXIT_CODE=$?
+      /workspace || EXIT_CODE=$?
     if [ $EXIT_CODE -eq 2 ]; then
       echo "EasyAudit found critical issues"
       exit 1
@@ -216,4 +216,4 @@ after_success:
 
 ---
 
-[Back to README](../../README.md)
+[Back to CI/CD Overview](../ci-cd.md) | [Back to README](../../README.md)

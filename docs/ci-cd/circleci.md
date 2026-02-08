@@ -87,12 +87,12 @@ jobs:
           name: Run EasyAudit (fail on errors)
           command: |
             mkdir -p report
+            EXIT_CODE=0
             easyaudit scan \
               --format=sarif \
               --output=report/easyaudit.sarif \
               --exclude="vendor,generated,var" \
-              "$PWD"
-            EXIT_CODE=$?
+              "$PWD" || EXIT_CODE=$?
             if [ $EXIT_CODE -eq 2 ]; then
               echo "EasyAudit found critical issues"
               exit 1
@@ -209,4 +209,4 @@ Set `EASYAUDIT_AUTH` in CircleCI:
 
 ---
 
-[Back to README](../../README.md)
+[Back to CI/CD Overview](../ci-cd.md) | [Back to README](../../README.md)

@@ -62,12 +62,12 @@ pipelines:
         script:
           - mkdir -p report
           - |
+            EXIT_CODE=0
             easyaudit scan \
               --format=sarif \
               --output=report/easyaudit.sarif \
               --exclude="vendor,generated,var" \
-              "$BITBUCKET_CLONE_DIR"
-            EXIT_CODE=$?
+              "$BITBUCKET_CLONE_DIR" || EXIT_CODE=$?
             if [ $EXIT_CODE -eq 2 ]; then
               echo "EasyAudit found critical issues"
               exit 1
@@ -159,4 +159,4 @@ pipelines:
 
 ---
 
-[Back to README](../../README.md)
+[Back to CI/CD Overview](../ci-cd.md) | [Back to README](../../README.md)

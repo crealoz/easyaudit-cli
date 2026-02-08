@@ -96,12 +96,12 @@ steps:
 
   - script: |
       mkdir -p $(Build.ArtifactStagingDirectory)/report
+      EXIT_CODE=0
       easyaudit scan \
         --format=sarif \
         --output=$(Build.ArtifactStagingDirectory)/report/easyaudit.sarif \
         --exclude="vendor,generated,var" \
-        "$(Build.SourcesDirectory)"
-      EXIT_CODE=$?
+        "$(Build.SourcesDirectory)" || EXIT_CODE=$?
       if [ $EXIT_CODE -eq 2 ]; then
         echo "##vso[task.logissue type=error]EasyAudit found critical issues"
         exit 1
@@ -208,4 +208,4 @@ steps:
 
 ---
 
-[Back to README](../../README.md)
+[Back to CI/CD Overview](../ci-cd.md) | [Back to README](../../README.md)

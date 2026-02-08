@@ -2,13 +2,29 @@
 
 This directory contains test fixtures for EasyAudit CLI processors.
 
-## Newly Added Processors
+## Table of Contents
 
-### Session 1 - XML Processors (2025-01-06 afternoon)
+- [Dependency Injection (DI)](#dependency-injection-di)
+  - [Preferences](#preferences-processor)
+  - [ProxyForHeavyClasses](#proxyforheavyclasses-processor)
+- [Code Quality](#code-quality)
+  - [PaymentInterfaceUseAudit](#paymentinterfaceuseaudit-processor)
+- [Templates & View Layer](#templates--view-layer)
+  - [Cacheable](#cacheable-processor)
+  - [AdvancedBlockVsViewModel](#advancedblockvsviewmodel-processor)
+  - [Helpers](#helpers-processor)
+- [Architecture](#architecture)
+  - [BlockViewModelRatio](#blockviewmodelratio-processor)
+  - [UnusedModules](#unusedmodules-processor)
+- [Testing All Processors](#testing-all-processors)
+- [Scanner File Type Mapping](#scanner-file-type-mapping)
+- [Expected Results](#expected-results)
 
-The following XML processors have been ported from easy-audit to easyaudit-cli:
+---
 
-### 1. Preferences Processor
+## Dependency Injection (DI)
+
+### Preferences Processor
 
 **Location**: `src/Core/Scan/Processor/Preferences.php`
 
@@ -34,7 +50,74 @@ The following XML processors have been ported from easy-audit to easyaudit-cli:
 
 ---
 
-### 2. Cacheable Processor
+### ProxyForHeavyClasses Processor
+
+**Location**: `src/Core/Scan/Processor/ProxyForHeavyClasses.php`
+
+**Purpose**: Checks if heavy classes (Session, Collection, ResourceModel) are injected without proxy configuration.
+
+**Fixtures**:
+- `ProxyForHeavyClasses/Bad/` - Customer class injects Session without proxy (should trigger error)
+- `ProxyForHeavyClasses/Good/` - Customer class injects Session with proxy in di.xml (should pass)
+
+**Testing**:
+```bash
+# Test bad (should find 1 issue - Session without proxy)
+./easyaudit.phar scan tests/fixtures/ProxyForHeavyClasses/Bad/
+
+# Test good (should pass - proxy configured)
+./easyaudit.phar scan tests/fixtures/ProxyForHeavyClasses/Good/
+
+# Test both
+./easyaudit.phar scan tests/fixtures/ProxyForHeavyClasses/
+```
+
+**What it detects**:
+- Classes injecting Session, Collection, or ResourceModel
+- Checks if proxy is configured in di.xml
+- Reports missing proxy configurations
+- Level: `error`
+
+**Heavy class patterns**: Session, Collection, ResourceModel
+
+---
+
+## Code Quality
+
+### PaymentInterfaceUseAudit Processor
+
+**Location**: `src/Core/Scan/Processor/PaymentInterfaceUseAudit.php`
+
+**Purpose**: Detects payment methods extending deprecated AbstractMethod class.
+
+**Fixtures**:
+- `PaymentInterfaceUseAudit/Bad/DeprecatedPaymentMethod.php` - Extends AbstractMethod (should trigger error)
+- `PaymentInterfaceUseAudit/Bad/AnotherBadPayment.php` - Also extends AbstractMethod with use statement
+- `PaymentInterfaceUseAudit/Good/ModernPaymentMethod.php` - Implements PaymentMethodInterface (good)
+- `PaymentInterfaceUseAudit/Good/PaymentAdapter.php` - Uses gateway pattern (good)
+
+**Testing**:
+```bash
+# Test bad files (should find 2 issues)
+./easyaudit.phar scan tests/fixtures/PaymentInterfaceUseAudit/Bad/
+
+# Test good files (should pass)
+./easyaudit.phar scan tests/fixtures/PaymentInterfaceUseAudit/Good/
+
+# Test all
+./easyaudit.phar scan tests/fixtures/PaymentInterfaceUseAudit/
+```
+
+**What it detects**:
+- `extends \Magento\Payment\Model\Method\AbstractMethod`
+- Both fully qualified and imported class names
+- Level: `error`
+
+---
+
+## Templates & View Layer
+
+### Cacheable Processor
 
 **Location**: `src/Core/Scan/Processor/Cacheable.php`
 
@@ -61,7 +144,7 @@ The following XML processors have been ported from easy-audit to easyaudit-cli:
 
 ---
 
-### 3. AdvancedBlockVsViewModel Processor
+### AdvancedBlockVsViewModel Processor
 
 **Location**: `src/Core/Scan/Processor/AdvancedBlockVsViewModel.php`
 
@@ -97,7 +180,117 @@ The following XML processors have been ported from easy-audit to easyaudit-cli:
 
 ---
 
-## Testing All New Processors
+### Helpers Processor
+
+**Location**: `src/Core/Scan/Processor/Helpers.php`
+
+**Purpose**: Detects deprecated Helper patterns:
+1. Helper classes extending AbstractHelper
+2. Helpers used in phtml templates (should use ViewModels)
+
+**Fixtures**:
+- `Helpers/Bad/Helper/Data.php` - Extends AbstractHelper (deprecated)
+- `Helpers/Bad/view/frontend/templates/product.phtml` - Uses helper in template
+- `Helpers/Good/Helper/PriceUtility.php` - Simple utility without AbstractHelper
+- `Helpers/Good/ViewModel/ProductDetails.php` - ViewModel for presentation logic
+- `Helpers/Good/view/frontend/templates/product.phtml` - Uses ViewModel
+
+**Testing**:
+```bash
+# Test bad (should find 2 issues: AbstractHelper + helper in phtml)
+./easyaudit.phar scan tests/fixtures/Helpers/Bad/
+
+# Test good (should pass)
+./easyaudit.phar scan tests/fixtures/Helpers/Good/
+
+# Test all
+./easyaudit.phar scan tests/fixtures/Helpers/
+```
+
+**What it detects**:
+- Classes extending `Magento\Framework\App\Helper\AbstractHelper`
+- `$this->helper()` usage in phtml files
+- Matches helpers to templates
+- Two severity levels:
+  - `error`: Helper extends AbstractHelper AND used in phtml
+  - `warning`: Helper extends AbstractHelper but not in phtml
+
+**Ignored helpers** (Magento core exceptions):
+- Magento\\Customer\\Helper\\Address
+- Magento\\Tax\\Helper\\Data
+- Magento\\Msrp\\Helper\\Data
+- Magento\\Catalog\\Helper\\Output
+- Magento\\Directory\\Helper\\Data
+
+---
+
+## Architecture
+
+### BlockViewModelRatio Processor
+
+**Location**: `src/Core/Scan/Processor/BlockViewModelRatio.php`
+
+**Purpose**: Analyzes the ratio of Block classes to total classes per module to identify poor code organization.
+
+**Fixtures**:
+- `BlockViewModelRatio/HighRatio/` - Module with 80% blocks (4 blocks, 1 model) - should trigger warning
+- `BlockViewModelRatio/GoodRatio/` - Module with 20% blocks (1 block, 2 viewmodels, 1 model, 1 helper) - should pass
+
+**Testing**:
+```bash
+# Test with high block ratio (should find 1 issue)
+./easyaudit.phar scan tests/fixtures/BlockViewModelRatio/HighRatio/
+
+# Test with good ratio (should find no issues)
+./easyaudit.phar scan tests/fixtures/BlockViewModelRatio/GoodRatio/
+
+# Test both
+./easyaudit.phar scan tests/fixtures/BlockViewModelRatio/
+```
+
+**What it detects**:
+- Modules where more than 50% of classes are Blocks
+- Reports module name, ratio, block count, and total count
+- Suggests using ViewModels for better separation of concerns
+- Level: `warning`
+
+**Threshold**: Block ratio > 0.5 (50%)
+
+---
+
+### UnusedModules Processor
+
+**Location**: `src/Core/Scan/Processor/UnusedModules.php`
+
+**Purpose**: Identifies modules present in codebase but disabled in app/etc/config.php.
+
+**Fixtures**:
+- `UnusedModules/app/code/Vendor/ActiveModule/etc/module.xml` - Active module (enabled in config.php)
+- `UnusedModules/app/code/Vendor/DisabledModule/etc/module.xml` - Disabled module (should be flagged)
+- `UnusedModules/app/code/Vendor/AnotherActive/etc/module.xml` - Active module
+- `UnusedModules/app/etc/config.php` - Mock Magento config showing module states
+
+**Testing**:
+```bash
+# Test from UnusedModules directory (will find config.php automatically)
+cd tests/fixtures/UnusedModules
+../../../easyaudit.phar scan .
+
+# Or test from root
+./easyaudit.phar scan tests/fixtures/UnusedModules/
+```
+
+**What it detects**:
+- Modules with status `0` in app/etc/config.php
+- Reports module name and path
+- Suggests removing unused modules from codebase
+- Level: `note` (suggestion)
+
+**Important**: This processor requires access to `app/etc/config.php`. It will skip the check if the file cannot be found.
+
+---
+
+## Testing All Processors
 
 To test all fixtures at once:
 
@@ -140,191 +333,12 @@ The scanner automatically maps file extensions to processor types:
 
 ---
 
-### Session 2 - Logic Processors (2025-01-06 evening)
-
-The following logic processors have been ported from easy-audit to easyaudit-cli:
-
-### 4. BlockViewModelRatio Processor
-
-**Location**: `src/Core/Scan/Processor/BlockViewModelRatio.php`
-
-**Purpose**: Analyzes the ratio of Block classes to total classes per module to identify poor code organization.
-
-**Fixtures**:
-- `BlockViewModelRatio/HighRatio/` - Module with 80% blocks (4 blocks, 1 model) - should trigger warning
-- `BlockViewModelRatio/GoodRatio/` - Module with 20% blocks (1 block, 2 viewmodels, 1 model, 1 helper) - should pass
-
-**Testing**:
-```bash
-# Test with high block ratio (should find 1 issue)
-./easyaudit.phar scan tests/fixtures/BlockViewModelRatio/HighRatio/
-
-# Test with good ratio (should find no issues)
-./easyaudit.phar scan tests/fixtures/BlockViewModelRatio/GoodRatio/
-
-# Test both
-./easyaudit.phar scan tests/fixtures/BlockViewModelRatio/
-```
-
-**What it detects**:
-- Modules where more than 50% of classes are Blocks
-- Reports module name, ratio, block count, and total count
-- Suggests using ViewModels for better separation of concerns
-- Level: `warning`
-
-**Threshold**: Block ratio > 0.5 (50%)
-
----
-
-### 5. UnusedModules Processor
-
-**Location**: `src/Core/Scan/Processor/UnusedModules.php`
-
-**Purpose**: Identifies modules present in codebase but disabled in app/etc/config.php.
-
-**Fixtures**:
-- `UnusedModules/app/code/Vendor/ActiveModule/etc/module.xml` - Active module (enabled in config.php)
-- `UnusedModules/app/code/Vendor/DisabledModule/etc/module.xml` - Disabled module (should be flagged)
-- `UnusedModules/app/code/Vendor/AnotherActive/etc/module.xml` - Active module
-- `UnusedModules/app/etc/config.php` - Mock Magento config showing module states
-
-**Testing**:
-```bash
-# Test from UnusedModules directory (will find config.php automatically)
-cd tests/fixtures/UnusedModules
-../../../easyaudit.phar scan .
-
-# Or test from root
-./easyaudit.phar scan tests/fixtures/UnusedModules/
-```
-
-**What it detects**:
-- Modules with status `0` in app/etc/config.php
-- Reports module name and path
-- Suggests removing unused modules from codebase
-- Level: `note` (suggestion)
-
-**Important**: This processor requires access to `app/etc/config.php`. It will skip the check if the file cannot be found.
-
----
-
 ## Notes
 
 - These processors follow the same pattern as existing processors (AroundPlugins, UseOfRegistry, etc.)
 - All processors extend `AbstractProcessor` and implement the required methods
 - Test fixtures are organized by processor name for easy maintenance
 - The Scanner automatically discovers and runs all processors in `src/Core/Scan/Processor/`
-
----
-
-### Session 3 - PHP/Code Quality & Helpers Processors (2025-01-06 evening)
-
-The following PHP and Code Quality processors have been ported:
-
-### 6. ProxyForHeavyClasses Processor
-
-**Location**: `src/Core/Scan/Processor/ProxyForHeavyClasses.php`
-
-**Purpose**: Checks if heavy classes (Session, Collection, ResourceModel) are injected without proxy configuration.
-
-**Fixtures**:
-- `ProxyForHeavyClasses/Bad/` - Customer class injects Session without proxy (should trigger error)
-- `ProxyForHeavyClasses/Good/` - Customer class injects Session with proxy in di.xml (should pass)
-
-**Testing**:
-```bash
-# Test bad (should find 1 issue - Session without proxy)
-./easyaudit.phar scan tests/fixtures/ProxyForHeavyClasses/Bad/
-
-# Test good (should pass - proxy configured)
-./easyaudit.phar scan tests/fixtures/ProxyForHeavyClasses/Good/
-
-# Test both
-./easyaudit.phar scan tests/fixtures/ProxyForHeavyClasses/
-```
-
-**What it detects**:
-- Classes injecting Session, Collection, or ResourceModel
-- Checks if proxy is configured in di.xml
-- Reports missing proxy configurations
-- Level: `error`
-
-**Heavy class patterns**: Session, Collection, ResourceModel
-
----
-
-### 7. PaymentInterfaceUseAudit Processor
-
-**Location**: `src/Core/Scan/Processor/PaymentInterfaceUseAudit.php`
-
-**Purpose**: Detects payment methods extending deprecated AbstractMethod class.
-
-**Fixtures**:
-- `PaymentInterfaceUseAudit/Bad/DeprecatedPaymentMethod.php` - Extends AbstractMethod (should trigger error)
-- `PaymentInterfaceUseAudit/Bad/AnotherBadPayment.php` - Also extends AbstractMethod with use statement
-- `PaymentInterfaceUseAudit/Good/ModernPaymentMethod.php` - Implements PaymentMethodInterface (good)
-- `PaymentInterfaceUseAudit/Good/PaymentAdapter.php` - Uses gateway pattern (good)
-
-**Testing**:
-```bash
-# Test bad files (should find 2 issues)
-./easyaudit.phar scan tests/fixtures/PaymentInterfaceUseAudit/Bad/
-
-# Test good files (should pass)
-./easyaudit.phar scan tests/fixtures/PaymentInterfaceUseAudit/Good/
-
-# Test all
-./easyaudit.phar scan tests/fixtures/PaymentInterfaceUseAudit/
-```
-
-**What it detects**:
-- `extends \Magento\Payment\Model\Method\AbstractMethod`
-- Both fully qualified and imported class names
-- Level: `error`
-
----
-
-### 8. Helpers Processor
-
-**Location**: `src/Core/Scan/Processor/Helpers.php`
-
-**Purpose**: Detects deprecated Helper patterns:
-1. Helper classes extending AbstractHelper
-2. Helpers used in phtml templates (should use ViewModels)
-
-**Fixtures**:
-- `Helpers/Bad/Helper/Data.php` - Extends AbstractHelper (deprecated)
-- `Helpers/Bad/view/frontend/templates/product.phtml` - Uses helper in template
-- `Helpers/Good/Helper/PriceUtility.php` - Simple utility without AbstractHelper
-- `Helpers/Good/ViewModel/ProductDetails.php` - ViewModel for presentation logic
-- `Helpers/Good/view/frontend/templates/product.phtml` - Uses ViewModel
-
-**Testing**:
-```bash
-# Test bad (should find 2 issues: AbstractHelper + helper in phtml)
-./easyaudit.phar scan tests/fixtures/Helpers/Bad/
-
-# Test good (should pass)
-./easyaudit.phar scan tests/fixtures/Helpers/Good/
-
-# Test all
-./easyaudit.phar scan tests/fixtures/Helpers/
-```
-
-**What it detects**:
-- Classes extending `Magento\Framework\App\Helper\AbstractHelper`
-- `$this->helper()` usage in phtml files
-- Matches helpers to templates
-- Two severity levels:
-  - `error`: Helper extends AbstractHelper AND used in phtml
-  - `warning`: Helper extends AbstractHelper but not in phtml
-
-**Ignored helpers** (Magento core exceptions):
-- Magento\\Customer\\Helper\\Address
-- Magento\\Tax\\Helper\\Data
-- Magento\\Msrp\\Helper\\Data
-- Magento\\Catalog\\Helper\\Output
-- Magento\\Directory\\Helper\\Data
 
 ---
 

@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: easyaudit scan --format=sarif --output=report.sarif .
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report.sarif
 ```

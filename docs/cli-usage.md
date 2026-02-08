@@ -1,12 +1,17 @@
 # CLI Usage
 
-## Installation
+## Table of Contents
 
-### Clone the repository
-```bash
-git clone git@github.com:crealoz/easyaudit-cli.git
-cd easyaudit-cli
-```
+- [Installation](#installation)
+- [Commands](#commands)
+- [Common Use Cases](#common-use-cases)
+- [Docker Usage](#docker-usage)
+- [Exit Codes](#exit-codes)
+- [Output Examples](#output-examples)
+
+---
+
+## Installation
 
 ### Using PHAR (recommended)
 
@@ -22,6 +27,12 @@ sudo mv easyaudit.phar /usr/local/bin/easyaudit
 ### Using Docker
 ```bash
 docker pull ghcr.io/crealoz/easyaudit:latest
+```
+
+### From Source
+```bash
+git clone git@github.com:crealoz/easyaudit-cli.git
+cd easyaudit-cli
 ```
 
 ---
@@ -156,10 +167,10 @@ php bin/easyaudit scan /path/to/magento --format=sarif || exit 1
 
 ![cli-scanning.png](../images/cli-scanning.png)
 
-> **💡 Auto-fix available**
-> Many issues can be fixed automatically. Run `easyaudit fix-apply` or [set up automated PRs →](request-pr.md)
+> **Auto-fix available**
+> Many issues can be fixed automatically. Run `easyaudit fix-apply` or [set up automated PRs](request-pr.md)
+
 ![cli-fix-apply.png](../images/cli-fix-apply.png)
- 
 
 ### JSON
 ```json
@@ -197,6 +208,7 @@ open report/easyaudit-report.html         # macOS
 The report is fully standalone (all CSS inline, no external dependencies) and can be shared as a single file or printed to PDF directly from the browser.
 
 ![easyaudit-html-report.png](../images/easyaudit-html-report.png)
+
 ---
 
 [Back to README](../README.md)

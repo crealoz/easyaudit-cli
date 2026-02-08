@@ -72,12 +72,12 @@ easyaudit:
   script:
     - mkdir -p report
     - |
+      EXIT_CODE=0
       easyaudit scan \
         --format=sarif \
         --output=report/easyaudit.sarif \
         --exclude="vendor,generated,var" \
-        "$CI_PROJECT_DIR"
-      EXIT_CODE=$?
+        "$CI_PROJECT_DIR" || EXIT_CODE=$?
       if [ $EXIT_CODE -eq 2 ]; then
         echo "EasyAudit found critical issues"
         exit 1
@@ -155,4 +155,4 @@ If you use the `reports: sast` artifact type, results appear in:
 
 ---
 
-[Back to README](../../README.md)
+[Back to CI/CD Overview](../ci-cd.md) | [Back to README](../../README.md)

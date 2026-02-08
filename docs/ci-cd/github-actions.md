@@ -2,6 +2,16 @@
 
 EasyAudit integrates with GitHub Actions for automated code scanning. Results appear in the **Security** tab of your repository.
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Workflow Variants](#workflow-variants)
+- [Private Repositories](#private-repositories)
+- [Required Permissions](#required-permissions)
+- [Environment Variables](#environment-variables)
+- [Viewing Results](#viewing-results)
+- [See Also](#see-also)
+
 ---
 
 ## Quick Start
@@ -39,7 +49,7 @@ jobs:
             "$GITHUB_WORKSPACE"
 
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report/easyaudit.sarif
 ```
@@ -80,7 +90,7 @@ jobs:
             --output=report/easyaudit.sarif \
             "$GITHUB_WORKSPACE/app/code"
 
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report/easyaudit.sarif
 ```
@@ -117,7 +127,7 @@ jobs:
             --exclude="vendor,generated,var,pub/static,pub/media,dev,setup" \
             "$GITHUB_WORKSPACE"
 
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report/easyaudit.sarif
 ```
@@ -145,20 +155,19 @@ jobs:
       - name: Run EasyAudit (fail on errors)
         run: |
           mkdir -p report
+          EXIT_CODE=0
           easyaudit scan \
             --format=sarif \
             --output=report/easyaudit.sarif \
             --exclude="vendor,generated,var" \
-            "$GITHUB_WORKSPACE"
+            "$GITHUB_WORKSPACE" || EXIT_CODE=$?
 
-          # Exit code 2 = errors found
-          EXIT_CODE=$?
           if [ $EXIT_CODE -eq 2 ]; then
             echo "::error::EasyAudit found critical issues"
             exit 1
           fi
 
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: report/easyaudit.sarif
@@ -373,4 +382,4 @@ permissions:
 
 ---
 
-[Back to README](../../README.md)
+[Back to CI/CD Overview](../ci-cd.md) | [Back to README](../../README.md)

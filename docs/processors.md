@@ -2,6 +2,27 @@
 
 EasyAudit includes **16 static analysis processors** for Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
 
+## Summary
+
+| Processor | Category | Severity | Description |
+|-----------|----------|----------|-------------|
+| [SameModulePlugins](#samemodulplugins) | DI | Warning | Plugins targeting classes in the same module |
+| [MagentoFrameworkPlugin](#magentoframeworkplugin) | DI | Warning | Plugins on Magento Framework classes |
+| [AroundPlugins](#aroundplugins) | DI | Note | Around plugins replaceable with before/after |
+| [NoProxyInCommands](#noproxyincommands) | DI | Warning | Console commands without proxy for heavy deps |
+| [Preferences](#preferences) | DI | Error | Multiple preferences for the same interface |
+| [ProxyForHeavyClasses](#proxyforheavyclasses) | DI | Warning | Heavy classes injected without proxies |
+| [HardWrittenSQL](#hardwrittensql) | Code Quality | Error | Raw SQL queries in PHP code |
+| [UseOfRegistry](#useofregistry) | Code Quality | Warning | Deprecated Registry usage |
+| [UseOfObjectManager](#useofobjectmanager) | Code Quality | Error | Direct ObjectManager usage |
+| [SpecificClassInjection](#specificclassinjection) | Code Quality | Warning | Concrete class injection instead of interfaces |
+| [PaymentInterfaceUseAudit](#paymentinterfaceuseaudit) | Code Quality | Error | Deprecated payment method implementations |
+| [Cacheable](#cacheable) | Templates | Warning | Blocks with `cacheable="false"` in layout XML |
+| [AdvancedBlockVsViewModel](#advancedblockvsviewmodel) | Templates | Note | `$this` usage and data processing in phtml |
+| [Helpers](#helpers) | Templates | Warning | Deprecated Helper patterns |
+| [BlockViewModelRatio](#blockviewmodelratio) | Architecture | Note | High block-to-viewmodel ratio per module |
+| [UnusedModules](#unusedmodules) | Architecture | Note | Modules present but disabled in config.php |
+
 ---
 
 ## Dependency Injection (DI) Analysis
