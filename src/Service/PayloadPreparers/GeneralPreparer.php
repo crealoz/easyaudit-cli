@@ -68,7 +68,7 @@ class GeneralPreparer extends AbstractPreparer
         // Transform issues array to rules object
         $rules = [];
         foreach ($data['issues'] as $issue) {
-            $ruleId = $issue['ruleId'];
+            $ruleId = self::MAPPED_RULES[$issue['ruleId']] ?? $issue['ruleId'];
             $metadata = $issue['metadata'] ?? [];
 
             // Default: merge metadata for same rule

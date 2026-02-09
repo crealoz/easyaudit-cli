@@ -5,7 +5,6 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
-use PHPUnit\Event\Runtime\PHP;
 
 /**
  * Class UseOfObjectManager
@@ -112,7 +111,7 @@ class UseOfObjectManager extends AbstractProcessor
     {
         // Check if ObjectManager is mentioned in the file
         if (
-            $this->isFactory($fileContent) ||
+            Classes::isFactoryClass($fileContent) ||
             (!str_contains($fileContent, self::OM_INTERFACE) &&
             !str_contains($fileContent, self::OM_CLASS))
         ) {
@@ -212,18 +211,6 @@ class UseOfObjectManager extends AbstractProcessor
     }
 
     /**
-     * Check if the class is a Factory
-     * Factories are allowed to use ObjectManager
-     *
-     * @param string $fileContent
-     * @return bool
-     */
-    private function isFactory(string $fileContent): bool
-    {
-        return preg_match('/class\s+\w*Factory\b/', $fileContent) === 1;
-    }
-
-    /**
      * Record direct ObjectManager usage (ERROR)
      *
      * @param string $file File path
@@ -232,7 +219,7 @@ class UseOfObjectManager extends AbstractProcessor
      */
     private function addObjectManagerUsage(string $file, int $lineNumber, string $className): void
     {
-        $propertyName = $this->derivePropertyName($className);
+        $propertyName = Classes::derivePropertyName($className);
         $message = "Direct use of ObjectManager to get '$className'. Use dependency injection instead.";
 
         $this->objectManagerUsages[] = Formater::formatError(
@@ -246,23 +233,6 @@ class UseOfObjectManager extends AbstractProcessor
             ]
         );
         $this->foundCount++;
-    }
-
-    /**
-     * Derive a property name from a class name
-     * e.g., Magento\Catalog\Model\ProductFactory -> productFactory
-     *
-     * @param string $className
-     * @return string
-     */
-    private function derivePropertyName(string $className): string
-    {
-        // Get the short class name (last part after \)
-        $parts = explode('\\', $className);
-        $shortName = end($parts);
-
-        // Convert to camelCase (first letter lowercase)
-        return lcfirst($shortName);
     }
 
     /**

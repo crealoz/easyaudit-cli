@@ -1,6 +1,6 @@
 # Available Processors
 
-EasyAudit includes **16 static analysis processors** for Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
+EasyAudit includes **19 static analysis processors** for Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
 
 ## Summary
 
@@ -12,6 +12,7 @@ EasyAudit includes **16 static analysis processors** for Magento 2 codebases. Ea
 | [NoProxyInCommands](#noproxyincommands) | DI | Warning | Console commands without proxy for heavy deps |
 | [Preferences](#preferences) | DI | Error | Multiple preferences for the same interface |
 | [ProxyForHeavyClasses](#proxyforheavyclasses) | DI | Warning | Heavy classes injected without proxies |
+| [DiAreaScope](#diareascope) | DI | Note | Plugins/preferences in global di.xml for area-specific classes |
 | [HardWrittenSQL](#hardwrittensql) | Code Quality | Error | Raw SQL queries in PHP code |
 | [UseOfRegistry](#useofregistry) | Code Quality | Warning | Deprecated Registry usage |
 | [UseOfObjectManager](#useofobjectmanager) | Code Quality | Error | Direct ObjectManager usage |
@@ -20,6 +21,8 @@ EasyAudit includes **16 static analysis processors** for Magento 2 codebases. Ea
 | [Cacheable](#cacheable) | Templates | Warning | Blocks with `cacheable="false"` in layout XML |
 | [AdvancedBlockVsViewModel](#advancedblockvsviewmodel) | Templates | Note | `$this` usage and data processing in phtml |
 | [Helpers](#helpers) | Templates | Warning | Deprecated Helper patterns |
+| [CollectionInLoop](#collectioninloop) | Performance | Warning | N+1 queries: model/repository loading inside loops |
+| [CountOnCollection](#countoncollection) | Performance | Warning | count() on collections instead of getSize() |
 | [BlockViewModelRatio](#blockviewmodelratio) | Architecture | Note | High block-to-viewmodel ratio per module |
 | [UnusedModules](#unusedmodules) | Architecture | Note | Modules present but disabled in config.php |
 
@@ -62,6 +65,12 @@ Detects heavy classes (Session, Collection, ResourceModel) injected without prox
 
 - **Severity**: Warning
 - **Why it matters**: Heavy classes should use proxies to defer instantiation and improve performance.
+
+### DiAreaScope
+Detects plugins and preferences in global `di.xml` that target area-specific classes.
+
+- **Severity**: Note
+- **Why it matters**: Plugins/preferences on frontend blocks or admin controllers declared in global `etc/di.xml` are loaded for every area (frontend, adminhtml, cron, REST API). Moving them to the appropriate area `di.xml` reduces DI compilation footprint and improves performance.
 
 ---
 
@@ -123,6 +132,22 @@ Detects deprecated Helper patterns.
 - **Why it matters**:
   - Extending `AbstractHelper` is deprecated
   - Using helpers directly in templates (`$this->helper()`) should be replaced with ViewModels
+
+---
+
+## Performance
+
+### CollectionInLoop
+Detects N+1 query patterns: model or repository loading inside loops.
+
+- **Severity**: Warning
+- **Why it matters**: Loading models one by one inside loops (`->load()`, `->getById()`, `->getFirstItem()`) causes N+1 queries, one of the most common performance killers. Use `getList()` with search criteria or a filtered collection to batch-load entities before the loop.
+
+### CountOnCollection
+Detects `count()` usage on Magento collections instead of `getSize()`.
+
+- **Severity**: Warning
+- **Why it matters**: `count($collection)` and `$collection->count()` load all items from the database into memory. Use `$collection->getSize()` which executes a `COUNT(*)` SQL query without loading items.
 
 ---
 

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- GOOD: Plugin on service class in global di.xml (correct scope) -->
+    <type name="Magento\Catalog\Api\ProductRepositoryInterface">
+        <plugin name="custom_product_repo" type="Vendor\Module\Plugin\ProductRepositoryPlugin"/>
+    </type>
+
+    <!-- GOOD: Preference for service interface in global di.xml -->
+    <preference for="Vendor\Module\Api\ServiceInterface"
+                type="Vendor\Module\Model\Service"/>
+</config>

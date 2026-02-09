@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **3 new processors** (19 total):
+  - **CollectionInLoop**: Detects N+1 query patterns (model/repository loading inside loops)
+  - **CountOnCollection**: Detects `count()` on collections instead of `getSize()`
+  - **DiAreaScope**: Detects plugins/preferences in global `di.xml` targeting area-specific classes
+- **`DiScope` utility** (`src/Core/Scan/Util/DiScope.php`): Shared DI scope detection, XML loading, and class area detection
+
+### Changed
+- **Preferences processor** now scope-aware: duplicate preferences in different scopes (e.g., `frontend/di.xml` vs `adminhtml/di.xml`) are no longer flagged as conflicts
+- Preferences processor uses shared `DiScope::loadXml()` instead of private XML loading
+
 ---
 
 ## [0.3.0] - 2026-02-09

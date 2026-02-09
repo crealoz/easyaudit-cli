@@ -111,4 +111,36 @@ class Functions
         }
         return null;
     }
+
+    /**
+     * Extract the content of a brace-delimited block starting from a given offset.
+     *
+     * Finds the first '{' at or after $offset, then uses brace counting to extract
+     * the inner content up to the matching '}'.
+     *
+     * @return string|null The inner content between braces, or null if not found
+     */
+    public static function extractBraceBlock(string $content, int $offset): ?string
+    {
+        $braceStart = strpos($content, '{', $offset);
+        if ($braceStart === false) {
+            return null;
+        }
+
+        $length = strlen($content);
+        $braceCount = 0;
+
+        for ($i = $braceStart; $i < $length; $i++) {
+            if ($content[$i] === '{') {
+                $braceCount++;
+            } elseif ($content[$i] === '}') {
+                $braceCount--;
+                if ($braceCount === 0) {
+                    return substr($content, $braceStart + 1, $i - $braceStart - 1);
+                }
+            }
+        }
+
+        return null;
+    }
 }

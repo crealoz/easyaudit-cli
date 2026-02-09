@@ -2,6 +2,7 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
+use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
 use EasyAudit\Service\CliWriter;
@@ -16,8 +17,7 @@ use EasyAudit\Service\CliWriter;
  */
 class PaymentInterfaceUseAudit extends AbstractProcessor
 {
-    private const DEPRECATED_CLASS = '\\Magento\\Payment\\Model\\Method\\AbstractMethod';
-    private const DEPRECATED_CLASS_WITHOUT_SLASH = 'Magento\\Payment\\Model\\Method\\AbstractMethod';
+    private const DEPRECATED_FQCN = 'Magento\\Payment\\Model\\Method\\AbstractMethod';
 
     public function getIdentifier(): string
     {
@@ -79,11 +79,11 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
             }
 
             // Check for extension of AbstractMethod
-            if ($this->extendsAbstractMethod($content)) {
+            if (Classes::extendsClass($content, self::DEPRECATED_FQCN)) {
                 $this->foundCount++;
 
                 // Find the line number of the class declaration
-                $lineNumber = $this->findClassDeclarationLine($content);
+                $lineNumber = Classes::findClassDeclarationLine($content, 'AbstractMethod');
 
                 $msg = 'This payment method extends the deprecated '
                     . '\\Magento\\Payment\\Model\\Method\\AbstractMethod. Consider implementing '
@@ -91,37 +91,6 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
                 $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'error');
             }
         }
-    }
-
-    /**
-     * Check if the file extends AbstractMethod
-     */
-    private function extendsAbstractMethod(string $content): bool
-    {
-        // Check for both with and without leading backslash
-        return str_contains($content, 'extends ' . self::DEPRECATED_CLASS) ||
-               str_contains($content, 'extends ' . self::DEPRECATED_CLASS_WITHOUT_SLASH);
-    }
-
-    /**
-     * Find the line number where the class is declared
-     */
-    private function findClassDeclarationLine(string $content): int
-    {
-        $lines = explode("\n", $content);
-
-        foreach ($lines as $index => $line) {
-            if (preg_match('/class\s+\w+\s+extends\s+.*AbstractMethod/', $line)) {
-                return $index + 1; // Line numbers are 1-indexed
-            }
-        }
-
-        // Fallback: find first occurrence of "extends"
-        $search1 = 'extends \\Magento\\Payment\\Model\\Method\\AbstractMethod';
-        $search2 = 'extends Magento\\Payment\\Model\\Method\\AbstractMethod';
-        return Content::getLineNumber($content, $search1)
-            ?: Content::getLineNumber($content, $search2)
-            ?: 1;
     }
 
     public function getName(): string

@@ -15,6 +15,7 @@ body {
 
 /* Header */
 .header {
+    position: relative;
     background: #142d37;
     color: #fff;
     padding: 32px;
@@ -43,6 +44,24 @@ body {
     justify-content: space-between;
 }
 .header .meta span { margin-right: 24px; }
+
+.print-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 6px 16px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.print-btn:hover {
+    background: rgba(255,255,255,0.25);
+}
 
 /* Summary cards */
 .summary {
@@ -243,6 +262,7 @@ details[open] > .rule-header::before {
     details[open] { break-inside: avoid; }
     .rule-header::after { content: ""; }
     .cell-file { max-width: none; white-space: normal; }
+    .print-btn { display: none; }
     .summary-card[data-filter] { cursor: default; }
     .container[data-filter] .rule-card { display: block !important; }
     .container[data-filter] .summary-card { opacity: 1 !important; }

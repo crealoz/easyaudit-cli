@@ -5,6 +5,7 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Xml;
 
 class NoProxyInCommands extends AbstractProcessor
 {
@@ -21,10 +22,7 @@ class NoProxyInCommands extends AbstractProcessor
     public function process(array $files): void
     {
         foreach ($files['di'] ?? [] as $file) {
-            $previousUseErrors = libxml_use_internal_errors(true);
-            $content = simplexml_load_file($file);
-            libxml_clear_errors();
-            libxml_use_internal_errors($previousUseErrors);
+            $content = Xml::loadFile($file);
 
             if ($content === false) {
                 continue;

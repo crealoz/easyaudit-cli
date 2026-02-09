@@ -257,4 +257,73 @@ class Classes
 
         return null;
     }
+
+    /**
+     * Check if a class extends a given fully qualified class name.
+     *
+     * Handles: `extends \FQCN`, `extends FQCN`, and `use FQCN; extends ShortName`.
+     */
+    public static function extendsClass(string $content, string $fqcn): bool
+    {
+        $fqcnWithSlash = '\\' . ltrim($fqcn, '\\');
+        $fqcnWithout = ltrim($fqcn, '\\');
+        $parts = explode('\\', $fqcnWithout);
+        $shortName = end($parts);
+
+        return str_contains($content, 'extends ' . $fqcnWithSlash) ||
+               str_contains($content, 'extends ' . $fqcnWithout) ||
+               (str_contains($content, 'use ' . $fqcnWithout) &&
+                str_contains($content, 'extends ' . $shortName));
+    }
+
+    /**
+     * Find the line number where a class declaration with a given parent class appears.
+     */
+    public static function findClassDeclarationLine(string $content, string $parentClassName): int
+    {
+        $parts = explode('\\', $parentClassName);
+        $shortName = end($parts);
+
+        $lines = explode("\n", $content);
+
+        foreach ($lines as $index => $line) {
+            if (preg_match('/class\s+\w+\s+extends\s+.*' . preg_quote($shortName, '/') . '/', $line)) {
+                return $index + 1;
+            }
+        }
+
+        return Content::getLineNumber($content, 'extends') ?: 1;
+    }
+
+    /**
+     * Check if file content defines a Factory class.
+     */
+    public static function isFactoryClass(string $fileContent): bool
+    {
+        return preg_match('/class\s+\w*Factory\b/', $fileContent) === 1;
+    }
+
+    /**
+     * Check if file content defines a Symfony Console Command class.
+     */
+    public static function isCommandClass(string $fileContent): bool
+    {
+        if (!str_contains($fileContent, 'Symfony\Component\Console\Command\Command')) {
+            return false;
+        }
+        $pattern = '/class\s+\w+\s+extends\s+(?:\\\\?Symfony\\\\Component\\\\Console\\\\Command\\\\)?Command\b/';
+        return preg_match($pattern, $fileContent) === 1;
+    }
+
+    /**
+     * Derive a property name from a fully qualified class name.
+     *
+     * e.g., Magento\Catalog\Model\ProductFactory -> productFactory
+     */
+    public static function derivePropertyName(string $className): string
+    {
+        $parts = explode('\\', $className);
+        $shortName = end($parts);
+        return lcfirst($shortName);
+    }
 }

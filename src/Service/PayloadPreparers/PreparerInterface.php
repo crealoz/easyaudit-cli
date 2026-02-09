@@ -15,6 +15,7 @@ interface PreparerInterface
     public const MAPPED_RULES = [
         'noProxyUsedInCommands' => 'proxyConfiguration',
         'noProxyUsedForHeavyClasses' => 'proxyConfiguration',
+        'magento.performance.count-on-collection' => 'countOnCollection',
     ];
 
     /**

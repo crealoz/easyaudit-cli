@@ -5,10 +5,9 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Types;
 use EasyAudit\Service\ClassToProxy;
 use EasyAudit\Service\CliWriter;
-use ReflectionClass;
-use ReflectionException;
 
 /**
  * Class SpecificClassInjection
@@ -145,17 +144,6 @@ class SpecificClassInjection extends AbstractProcessor
     ];
 
     /**
-     * Known non-Magento PHP library vendor prefixes.
-     */
-    private const NON_MAGENTO_VENDORS = [
-        'GuzzleHttp\\', 'Monolog\\', 'Psr\\', 'Symfony\\', 'Laminas\\',
-        'League\\', 'Composer\\', 'Doctrine\\', 'phpDocumentor\\', 'PHPUnit\\',
-        'Webmozart\\', 'Ramsey\\', 'Firebase\\', 'Google\\', 'Aws\\',
-        'Carbon\\', 'Brick\\', 'Sabberworm\\', 'Pelago\\', 'Colinodell\\',
-        'Fig\\', 'Zend\\',
-    ];
-
-    /**
      * Substrings that indicate an argument should be ignored
      */
     private const IGNORED_SUBSTRINGS = [
@@ -237,7 +225,7 @@ class SpecificClassInjection extends AbstractProcessor
      */
     private function analyzeFile(string $file, string $fileContent): void
     {
-        if (preg_match('/class\s+\w*Factory\b/', $fileContent) === 1 || $this->isCommand($fileContent)) {
+        if (Classes::isFactoryClass($fileContent) || Classes::isCommandClass($fileContent)) {
             return;
         }
 
@@ -284,7 +272,7 @@ class SpecificClassInjection extends AbstractProcessor
             return;
         }
 
-        if (!$this->isNonMagentoLibrary($paramClass)) {
+        if (!Types::isNonMagentoLibrary($paramClass)) {
             $message = sprintf(
                 'Specific class "%s" injected in %s. Consider using a factory, builder, or '
                 . 'interface instead. (Note: This is a suggestion - manual verification recommended)',
@@ -319,13 +307,13 @@ class SpecificClassInjection extends AbstractProcessor
             $handled = true;
         }
 
-        if ($this->isRepository($paramClass)) {
+        if (Types::isRepository($paramClass)) {
             $this->addRepositoryError($file, $lineNumber, $paramName, $paramClass, $children);
             $handled = true;
         }
 
-        if ($this->hasApiInterface($paramClass)) {
-            $interfaceName = $this->getApiInterface($paramClass);
+        if (Types::hasApiInterface($paramClass)) {
+            $interfaceName = Types::getApiInterface($paramClass);
             $message = sprintf(
                 'Model "%s" implements an API interface but is injected as concrete class in %s. '
                 . 'Inject the API interface instead to respect preferences and coding standards.',
@@ -343,7 +331,7 @@ class SpecificClassInjection extends AbstractProcessor
             $handled = true;
         }
 
-        if ($this->isResourceModel($paramClass) && $this->shouldFlagResourceModel($paramClass, $className)) {
+        if (Types::isResourceModel($paramClass) && $this->shouldFlagResourceModel($paramClass, $className)) {
             $message = sprintf(
                 'Resource Model "%s" injected in %s. Resource models should not be directly '
                 . 'injected. Use a repository instead for better separation of concerns. '
@@ -363,9 +351,9 @@ class SpecificClassInjection extends AbstractProcessor
      */
     private function shouldFlagResourceModel(string $paramClass, string $className): bool
     {
-        return !$this->isRepository($paramClass)
-            && !$this->isResourceModel($className)
-            && !$this->isRepository($className);
+        return !Types::isRepository($paramClass)
+            && !Types::isResourceModel($className)
+            && !Types::isRepository($className);
     }
 
     /**
@@ -375,85 +363,13 @@ class SpecificClassInjection extends AbstractProcessor
     {
         if (
             in_array($className, Classes::BASIC_TYPES, true) ||
-            $this->matchesSuffix($className, self::LEGITIMATE_SUFFIXES) ||
-            $this->matchesSubstring($className, self::IGNORED_SUBSTRINGS)
+            Types::matchesSuffix($className, self::LEGITIMATE_SUFFIXES) ||
+            Types::matchesSubstring($className, self::IGNORED_SUBSTRINGS)
         ) {
             return true;
         }
 
         return ClassToProxy::isRequired($className);
-    }
-
-    /**
-     * Check if class name ends with any of the given suffixes
-     */
-    private function matchesSuffix(string $className, array $suffixes): bool
-    {
-        foreach ($suffixes as $suffix) {
-            if (str_ends_with($className, $suffix)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if class name contains any of the given substrings
-     */
-    private function matchesSubstring(string $className, array $substrings): bool
-    {
-        foreach ($substrings as $substring) {
-            if (str_contains($className, $substring)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private function isCommand(string $fileContent): bool
-    {
-        if (!str_contains($fileContent, 'Symfony\Component\Console\Command\Command')) {
-            return false;
-        }
-        $pattern = '/class\s+\w+\s+extends\s+(?:\\\\?Symfony\\\\Component\\\\Console\\\\Command\\\\)?Command\b/';
-        return preg_match($pattern, $fileContent) === 1;
-    }
-
-    private function isRepository(string $className): bool
-    {
-        return str_contains($className, 'Repository');
-    }
-
-    private function isResourceModel(string $className): bool
-    {
-        return str_contains($className, 'ResourceModel');
-    }
-
-    private function isNonMagentoLibrary(string $className): bool
-    {
-        $normalizedClassName = ltrim($className, '\\');
-        foreach (self::NON_MAGENTO_VENDORS as $vendor) {
-            if (str_starts_with($normalizedClassName, $vendor)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private function hasApiInterface(string $className): bool
-    {
-        if (!class_exists($className) && !interface_exists($className)) {
-            return false;
-        }
-
-        $reflection = new ReflectionClass($className);
-        foreach ($reflection->getInterfaceNames() as $interface) {
-            if (str_contains($interface, 'Api')) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -547,21 +463,6 @@ class SpecificClassInjection extends AbstractProcessor
                 ['repositories' => [$paramClass => ['interface' => $interfaceName]]]
             );
         }
-    }
-
-    private function getApiInterface(string $className): string
-    {
-        try {
-            $reflection = new ReflectionClass($className);
-            foreach ($reflection->getInterfaceNames() as $interface) {
-                if (str_contains($interface, 'Api')) {
-                    return $interface;
-                }
-            }
-        } catch (ReflectionException $e) {
-            // Fallback below
-        }
-        return str_replace('Model\\', 'Api\\Data\\', $className) . 'Interface';
     }
 
     /**

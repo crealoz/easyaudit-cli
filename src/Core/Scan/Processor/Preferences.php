@@ -3,6 +3,7 @@
 namespace EasyAudit\Core\Scan\Processor;
 
 use EasyAudit\Core\Scan\Util\Content;
+use EasyAudit\Core\Scan\Util\DiScope;
 use EasyAudit\Core\Scan\Util\Formater;
 
 /**
@@ -72,7 +73,7 @@ class Preferences extends AbstractProcessor
     private function collectPreferences(array $diFiles): void
     {
         foreach ($diFiles as $file) {
-            $xml = $this->loadXml($file);
+            $xml = DiScope::loadXml($file);
             if ($xml === false) {
                 continue;
             }
@@ -81,22 +82,6 @@ class Preferences extends AbstractProcessor
                 $this->addPreference($file, $preference);
             }
         }
-    }
-
-    /**
-     * Load XML file with error suppression
-     *
-     * @param string $file
-     * @return \SimpleXMLElement|false
-     */
-    private function loadXml(string $file): \SimpleXMLElement|false
-    {
-        $previousUseErrors = libxml_use_internal_errors(true);
-        $xml = simplexml_load_file($file);
-        libxml_clear_errors();
-        libxml_use_internal_errors($previousUseErrors);
-
-        return $xml;
     }
 
     /**
@@ -111,27 +96,38 @@ class Preferences extends AbstractProcessor
             return;
         }
 
+        $scope = DiScope::getScope($file);
+
         if (!isset($this->existingPreferences[$preferenceFor])) {
             $this->existingPreferences[$preferenceFor] = [];
         }
 
         $this->existingPreferences[$preferenceFor][] = [
             'type' => $preferenceType,
-            'file' => $file
+            'file' => $file,
+            'scope' => $scope,
         ];
     }
 
     /**
-     * Second pass: report interfaces with multiple preferences
+     * Second pass: report interfaces with multiple preferences in the same scope
      */
     private function reportDuplicates(): void
     {
         foreach ($this->existingPreferences as $interface => $preferences) {
-            if (count($preferences) <= 1) {
-                continue;
+            // Group preferences by scope
+            $byScope = [];
+            foreach ($preferences as $pref) {
+                $byScope[$pref['scope']][] = $pref;
             }
 
-            $this->reportDuplicatePreference($interface, $preferences);
+            // Only flag scopes with more than one preference
+            foreach ($byScope as $scopePreferences) {
+                if (count($scopePreferences) <= 1) {
+                    continue;
+                }
+                $this->reportDuplicatePreference($interface, $scopePreferences);
+            }
         }
     }
 

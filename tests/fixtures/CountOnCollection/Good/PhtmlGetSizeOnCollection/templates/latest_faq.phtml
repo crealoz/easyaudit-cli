@@ -1,0 +1,13 @@
+<?php
+/** @var \Vendor\Module\Block\LatestFaq $block */
+$latestFaq = $block->getLatestFaq();
+?>
+<?php if ($latestFaq->getSize() > 0): ?>
+    <div class="faq-list">
+        <?php foreach ($latestFaq as $faq): ?>
+            <div class="faq-item">
+                <?= $faq->getTitle() ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>

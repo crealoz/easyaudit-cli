@@ -5,6 +5,8 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Modules;
+use EasyAudit\Core\Scan\Util\Xml;
 use EasyAudit\Service\ClassToProxy;
 
 /**
@@ -102,8 +104,8 @@ class ProxyForHeavyClasses extends AbstractProcessor
         }
 
         // Get class name from file
-        $className = $this->extractClassName($fileContent);
-        if ($className === null) {
+        $className = Classes::extractClassName($fileContent);
+        if ($className === 'UnknownClass') {
             return;
         }
 
@@ -126,10 +128,10 @@ class ProxyForHeavyClasses extends AbstractProcessor
                 if (!$this->hasProxyInDiXml($className, $paramName, $paramClassName, $diXmlFiles)) {
                     $this->foundCount++;
                     $lineNumber = Content::getLineNumber($fileContent, $paramName);
-                    $diFile = $this->findDiXmlForFile($file);
+                    $diFile = Modules::findDiXmlForFile($file);
 
                     $msg = "Class '$className' injects heavy class '$paramClassName' "
-                        . "(parameter \$$paramName) without a proxy. Consider configuring a "
+                        . "(parameter $paramName) without a proxy. Consider configuring a "
                         . "proxy in di.xml to improve performance.";
                     $this->results[] = Formater::formatError(
                         $file,
@@ -147,21 +149,6 @@ class ProxyForHeavyClasses extends AbstractProcessor
                 }
             }
         }
-    }
-
-    /**
-     * Extract class name from file content
-     */
-    private function extractClassName(string $content): ?string
-    {
-        // Match: namespace Vendor\Module\...; followed by class ClassName
-        if (preg_match('/namespace\s+([^;]+);.*class\s+(\w+)/s', $content, $matches)) {
-            $namespace = trim($matches[1]);
-            $class = trim($matches[2]);
-            return $namespace . '\\' . $class;
-        }
-
-        return null;
     }
 
     /**
@@ -190,51 +177,13 @@ class ProxyForHeavyClasses extends AbstractProcessor
     }
 
     /**
-     * Find the di.xml file for a given PHP file path.
-     * Looks for etc/di.xml in the module root directory.
-     *
-     * @param  string $phpFile Path to PHP file
-     * @return string|null Path to di.xml or null if not found
-     */
-    private function findDiXmlForFile(string $phpFile): ?string
-    {
-        // Extract module root from path like /path/to/app/code/Vendor/Module/Model/Class.php
-        // Module root would be /path/to/app/code/Vendor/Module/
-
-        // Look for app/code/Vendor/Module pattern
-        if (preg_match('#(.*?/app/code/[^/]+/[^/]+)/#', $phpFile, $matches)) {
-            $moduleRoot = $matches[1];
-            $diFile = $moduleRoot . '/etc/di.xml';
-            if (file_exists($diFile)) {
-                return $diFile;
-            }
-        }
-
-        // Fallback: walk up directories looking for etc/di.xml
-        $dir = dirname($phpFile);
-        while ($dir !== '/' && $dir !== '.') {
-            $diFile = $dir . '/etc/di.xml';
-            if (file_exists($diFile)) {
-                return $diFile;
-            }
-            // Stop if we hit app/code level
-            if (str_ends_with($dir, '/app/code')) {
-                break;
-            }
-            $dir = dirname($dir);
-        }
-
-        return null;
-    }
-
-    /**
      * Check if proxy is configured in di.xml for this class
      */
     private function hasProxyInDiXml(string $className, string $paramName, string $paramClassName, array $diXmlFiles): bool
     {
         // Look for proxy configuration in di.xml files
         foreach ($diXmlFiles as $diXmlFile) {
-            $xml = @simplexml_load_file($diXmlFile);
+            $xml = Xml::loadFile($diXmlFile);
             if ($xml === false) {
                 continue;
             }

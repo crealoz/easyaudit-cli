@@ -2,7 +2,9 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
+use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Modules;
 use EasyAudit\Service\CliWriter;
 
 /**
@@ -133,7 +135,7 @@ class HardWrittenSQL extends AbstractProcessor
         }
 
         foreach ($files['php'] as $file) {
-            if ($this->isSetupDirectory($file)) {
+            if (Modules::isSetupDirectory($file)) {
                 continue;
             }
 
@@ -142,32 +144,11 @@ class HardWrittenSQL extends AbstractProcessor
                 continue;
             }
 
-            $cleanedContent = $this->removeComments($fileContent);
+            $cleanedContent = Content::removeComments($fileContent);
             $this->detectSQL($cleanedContent, $file, $fileContent);
         }
 
         $this->reportResults();
-    }
-
-    /**
-     * Check if file is in a Setup directory (should be excluded from SQL checks)
-     */
-    private function isSetupDirectory(string $filePath): bool
-    {
-        return str_contains($filePath, '/Setup/') ||
-               str_contains($filePath, DIRECTORY_SEPARATOR . 'Setup' . DIRECTORY_SEPARATOR);
-    }
-
-    /**
-     * Remove comments and docblocks from code to avoid false positives
-     */
-    private function removeComments(string $content): string
-    {
-        $content = preg_replace('/\/\*.*?\*\//s', '', $content);
-        $content = preg_replace('/\/\/.*$/m', '', $content);
-        $content = preg_replace('/#.*$/m', '', $content);
-
-        return $content;
     }
 
     /**
@@ -198,7 +179,12 @@ class HardWrittenSQL extends AbstractProcessor
             $offset = $match[1];
 
             $lineNumber = substr_count(substr($cleanedContent, 0, $offset), "\n") + 1;
-            $actualLineNumber = $this->findLineNumber($originalContent, $matchedText, $lineNumber);
+            $actualLineNumber = Content::findApproximateLine(
+                $originalContent,
+                $matchedText,
+                $lineNumber,
+                true
+            );
 
             $message = $this->createMessage($sqlType, $matchedText, $config['recommendation']);
 
@@ -206,27 +192,6 @@ class HardWrittenSQL extends AbstractProcessor
             $this->storeResult($sqlType, $error);
             $this->foundCount++;
         }
-    }
-
-    /**
-     * Find the actual line number in the original content
-     */
-    private function findLineNumber(string $originalContent, string $matchedText, int $approximateLine): int
-    {
-        $lines = explode("\n", $originalContent);
-        $searchStart = max(0, $approximateLine - 10);
-        $searchEnd = min(count($lines), $approximateLine + 10);
-
-        for ($i = $searchStart; $i < $searchEnd; $i++) {
-            $normalizedLine = preg_replace('/\s+/', ' ', $lines[$i]);
-            $normalizedMatch = preg_replace('/\s+/', ' ', $matchedText);
-
-            if (str_contains($normalizedLine, trim($normalizedMatch))) {
-                return $i + 1;
-            }
-        }
-
-        return $approximateLine;
     }
 
     /**

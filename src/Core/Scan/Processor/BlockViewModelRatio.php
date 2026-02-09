@@ -2,6 +2,8 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
+use EasyAudit\Core\Scan\Util\Modules;
+
 /**
  * Class BlockViewModelRatio
  *
@@ -62,7 +64,7 @@ class BlockViewModelRatio extends AbstractProcessor
             return;
         }
 
-        $moduleFiles = $this->segregateFilesByModule($files['php']);
+        $moduleFiles = Modules::groupFilesByModule($files['php']);
 
         foreach ($moduleFiles as $moduleName => $moduleFilesList) {
             $ratio = $this->calculateBlockRatio($moduleFilesList);
@@ -85,73 +87,6 @@ class BlockViewModelRatio extends AbstractProcessor
                 ];
             }
         }
-    }
-
-    /**
-     * Segregate files by module name (Vendor_Module pattern)
-     *
-     * @param  array $files
-     * @return array
-     */
-    private function segregateFilesByModule(array $files): array
-    {
-        $moduleFiles = [];
-
-        foreach ($files as $file) {
-            $moduleName = $this->extractModuleName($file);
-
-            if ($moduleName === null) {
-                continue;
-            }
-
-            if (!isset($moduleFiles[$moduleName])) {
-                $moduleFiles[$moduleName] = [];
-            }
-
-            $moduleFiles[$moduleName][] = $file;
-        }
-
-        return $moduleFiles;
-    }
-
-    /**
-     * Extract module name from file path
-     * Expected patterns:
-     * - /path/to/vendor/module/...
-     * - /app/code/Vendor/Module/...
-     * - /vendor/vendor/module-name/...
-     *
-     * @param  string $filePath
-     * @return string|null
-     */
-    private function extractModuleName(string $filePath): ?string
-    {
-        // Normalize path separators
-        $filePath = str_replace('\\', '/', $filePath);
-
-        // Try to find Magento module pattern (Vendor/Module or vendor/module)
-        // Pattern 1: app/code/Vendor/Module
-        if (preg_match('#/app/code/([A-Z][a-zA-Z0-9]+)/([A-Z][a-zA-Z0-9]+)/#', $filePath, $matches)) {
-            return $matches[1] . '_' . $matches[2];
-        }
-
-        // Pattern 2: vendor/vendor-name/module-name or vendor/vendor-name/magento2-module
-        $vendorPattern = '#/vendor/([a-z0-9-]+)/(?:magento2?-)?([a-z0-9-]+)/#i';
-        if (preg_match($vendorPattern, $filePath, $matches)) {
-            // Convert kebab-case to PascalCase for vendor and module
-            $vendor = str_replace(' ', '', ucwords(str_replace('-', ' ', $matches[1])));
-            $module = str_replace(' ', '', ucwords(str_replace('-', ' ', $matches[2])));
-            return $vendor . '_' . $module;
-        }
-
-        // Pattern 3: Generic two-level directory structure that looks like modules
-        $genericPattern = '#/([A-Z][a-zA-Z0-9]*)/([A-Z][a-zA-Z0-9]*)/'
-            . '(?:Block|Model|ViewModel|Controller|Helper)/#';
-        if (preg_match($genericPattern, $filePath, $matches)) {
-            return $matches[1] . '_' . $matches[2];
-        }
-
-        return null;
     }
 
     /**
@@ -183,27 +118,12 @@ class BlockViewModelRatio extends AbstractProcessor
         $blockCount = 0;
 
         foreach ($files as $file) {
-            if ($this->isBlockFile($file)) {
+            if (Modules::isBlockFile($file)) {
                 $blockCount++;
             }
         }
 
         return $blockCount;
-    }
-
-    /**
-     * Check if file is in Block directory
-     *
-     * @param  string $file
-     * @return bool
-     */
-    private function isBlockFile(string $file): bool
-    {
-        // Normalize path separators
-        $file = str_replace('\\', '/', $file);
-
-        // Check if /Block/ is in the path
-        return preg_match('#/Block/[^/]+\.php$#', $file) === 1;
     }
 
     public function getName(): string

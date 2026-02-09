@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- BAD: Plugin on frontend block in global di.xml -->
+    <type name="Magento\Catalog\Block\Product\View">
+        <plugin name="custom_product_view" type="Vendor\Module\Plugin\ProductViewPlugin"/>
+    </type>
+
+    <!-- BAD: Plugin on ViewModel in global di.xml -->
+    <type name="Vendor\Module\ViewModel\ProductDetails">
+        <plugin name="custom_product_details" type="Vendor\Module\Plugin\ProductDetailsPlugin"/>
+    </type>
+</config>

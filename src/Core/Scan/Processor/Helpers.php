@@ -2,6 +2,7 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
+use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
 
@@ -16,6 +17,8 @@ use EasyAudit\Core\Scan\Util\Formater;
  */
 class Helpers extends AbstractProcessor
 {
+    private const ABSTRACT_HELPER_FQCN = 'Magento\\Framework\\App\\Helper\\AbstractHelper';
+
     /**
      * Magento core helpers that are allowed (legacy exceptions)
      */
@@ -167,19 +170,19 @@ class Helpers extends AbstractProcessor
         }
 
         // Check if it extends AbstractHelper
-        if (!$this->extendsAbstractHelper($content)) {
+        if (!Classes::extendsClass($content, self::ABSTRACT_HELPER_FQCN)) {
             return;
         }
 
         $this->foundCount++;
 
         // Get the class name
-        $className = $this->extractClassName($content);
-        if ($className === null) {
+        $className = Classes::extractClassName($content);
+        if ($className === 'UnknownClass') {
             return;
         }
 
-        $lineNumber = $this->findClassDeclarationLine($content);
+        $lineNumber = Classes::findClassDeclarationLine($content, 'AbstractHelper');
 
         // Check if this helper is used in phtml files
         $usedInPhtml = false;
@@ -217,48 +220,6 @@ class Helpers extends AbstractProcessor
                 'warning'
             );
         }
-    }
-
-    /**
-     * Check if content extends AbstractHelper
-     */
-    private function extendsAbstractHelper(string $content): bool
-    {
-        return str_contains($content, 'extends \Magento\Framework\App\Helper\AbstractHelper') ||
-               str_contains($content, 'extends Magento\Framework\App\Helper\AbstractHelper') ||
-               (str_contains($content, 'use Magento\Framework\App\Helper\AbstractHelper') &&
-                str_contains($content, 'extends AbstractHelper'));
-    }
-
-    /**
-     * Extract class name from file content
-     */
-    private function extractClassName(string $content): ?string
-    {
-        if (preg_match('/namespace\s+([^;]+);.*class\s+(\w+)/s', $content, $matches)) {
-            $namespace = trim($matches[1]);
-            $class = trim($matches[2]);
-            return $namespace . '\\' . $class;
-        }
-
-        return null;
-    }
-
-    /**
-     * Find the line number where the class is declared
-     */
-    private function findClassDeclarationLine(string $content): int
-    {
-        $lines = explode("\n", $content);
-
-        foreach ($lines as $index => $line) {
-            if (preg_match('/class\s+\w+\s+extends\s+.*AbstractHelper/', $line)) {
-                return $index + 1;
-            }
-        }
-
-        return Content::getLineNumber($content, 'extends')
-            ?: 1;
     }
 
     public function getName(): string

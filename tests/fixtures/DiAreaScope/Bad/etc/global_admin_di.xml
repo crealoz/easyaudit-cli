@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- BAD: Preference for admin controller in global di.xml -->
+    <preference for="Magento\Backend\Controller\Adminhtml\Dashboard\Index"
+                type="Vendor\Module\Controller\Adminhtml\Dashboard\CustomIndex"/>
+
+    <!-- BAD: Plugin on admin block in global di.xml -->
+    <type name="Magento\Backend\Block\Adminhtml\Dashboard\Grid">
+        <plugin name="custom_dashboard_grid" type="Vendor\Module\Plugin\DashboardGridPlugin"/>
+    </type>
+</config>

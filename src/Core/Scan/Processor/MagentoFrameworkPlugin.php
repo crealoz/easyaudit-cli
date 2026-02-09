@@ -4,6 +4,7 @@ namespace EasyAudit\Core\Scan\Processor;
 
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Xml;
 
 class MagentoFrameworkPlugin extends AbstractProcessor
 {
@@ -23,10 +24,7 @@ class MagentoFrameworkPlugin extends AbstractProcessor
             return ;
         }
         foreach ($files['di'] as $file) {
-            $previousUseErrors = libxml_use_internal_errors(true);
-            $xml = simplexml_load_file($file);
-            libxml_clear_errors();
-            libxml_use_internal_errors($previousUseErrors);
+            $xml = Xml::loadFile($file);
 
             if ($xml === false) {
                 continue;

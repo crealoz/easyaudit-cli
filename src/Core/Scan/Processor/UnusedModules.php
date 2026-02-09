@@ -2,6 +2,8 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
+use EasyAudit\Core\Scan\Util\Xml;
+
 /**
  * Class UnusedModules
  *
@@ -149,7 +151,7 @@ class UnusedModules extends AbstractProcessor
      */
     private function extractModuleName(string $filePath): ?string
     {
-        $xml = @simplexml_load_file($filePath);
+        $xml = Xml::loadFile($filePath);
 
         if ($xml === false) {
             return null;

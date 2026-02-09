@@ -4,6 +4,7 @@ namespace EasyAudit\Core\Scan\Processor;
 
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Xml;
 
 /**
  * Class Cacheable
@@ -73,11 +74,7 @@ class Cacheable extends AbstractProcessor
                 continue;
             }
 
-            // Suppress XML parsing errors (malformed files will be skipped)
-            $previousUseErrors = libxml_use_internal_errors(true);
-            $xml = simplexml_load_file($file);
-            libxml_clear_errors();
-            libxml_use_internal_errors($previousUseErrors);
+            $xml = Xml::loadFile($file);
 
             if ($xml === false) {
                 continue;
