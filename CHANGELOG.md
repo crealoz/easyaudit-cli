@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.3.0] - 2026-02-09
+
+### Added
+- **HTML report format** (`--format=html`):
+  - Self-contained single-file dashboard with inline CSS
+  - Color-coded summary cards (Total, Errors, Warnings, Notes)
+  - Collapsible rule sections with severity badges and file tables
+  - **Interactive filtering**: click any summary card to filter rules by severity
+  - Print-to-PDF support with `@media print` styles (4 cards on one row, all rules expanded)
+- **GitHub Pages documentation site**:
+  - Custom layout with responsive navigation and mobile hamburger menu
+  - Dark teal (`#142d37`) header/footer matching report branding
+  - Deployed via `deploy-docs.yml` GitHub Actions workflow
+  - "Buy Fixer Credits" CTA link in navigation
+- **17 new unit test files** covering Args, Filenames, HtmlReporter, ExternalToolMapping, Scanner, ClassToProxy, CliWriter, Paths, Version, and multiple processors (AroundPlugins, AdvancedBlockVsViewModel, PaymentInterfaceUseAudit, SpecificClassInjection, Classes, Content, Formater, Functions)
+
+### Changed
+- `SpecificClassInjection` processor refactored: inlined private methods (`addGenericClassWarning`, `addModelWithInterfaceError`, `addResourceModelError`, `guessInterfaceName`, `printResults`), reduced duplicate `Classes::getChildren()` calls per parameter
+- **Documentation overhaul** across 16 files:
+  - Added summary table to processors.md with all 16 rules at a glance
+  - Added table of contents to cli-usage.md, request-pr.md, github-actions.md, and fixtures README
+  - Fixed exit code capture bug in all 7 CI/CD platform docs (`EXIT_CODE=$?` replaced with `|| EXIT_CODE=$?` pattern for `set -e` compatibility)
+  - Fixed `upload-sarif` action version inconsistency (standardized to `@v4`)
+  - Replaced 45-line paid PR workflow YAML in README with concise summary + link
+  - Reorganized fixtures README from session-based to category-based headings
+  - Added breadcrumb navigation to all CI/CD platform docs
+  - Removed broken Jenkins "Fail on Errors" example (kept correct `returnStatus` approach)
+  - Fixed PR template markdown formatting
+
 ### Fixed
 - Improved ObjectManager detection for fixing (better identification of actual usages vs imports)
 - Fixed class name comparison in `UseOfRegistry` and `SpecificClassInjection` processors (leading backslash normalization)
