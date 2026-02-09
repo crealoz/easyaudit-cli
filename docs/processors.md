@@ -6,7 +6,7 @@ EasyAudit includes **16 static analysis processors** for Magento 2 codebases. Ea
 
 | Processor | Category | Severity | Description |
 |-----------|----------|----------|-------------|
-| [SameModulePlugins](#samemodulplugins) | DI | Warning | Plugins targeting classes in the same module |
+| [SameModulePlugins](#samemoduleplugins) | DI | Warning | Plugins targeting classes in the same module |
 | [MagentoFrameworkPlugin](#magentoframeworkplugin) | DI | Warning | Plugins on Magento Framework classes |
 | [AroundPlugins](#aroundplugins) | DI | Note | Around plugins replaceable with before/after |
 | [NoProxyInCommands](#noproxyincommands) | DI | Warning | Console commands without proxy for heavy deps |

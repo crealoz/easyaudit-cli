@@ -72,6 +72,30 @@ body {
 .card-warning { background: #fd7e14; }
 .card-note { background: #0d6efd; }
 
+/* Clickable summary cards */
+.summary-card[data-filter] {
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+}
+.summary-card[data-filter]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Active filter state — dim non-active cards */
+.container[data-filter="error"] .summary-card:not(.card-error):not(.card-total),
+.container[data-filter="warning"] .summary-card:not(.card-warning):not(.card-total),
+.container[data-filter="note"] .summary-card:not(.card-note):not(.card-total) {
+    opacity: 0.4;
+}
+
+/* Hide rule cards that don't match the active filter */
+.container[data-filter="error"] .rule-card:not([data-severity="error"]),
+.container[data-filter="warning"] .rule-card:not([data-severity="warning"]),
+.container[data-filter="note"] .rule-card:not([data-severity="note"]) {
+    display: none;
+}
+
 /* Rule cards */
 .rule-card {
     background: #fff;
@@ -195,6 +219,9 @@ details[open] > .rule-header::before {
         print-color-adjust: exact;
         border-radius: 0;
     }
+    .summary {
+        grid-template-columns: repeat(4, 1fr);
+    }
     .summary-card {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -209,8 +236,14 @@ details[open] > .rule-header::before {
         border: 1px solid #dee2e6;
         break-inside: avoid;
     }
+    .rule-header::before {
+        display: none;
+    }
     details { open: true; }
     details[open] { break-inside: avoid; }
     .rule-header::after { content: ""; }
     .cell-file { max-width: none; white-space: normal; }
+    .summary-card[data-filter] { cursor: default; }
+    .container[data-filter] .rule-card { display: block !important; }
+    .container[data-filter] .summary-card { opacity: 1 !important; }
 }

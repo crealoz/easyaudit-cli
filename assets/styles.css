@@ -66,6 +66,15 @@ body {
   color: #fff;
 }
 
+.site-nav a.nav-cta {
+  color: #f0ad4e;
+  font-weight: 600;
+}
+
+.site-nav a.nav-cta:hover {
+  color: #ffc107;
+}
+
 /* ── Mobile menu toggle ─────────────────────────────────────── */
 .menu-toggle {
   display: none;
