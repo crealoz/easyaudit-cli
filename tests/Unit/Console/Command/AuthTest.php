@@ -7,6 +7,35 @@ use PHPUnit\Framework\TestCase;
 
 class AuthTest extends TestCase
 {
+    private string $originalXdg;
+    private string $tmpDir;
+
+    protected function setUp(): void
+    {
+        $this->originalXdg = getenv('XDG_CONFIG_HOME') ?: '';
+        $this->tmpDir = sys_get_temp_dir() . '/easyaudit-test-' . uniqid();
+        mkdir($this->tmpDir, 0700, true);
+        putenv('XDG_CONFIG_HOME=' . $this->tmpDir);
+    }
+
+    protected function tearDown(): void
+    {
+        // Restore original env
+        if ($this->originalXdg === '') {
+            putenv('XDG_CONFIG_HOME');
+        } else {
+            putenv('XDG_CONFIG_HOME=' . $this->originalXdg);
+        }
+
+        // Clean up temp dir
+        $files = glob($this->tmpDir . '/easyaudit/*');
+        if ($files) {
+            array_map('unlink', $files);
+        }
+        @rmdir($this->tmpDir . '/easyaudit');
+        @rmdir($this->tmpDir);
+    }
+
     public function testGetDescriptionReturnsNonEmptyString(): void
     {
         $cmd = new Auth();
@@ -49,5 +78,12 @@ class AuthTest extends TestCase
         $result = $cmd->run(['--key=testkey123', '--hash=testhash456']);
 
         $this->assertSame(0, $result);
+
+        // Verify credentials were written to the temp config, not the real one
+        $configFile = $this->tmpDir . '/easyaudit/config.json';
+        $this->assertFileExists($configFile);
+        $data = json_decode(file_get_contents($configFile), true);
+        $this->assertSame('testkey123', $data['key']);
+        $this->assertSame('testhash456', $data['hash']);
     }
 }

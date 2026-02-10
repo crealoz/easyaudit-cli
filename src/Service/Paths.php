@@ -6,8 +6,7 @@ final class Paths
 {
     public static function configDir(): string
     {
-        $xdg = getenv('XDG_CONFIG_HOME');
-        $base = $xdg ? $xdg : rtrim(getenv('HOME') ?: sys_get_temp_dir(), '/') . '/.config';
+        $base = getenv('XDG_CONFIG_HOME') ?: rtrim(getenv('HOME') ?: sys_get_temp_dir(), '/') . '/.config';
         if (!is_dir($base . '/easyaudit') && !@mkdir($base . '/easyaudit', 0700, true) && !is_dir($base . '/easyaudit')) {
             throw new \RuntimeException('Failed to create config directory: ' . $base . '/easyaudit');
         }
