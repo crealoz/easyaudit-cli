@@ -115,7 +115,7 @@ class AroundPlugins extends AbstractProcessor
 
         foreach ($matches as $match) {
             $functionName = $match[1][0];
-            $lineNumber = substr_count(substr($code, 0, (int)$match[0][1]), "\n") + 1;
+            $lineNumber = substr_count(substr($code, 0, $match[0][1]), "\n") + 1;
             $params = array_filter(array_map('trim', explode(',', $match[2][0])));
 
             $functionContent = Functions::getFunctionContent($code, $lineNumber);
@@ -235,11 +235,9 @@ class AroundPlugins extends AbstractProcessor
             if (trim($line) === '') {
                 continue;
             }
-            if (str_contains($line, $callableName . '();')) {
-                return true;
-            }
-            return false;
+            return str_contains($line, $callableName . '();');
         }
+        return false;
     }
 
     /**
@@ -256,11 +254,9 @@ class AroundPlugins extends AbstractProcessor
             if (trim($line) === '') {
                 continue;
             }
-            if (str_contains($line, $callableName . '();')) {
-                return true;
-            }
-            return false;
+            return str_contains($line, $callableName . '();');
         }
+        return false;
     }
 
     public function getName(): string

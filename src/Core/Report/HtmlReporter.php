@@ -14,7 +14,7 @@ class HtmlReporter implements ReporterInterface
         $notes = 0;
         $rules = [];
 
-        foreach ($findings as $key => $finding) {
+        foreach ($findings as $finding) {
             if (!is_array($finding) || empty($finding['files']) || !is_array($finding['files'])) {
                 continue;
             }

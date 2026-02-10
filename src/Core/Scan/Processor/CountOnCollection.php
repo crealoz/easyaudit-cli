@@ -108,7 +108,7 @@ class CountOnCollection extends AbstractProcessor
             }
 
             if ($isDirect) {
-                $this->detectCountUsage($file, $fileContent, $property, $paramClass);
+                $this->detectCountUsage($file, $fileContent, $property);
             } else {
                 $this->detectFactoryCountUsage($file, $fileContent, $property);
             }
@@ -127,11 +127,11 @@ class CountOnCollection extends AbstractProcessor
 
         $localVars = array_unique($createMatches[1]);
         foreach ($localVars as $localVar) {
-            $this->detectCountUsage($file, $fileContent, $localVar, '');
+            $this->detectCountUsage($file, $fileContent, $localVar);
         }
     }
 
-    private function detectCountUsage(string $file, string $fileContent, string $property, string $paramClass): void
+    private function detectCountUsage(string $file, string $fileContent, string $property): void
     {
         $cleanProperty = preg_quote($property, '/');
 
@@ -239,8 +239,10 @@ class CountOnCollection extends AbstractProcessor
             }
 
             // Check: contains $var = ... ->create() AND return $var;
-            if (preg_match('/' . $cleanVar . '\s*=\s*\$this->\w+->create\s*\(/', $methodBody)
-                && preg_match('/return\s+' . $cleanVar . '\s*;/', $methodBody)) {
+            if (
+                preg_match('/' . $cleanVar . '\s*=\s*\$this->\w+->create\s*\(/', $methodBody)
+                && preg_match('/return\s+' . $cleanVar . '\s*;/', $methodBody)
+            ) {
                 $this->collectionReturningMethods[$fqcn . '::' . $methodName] = true;
             }
         }
@@ -275,7 +277,7 @@ class CountOnCollection extends AbstractProcessor
             if (preg_match_all($assignPattern, $content, $assignMatches)) {
                 $localVars = array_unique($assignMatches[1]);
                 foreach ($localVars as $localVar) {
-                    $this->detectCountUsage($phtmlFile, $content, $localVar, '');
+                    $this->detectCountUsage($phtmlFile, $content, $localVar);
                 }
             }
 
@@ -312,7 +314,7 @@ class CountOnCollection extends AbstractProcessor
     {
         $methods = [];
         $prefix = $blockClass . '::';
-        foreach ($this->collectionReturningMethods as $key => $value) {
+        foreach (array_keys($this->collectionReturningMethods) as $key) {
             if (str_starts_with($key, $prefix)) {
                 $methods[] = substr($key, strlen($prefix));
             }

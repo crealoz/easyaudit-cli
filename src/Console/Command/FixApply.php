@@ -28,7 +28,8 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
     public function __construct(
         private Logger $logger,
         private Api $api,
-    ) {}
+    ) {
+    }
 
     public function getDescription(): string
     {

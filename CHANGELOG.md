@@ -12,11 +12,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **CollectionInLoop**: Detects N+1 query patterns (model/repository loading inside loops)
   - **CountOnCollection**: Detects `count()` on collections instead of `getSize()`
   - **DiAreaScope**: Detects plugins/preferences in global `di.xml` targeting area-specific classes
-- **`DiScope` utility** (`src/Core/Scan/Util/DiScope.php`): Shared DI scope detection, XML loading, and class area detection
+- **6 new utility classes** for shared logic across processors:
+  - **`DiScope`**: DI scope detection, XML loading, and class area detection
+  - **`Types`**: Type checking helpers (`isCollectionType`, `isRepository`, `isResourceModel`, `hasApiInterface`, etc.)
+  - **`Modules`**: Module extraction, file grouping, and `di.xml` lookup
+  - **`Functions`**: Function content extraction and brace block parsing
+  - **`Xml`**: Safe XML loading with libxml error suppression
+  - Extended **`Classes`** with `findClassDeclarationLine`, `isFactoryClass`, `isCommandClass`, `derivePropertyName`
+  - Extended **`Content`** with `removeComments`, `findApproximateLine`
+- **Console Command tests** (ScanTest, FixApplyTest, AuthTest, ActivateSelfSignedTest)
+- **Unit tests** for all new processors and utilities (CollectionInLoop, CountOnCollection, DiAreaScope, DiScope, Types, Modules, Functions, Classes)
+- Expanded tests for existing processors (Helpers, NoProxyInCommands, Preferences, ProxyForHeavyClasses, SpecificClassInjection, UseOfObjectManager, UseOfRegistry)
 
 ### Changed
 - **Preferences processor** now scope-aware: duplicate preferences in different scopes (e.g., `frontend/di.xml` vs `adminhtml/di.xml`) are no longer flagged as conflicts
-- Preferences processor uses shared `DiScope::loadXml()` instead of private XML loading
+- **Refactored 10 processors** to use shared utility classes instead of inline logic (Types, Modules, Content, Functions, Classes)
+- **Moved support classes** from `src/Support/` to `src/Service/` (`Env`, `Paths`, `ProjectIdentifier`)
+- **Constructor injection** in all Console Commands (Scan, FixApply) replacing static instantiation — enables mocking in tests
+- **Scanner** now uses injected dependency instead of hardcoded `Api` instantiation
+- **Code coverage** increased from 77% to 92.82% (2521/2716 lines), 750 tests
+- Excluded untestable infrastructure files from coverage (`Api.php`, `Env.php`, `Auth.php`)
+- **Psalm 5** static analysis integrated:
+  - Fixed redundant casts, missing return paths, dead code, docblock mismatches
+  - Configured `psalm.xml` with issue handlers for auto-discovered classes and runtime constants
+- **Developer Guide** documentation:
+  - [Writing Processors](docs/developer-guide/processors.md) — architecture, step-by-step guide, best practices, testing
+  - [Utilities Reference](docs/developer-guide/utilities.md) — all 8 utility classes with method signatures and examples
+
+### Removed
+- `src/Support/` namespace (replaced by `src/Service/`)
 
 ---
 

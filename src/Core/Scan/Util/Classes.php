@@ -52,7 +52,7 @@ class Classes
     {
         $constructorParameters = [];
         $pattern = '/function\s+__construct\s*\(([^)]*)\)/';
-        if ($fileContent !== false && str_contains($fileContent, '__construct') && preg_match($pattern, $fileContent, $m)) {
+        if (str_contains($fileContent, '__construct') && preg_match($pattern, $fileContent, $m)) {
             $constructorParameters = array_map('trim', explode(',', $m[1]));
         }
         return $constructorParameters;

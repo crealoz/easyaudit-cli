@@ -95,6 +95,7 @@ See [Automated PR docs](docs/request-pr.md) for the full workflow file and setup
 - [Available Processors](docs/processors.md) - All 16 analysis rules
 - [CI/CD Integration](docs/ci-cd.md) - GitHub, GitLab, Bitbucket, Azure, CircleCI, Jenkins, Travis
 - [Automated PR (paid)](docs/request-pr.md) - Auto-fix via API
+- Developer Guide: [Writing Processors](docs/developer-guide/processors.md) | [Utilities Reference](docs/developer-guide/utilities.md)
 
 ## Requirements
 

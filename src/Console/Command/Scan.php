@@ -16,7 +16,8 @@ final class Scan implements CommandInterface
 {
     public function __construct(
         private Scanner $scanner,
-    ) {}
+    ) {
+    }
 
     public function getDescription(): string
     {
@@ -97,7 +98,9 @@ HELP;
             'json' => (new JsonReporter())->generate($findings),
         };
 
-        $ext = match ($format) { 'sarif' => 'sarif', 'html' => 'html', default => 'json' };
+        $ext = match ($format) {
+            'sarif' => 'sarif', 'html' => 'html', default => 'json'
+        };
         $defaultPath = "report/easyaudit-report.{$ext}";
 
         if ($output) {

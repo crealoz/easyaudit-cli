@@ -47,7 +47,7 @@ class NoProxyInCommands extends AbstractProcessor
      *
      * @param  \SimpleXMLElement $commandNode
      * @param  \SimpleXMLElement $input
-     * @return array
+     * @return void
      * @throws \ReflectionException
      */
     private function manageCommandNode(\SimpleXMLElement $commandNode, \SimpleXMLElement $input): void

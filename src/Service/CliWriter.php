@@ -153,7 +153,7 @@ class CliWriter
         $empty = $barWidth - $filled;
 
         $bar = self::GREEN . str_repeat('█', $filled) . self::RESET . str_repeat('░', $empty);
-        $percent = str_pad((int) ($progress * 100), 3, ' ', STR_PAD_LEFT);
+        $percent = sprintf('%3d', (int)($progress * 100));
 
         // Truncate filename if too long
         $maxFilenameLen = 25;

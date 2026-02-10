@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="4"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="true"
+>
+    <projectFiles>
+        <directory name="src/" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+
+    <issueHandlers>
+        <!-- Processors and commands are auto-discovered at runtime via directory scan -->
+        <UnusedClass>
+            <errorLevel type="suppress">
+                <directory name="src/Core/Scan/Processor/" />
+                <directory name="src/Console/Command/" />
+            </errorLevel>
+        </UnusedClass>
+
+        <!-- Interface/public methods are called dynamically by the Scanner or are public API -->
+        <PossiblyUnusedMethod>
+            <errorLevel type="suppress">
+                <directory name="src/Console/" />
+                <directory name="src/Core/Scan/" />
+                <directory name="src/Exception/" />
+                <file name="src/Version.php" />
+                <file name="src/Service/PayloadPreparers/AbstractPreparer.php" />
+                <file name="src/Service/CiEnvironmentDetector.php" />
+            </errorLevel>
+        </PossiblyUnusedMethod>
+
+        <!-- Constants (RED, BLUE, RESET, EA_SCAN_PATH) are defined at runtime in bin/easyaudit -->
+        <UndefinedConstant>
+            <errorLevel type="suppress">
+                <file name="src/Service/Env.php" />
+                <file name="src/Service/Api.php" />
+                <file name="src/Core/Scan/Scanner.php" />
+                <file name="src/Core/Scan/Util/Classes.php" />
+            </errorLevel>
+        </UndefinedConstant>
+
+        <!-- Intentional shell_exec for terminal stty in interactive auth -->
+        <ForbiddenCode>
+            <errorLevel type="suppress">
+                <file name="src/Console/Command/Auth.php" />
+            </errorLevel>
+        </ForbiddenCode>
+
+        <!-- Version constants are replaced during CI builds; dev-time values cause false positives -->
+        <RedundantCondition>
+            <errorLevel type="suppress">
+                <file name="src/Version.php" />
+                <file name="src/Service/PayloadPreparers/DiPreparer.php" />
+            </errorLevel>
+        </RedundantCondition>
+        <InvalidCast>
+            <errorLevel type="suppress">
+                <file name="src/Version.php" />
+            </errorLevel>
+        </InvalidCast>
+
+        <!-- curl_exec returns string|true; json_decode call is guarded by httpCode check -->
+        <InvalidScalarArgument>
+            <errorLevel type="suppress">
+                <file name="src/Service/Api.php" />
+            </errorLevel>
+        </InvalidScalarArgument>
+
+        <!-- $lineNumber is the foreach loop variable; isset() guard is valid for empty arrays -->
+        <TypeDoesNotContainNull>
+            <errorLevel type="suppress">
+                <file name="src/Core/Scan/Util/Functions.php" />
+            </errorLevel>
+        </TypeDoesNotContainNull>
+    </issueHandlers>
+</psalm>

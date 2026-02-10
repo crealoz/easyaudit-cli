@@ -18,9 +18,8 @@ final class Env
      */
     public static function getAuthHeader(): ?string
     {
-        $authHeader = null;
         // If GitHub is used, the secret vault will store credentials and we will use them here to authenticate.
-        if (Env::isGithubActions()) {
+        if (self::isGithubActions()) {
             $authHeader = getenv('EASYAUDIT_AUTH');
             if ($authHeader === false || $authHeader === '') {
                 throw new GitHubAuthException('EASYAUDIT_AUTH environment variable is not set or empty.');
