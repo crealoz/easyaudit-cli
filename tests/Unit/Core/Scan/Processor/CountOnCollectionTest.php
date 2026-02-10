@@ -185,4 +185,171 @@ endif;
         unlink($phtmlFile);
         rmdir($tmpDir);
     }
+
+    public function testDetectsChainedCountInPhtml(): void
+    {
+        $processor = new CountOnCollection();
+
+        $tmpDir = sys_get_temp_dir() . '/easyaudit_test_' . uniqid();
+        mkdir($tmpDir, 0777, true);
+
+        // phtml with chained $block->getLatestFaq()->count()
+        $phtmlFile = $tmpDir . '/chained.phtml';
+        file_put_contents($phtmlFile, '<?php
+/** @var \Vendor\Module\Block\LatestFaq $block */
+?>
+<?php if ($block->getLatestFaq()->count() > 0): ?>
+    <div>Content</div>
+<?php endif; ?>
+');
+
+        $files = [
+            'php' => [$this->fixturesPath . '/Bad/PhtmlCountOnCollection/Block/LatestFaq.php'],
+            'phtml' => [$phtmlFile],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        unlink($phtmlFile);
+        rmdir($tmpDir);
+    }
+
+    public function testDetectsCountFunctionInPhtml(): void
+    {
+        $processor = new CountOnCollection();
+
+        $tmpDir = sys_get_temp_dir() . '/easyaudit_test_' . uniqid();
+        mkdir($tmpDir, 0777, true);
+
+        // phtml with count($block->getLatestFaq())
+        $phtmlFile = $tmpDir . '/count_func.phtml';
+        file_put_contents($phtmlFile, '<?php
+/** @var \Vendor\Module\Block\LatestFaq $block */
+$total = count($block->getLatestFaq());
+echo $total;
+');
+
+        $files = [
+            'php' => [$this->fixturesPath . '/Bad/PhtmlCountOnCollection/Block/LatestFaq.php'],
+            'phtml' => [$phtmlFile],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        unlink($phtmlFile);
+        rmdir($tmpDir);
+    }
+
+    public function testPhtmlIgnoresUnmappedBlockMethods(): void
+    {
+        $processor = new CountOnCollection();
+
+        $tmpDir = sys_get_temp_dir() . '/easyaudit_test_' . uniqid();
+        mkdir($tmpDir, 0777, true);
+
+        // phtml referencing a block method that doesn't return a collection
+        $phtmlFile = $tmpDir . '/non_collection.phtml';
+        file_put_contents($phtmlFile, '<?php
+/** @var \Vendor\Module\Block\LatestFaq $block */
+$items = $block->getSomeOtherData();
+if ($items->count() > 0):
+    echo "found";
+endif;
+');
+
+        $files = [
+            'php' => [$this->fixturesPath . '/Bad/PhtmlCountOnCollection/Block/LatestFaq.php'],
+            'phtml' => [$phtmlFile],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // getSomeOtherData is not in collectionReturningMethods, so no phtml findings
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($phtmlFile);
+        rmdir($tmpDir);
+    }
+
+    public function testProcessWithOnlyPhtmlFilesNoPhp(): void
+    {
+        $processor = new CountOnCollection();
+
+        $tmpDir = sys_get_temp_dir() . '/easyaudit_test_' . uniqid();
+        mkdir($tmpDir, 0777, true);
+
+        $phtmlFile = $tmpDir . '/template.phtml';
+        file_put_contents($phtmlFile, '<?php
+/** @var \Some\Block $block */
+$items = $block->getItems();
+echo count($items);
+');
+
+        $files = [
+            'phtml' => [$phtmlFile],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // No PHP files processed = no collectionReturningMethods mapped
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($phtmlFile);
+        rmdir($tmpDir);
+    }
+
+    public function testProcessWithNonCollectionConstructorParam(): void
+    {
+        $processor = new CountOnCollection();
+
+        $tmpDir = sys_get_temp_dir() . '/easyaudit_test_' . uniqid();
+        mkdir($tmpDir, 0777, true);
+
+        // Class with constructor params that are not collections or collection factories
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\App\Config\ScopeConfigInterface;
+
+class SomeService
+{
+    public function __construct(
+        private ScopeConfigInterface $scopeConfig,
+        private string $name
+    ) {
+    }
+
+    public function doStuff(): int
+    {
+        return count([1, 2, 3]);
+    }
+}
+PHP;
+        $file = $tmpDir . '/SomeService.php';
+        file_put_contents($file, $content);
+
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($file);
+        rmdir($tmpDir);
+    }
 }

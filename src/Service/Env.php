@@ -1,6 +1,6 @@
 <?php
 
-namespace EasyAudit\Support;
+namespace EasyAudit\Service;
 
 use EasyAudit\Exception\EnvAuthException;
 use EasyAudit\Exception\GitHubAuthException;

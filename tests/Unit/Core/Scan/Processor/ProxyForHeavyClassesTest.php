@@ -408,4 +408,105 @@ PHP;
 
         $this->assertEquals(0, $this->processor->getFoundCount());
     }
+
+    public function testProcessIgnoresInterfaceSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_proxy_test_' . uniqid();
+        mkdir($tempDir . '/etc', 0777, true);
+
+        // Interface suffix should be ignored even if it contains "Session"
+        $phpContent = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Customer\Model\SessionInterface;
+
+class TestClass
+{
+    public function __construct(
+        private SessionInterface $customerSession
+    ) {
+    }
+}
+PHP;
+        $phpFile = $tempDir . '/TestClass.php';
+        file_put_contents($phpFile, $phpContent);
+
+        $diContent = '<?xml version="1.0"?><config></config>';
+        $diFile = $tempDir . '/etc/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new ProxyForHeavyClasses();
+        $files = [
+            'php' => [$phpFile],
+            'di' => [$diFile],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Interface should not be flagged');
+
+        unlink($phpFile);
+        unlink($diFile);
+        rmdir($tempDir . '/etc');
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsMultipleHeavyDependencies(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_proxy_test_' . uniqid();
+        mkdir($tempDir . '/etc', 0777, true);
+
+        // Class with two heavy dependencies (both Session types)
+        $phpContent = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Customer\Model\Session;
+use Magento\Checkout\Model\Session as CheckoutSession;
+
+class TestClass
+{
+    public function __construct(
+        private Session $customerSession,
+        private CheckoutSession $checkoutSession
+    ) {
+    }
+}
+PHP;
+        $phpFile = $tempDir . '/TestClass.php';
+        file_put_contents($phpFile, $phpContent);
+
+        $diContent = '<?xml version="1.0"?><config></config>';
+        $diFile = $tempDir . '/etc/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new ProxyForHeavyClasses();
+        $files = [
+            'php' => [$phpFile],
+            'di' => [$diFile],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // Both Session classes should be detected
+        $this->assertGreaterThanOrEqual(2, $processor->getFoundCount());
+
+        unlink($phpFile);
+        unlink($diFile);
+        rmdir($tempDir . '/etc');
+        rmdir($tempDir);
+    }
+
+    public function testGetReportEmptyWhenNoIssues(): void
+    {
+        $processor = new ProxyForHeavyClasses();
+        $report = $processor->getReport();
+        $this->assertIsArray($report);
+        $this->assertEmpty($report);
+    }
 }

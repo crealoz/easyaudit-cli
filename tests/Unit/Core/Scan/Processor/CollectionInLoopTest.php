@@ -89,6 +89,99 @@ class CollectionInLoopTest extends TestCase
         $this->assertEquals(0, $this->processor->getFoundCount());
     }
 
+    public function testGetMessageContainsNPlus1(): void
+    {
+        $this->assertStringContainsString('N+1', $this->processor->getMessage());
+    }
+
+    public function testGetLongDescriptionExplainsProblem(): void
+    {
+        $description = $this->processor->getLongDescription();
+        $this->assertStringContainsString('N+1', $description);
+        $this->assertStringContainsString('loop', strtolower($description));
+    }
+
+    public function testDetectsGetFirstItemInLoop(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cil_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module\Model;
+
+class BadProcessor
+{
+    public function process(array $ids)
+    {
+        foreach ($ids as $id) {
+            $item = $this->collection->addFieldToFilter('id', $id)->getFirstItem();
+            $item->doSomething();
+        }
+    }
+}
+PHP;
+        $file = $tempDir . '/BadProcessor.php';
+        file_put_contents($file, $content);
+
+        $processor = new CollectionInLoop();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testIgnoresLoadOutsideLoop(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cil_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module\Model;
+
+class GoodProcessor
+{
+    public function process(int $id)
+    {
+        $item = $this->repository->getById($id);
+        foreach ($item->getItems() as $subItem) {
+            echo $subItem->getName();
+        }
+    }
+}
+PHP;
+        $file = $tempDir . '/GoodProcessor.php';
+        file_put_contents($file, $content);
+
+        $processor = new CollectionInLoop();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testGetReportHasEmptyFilesWhenNoIssues(): void
+    {
+        $processor = new CollectionInLoop();
+        $report = $processor->getReport();
+        $this->assertIsArray($report);
+        $this->assertNotEmpty($report);
+        $this->assertEmpty($report[0]['files']);
+    }
+
     public function testGetReportFormat(): void
     {
         $files = ['php' => [$this->fixturesPath . '/Bad/LoadInForeach.php']];

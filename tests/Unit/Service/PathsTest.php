@@ -1,8 +1,8 @@
 <?php
 
-namespace EasyAudit\Tests\Support;
+namespace EasyAudit\Tests\Unit\Service;
 
-use EasyAudit\Support\Paths;
+use EasyAudit\Service\Paths;
 use PHPUnit\Framework\TestCase;
 
 class PathsTest extends TestCase

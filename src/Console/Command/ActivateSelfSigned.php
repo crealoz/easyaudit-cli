@@ -5,7 +5,7 @@ namespace EasyAudit\Console\Command;
 use EasyAudit\Console\CommandInterface;
 use EasyAudit\Console\Util\Args;
 use EasyAudit\Console\Util\Confirm;
-use EasyAudit\Support\Paths;
+use EasyAudit\Service\Paths;
 
 class ActivateSelfSigned implements CommandInterface
 {

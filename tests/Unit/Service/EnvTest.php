@@ -1,11 +1,11 @@
 <?php
 
-namespace EasyAudit\Tests\Support;
+namespace EasyAudit\Tests\Unit\Service;
 
 use EasyAudit\Exception\EnvAuthException;
 use EasyAudit\Exception\GitHubAuthException;
-use EasyAudit\Support\Env;
-use EasyAudit\Support\Paths;
+use EasyAudit\Service\Env;
+use EasyAudit\Service\Paths;
 use PHPUnit\Framework\TestCase;
 
 class EnvTest extends TestCase

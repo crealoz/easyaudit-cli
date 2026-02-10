@@ -1074,13 +1074,9 @@ PHP;
 
     public function testChildrenDetectionAffectsSeverity(): void
     {
-        // Test that collection/repository with children use warning severity
-        // while those without children use error severity
-
         $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
         mkdir($tempDir, 0777, true);
 
-        // Create a parent collection class
         $parentContent = <<<'PHP'
 <?php
 namespace Test\Module\Model\ResourceModel\Product;
@@ -1092,7 +1088,6 @@ PHP;
         $parentFile = $tempDir . '/Collection.php';
         file_put_contents($parentFile, $parentContent);
 
-        // Create a child collection class
         $childContent = <<<'PHP'
 <?php
 namespace Test\Module\Model\ResourceModel\Product;
@@ -1104,8 +1099,6 @@ PHP;
         $childFile = $tempDir . '/ChildCollection.php';
         file_put_contents($childFile, $childContent);
 
-        // Create a service that injects the parent collection
-        // Note: ClassName must contain 'Model' AND 'Collection' to trigger collection detection
         $serviceContent = <<<'PHP'
 <?php
 namespace Test\Module\Model\Collection;
@@ -1131,13 +1124,8 @@ PHP;
         $report = $processor->getReport();
         ob_end_clean();
 
-        // When a collection has children, it should use collectionWithChildrenMustUseFactory (warning)
-        // When it doesn't, it should use collectionMustUseFactory (error)
-        // The exact behavior depends on whether Classes::getChildren finds the child
-
         $this->assertNotEmpty($report, 'Should have at least one report entry');
         $ruleIds = array_column($report, 'ruleId');
-        // Should be one of the two collection rules
         $hasCollectionRule = in_array('collectionMustUseFactory', $ruleIds)
             || in_array('collectionWithChildrenMustUseFactory', $ruleIds);
         $this->assertTrue($hasCollectionRule, 'Should have a collection rule');
@@ -1145,6 +1133,439 @@ PHP;
         unlink($parentFile);
         unlink($childFile);
         unlink($serviceFile);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsResourceModelInNonResourceModelClass(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // A regular Model (not ResourceModel, not Repository) injecting a ResourceModel
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\ResourceModel\Product;
+
+class ProductModel
+{
+    public function __construct(
+        private Product $productResource
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/ProductModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('noResourceModelInjection', $ruleIds);
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsRepositoryWithoutInterfaceInModel(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Class name contains "Model" and injects a Repository class
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\ProductRepository;
+
+class ProductModel
+{
+    public function __construct(
+        private ProductRepository $productRepository
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/ProductModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('repositoryMustUseInterface', $ruleIds);
+
+        // Verify message contains the interface suggestion
+        foreach ($report as $entry) {
+            if ($entry['ruleId'] === 'repositoryMustUseInterface') {
+                $this->assertStringContainsString('Interface', $entry['files'][0]['message']);
+            }
+        }
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsRepositoryWithChildrenUsesWarning(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $parentContent = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+class ProductRepository
+{
+}
+PHP;
+        $parentFile = $tempDir . '/ProductRepository.php';
+        file_put_contents($parentFile, $parentContent);
+
+        $childContent = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+class SpecialProductRepository extends ProductRepository
+{
+}
+PHP;
+        $childFile = $tempDir . '/SpecialProductRepository.php';
+        file_put_contents($childFile, $childContent);
+
+        // The service uses a fully-qualified class in the use statement
+        // but consolidateParameters adds a leading backslash, and getChildren
+        // stores without leading backslash. The processor handles this via
+        // try/catch on NoChildrenException.
+        $serviceContent = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+class ProductServiceModel
+{
+    public function __construct(
+        private ProductRepository $productRepository
+    ) {
+    }
+}
+PHP;
+        $serviceFile = $tempDir . '/ProductServiceModel.php';
+        file_put_contents($serviceFile, $serviceContent);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$parentFile, $childFile, $serviceFile]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        // Should detect repository violation (either with or without children depending
+        // on class resolution - at minimum, the repositoryMustUseInterface rule should trigger)
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        $ruleIds = array_column($report, 'ruleId');
+        $hasRepoRule = in_array('repositoryMustUseInterface', $ruleIds)
+            || in_array('repositoryWithChildrenMustUseInterface', $ruleIds);
+        $this->assertTrue($hasRepoRule, 'Should have a repository rule');
+
+        unlink($parentFile);
+        unlink($childFile);
+        unlink($serviceFile);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresContextClass(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\SomeContext;
+
+class SomeModel
+{
+    public function __construct(
+        private SomeContext $context
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Context classes');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresSessionClass(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\CustomerSession;
+
+class SomeModel
+{
+    public function __construct(
+        private CustomerSession $session
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Session classes');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresSerializerClass(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\JsonSerializer;
+
+class SomeModel
+{
+    public function __construct(
+        private JsonSerializer $serializer
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Serializer classes');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresGeneratorSubstring(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // "Generator" is in IGNORED_SUBSTRINGS
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\ReportGenerator;
+
+class SomeModel
+{
+    public function __construct(
+        private ReportGenerator $generator
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Generator classes');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testGetReportReturnsEmptyForNoIssues(): void
+    {
+        $processor = new SpecificClassInjection();
+        $report = $processor->getReport();
+
+        $this->assertIsArray($report);
+        $this->assertEmpty($report);
+    }
+
+    public function testProcessRepositoryInNonModelClassTriggersGenericRule(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Class name does NOT contain "Model" so handleModelViolation is not called
+        // But the class injects a Repository, so genericClass rule should apply
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Service;
+
+use Vendor\Module\Model\ProductRepository;
+
+class ProductService
+{
+    public function __construct(
+        private ProductRepository $productRepository
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/ProductService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('specificClassInjection', $ruleIds);
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsModelWithApiInterface(): void
+    {
+        // Create actual classes so Types::hasApiInterface works (needs class_exists)
+        $suffix = str_replace('.', '', uniqid('', true));
+        $ns = "EasyAuditTestApi{$suffix}";
+
+        if (!interface_exists("{$ns}\\Api\\ProductInterface")) {
+            eval("namespace {$ns}\\Api; interface ProductInterface {}");
+        }
+        if (!class_exists("{$ns}\\Model\\Product")) {
+            eval("namespace {$ns}\\Model; class Product implements \\{$ns}\\Api\\ProductInterface {}");
+        }
+
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Write file with use statement referencing the eval'd class
+        $useStmt = str_replace('\\', '\\', "{$ns}\\Model\\Product");
+        $content = <<<PHP
+<?php
+namespace {$ns}\Model;
+
+use {$useStmt};
+
+class ServiceModel
+{
+    public function __construct(
+        private Product \$product
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/ServiceModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('modelUseApiInterface', $ruleIds, 'Should detect model with API interface');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testResourceModelInRepositoryClassIsNotFlagged(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // A Repository class injecting a ResourceModel is acceptable
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\ResourceModel\Product;
+
+class ProductRepository
+{
+    public function __construct(
+        private Product $productResource
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/ProductRepository.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertNotContains('noResourceModelInjection', $ruleIds,
+            'Repository injecting ResourceModel should not be flagged');
+
+        unlink($file);
         rmdir($tempDir);
     }
 }

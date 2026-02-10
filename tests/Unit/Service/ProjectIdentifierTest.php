@@ -1,8 +1,8 @@
 <?php
 
-namespace EasyAudit\Tests\Support;
+namespace EasyAudit\Tests\Unit\Service;
 
-use EasyAudit\Support\ProjectIdentifier;
+use EasyAudit\Service\ProjectIdentifier;
 use PHPUnit\Framework\TestCase;
 
 class ProjectIdentifierTest extends TestCase

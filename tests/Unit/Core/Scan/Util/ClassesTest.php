@@ -439,4 +439,82 @@ PHP;
         $params = ['SomeClass $service'];
         Classes::getInstantiation($params, '$service', $content);
     }
+
+    // --- resolveShortClassName() with alias ---
+
+    public function testResolveShortClassNameWithAlias(): void
+    {
+        $content = "<?php\nuse Some\\Long\\Class as MyAlias;";
+        $result = Classes::resolveShortClassName('MyAlias', $content, 'Vendor\Module');
+        $this->assertEquals('Some\Long\Class', $result);
+    }
+
+    // --- extendsClass() ---
+
+    public function testExtendsClassWithFullyQualifiedName(): void
+    {
+        $content = '<?php class Child extends \Magento\Framework\Model\AbstractModel {}';
+        $this->assertTrue(Classes::extendsClass($content, 'Magento\Framework\Model\AbstractModel'));
+    }
+
+    public function testExtendsClassWithImportedShortName(): void
+    {
+        $content = "<?php\nuse Magento\\Framework\\Model\\AbstractModel;\nclass Child extends AbstractModel {}";
+        $this->assertTrue(Classes::extendsClass($content, 'Magento\Framework\Model\AbstractModel'));
+    }
+
+    public function testExtendsClassReturnsFalseForUnrelatedClass(): void
+    {
+        $content = '<?php class Child extends SomeOtherClass {}';
+        $this->assertFalse(Classes::extendsClass($content, 'Magento\Framework\Model\AbstractModel'));
+    }
+
+    // --- isFactoryClass() ---
+
+    public function testIsFactoryClassTrue(): void
+    {
+        $content = '<?php class ProductFactory { }';
+        $this->assertTrue(Classes::isFactoryClass($content));
+    }
+
+    public function testIsFactoryClassFalse(): void
+    {
+        $content = '<?php class ProductService { }';
+        $this->assertFalse(Classes::isFactoryClass($content));
+    }
+
+    // --- isCommandClass() ---
+
+    public function testIsCommandClassTrue(): void
+    {
+        $content = <<<'PHP'
+<?php
+use Symfony\Component\Console\Command\Command;
+class MyCommand extends Command {}
+PHP;
+        $this->assertTrue(Classes::isCommandClass($content));
+    }
+
+    public function testIsCommandClassFalse(): void
+    {
+        $content = '<?php class SomeService { }';
+        $this->assertFalse(Classes::isCommandClass($content));
+    }
+
+    // --- derivePropertyName() ---
+
+    public function testDerivePropertyName(): void
+    {
+        $this->assertEquals('productFactory', Classes::derivePropertyName('Magento\Catalog\Model\ProductFactory'));
+        $this->assertEquals('product', Classes::derivePropertyName('Product'));
+    }
+
+    // --- findClassDeclarationLine() ---
+
+    public function testFindClassDeclarationLine(): void
+    {
+        $content = "<?php\nnamespace Test;\n\nclass MyChild extends AbstractModel\n{\n}";
+        $result = Classes::findClassDeclarationLine($content, 'Magento\Framework\Model\AbstractModel');
+        $this->assertEquals(4, $result);
+    }
 }

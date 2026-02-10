@@ -6,7 +6,6 @@ use EasyAudit\Exception\Fixer\CurlResponseException;
 use EasyAudit\Exception\GitHubAuthException;
 use EasyAudit\Exception\RateLimitedException;
 use EasyAudit\Exception\UpgradeRequiredException;
-use EasyAudit\Support\Env;
 use EasyAudit\Version;
 use RuntimeException;
 

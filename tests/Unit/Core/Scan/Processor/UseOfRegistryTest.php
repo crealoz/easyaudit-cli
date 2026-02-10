@@ -259,6 +259,49 @@ PHP;
         rmdir($tempDir);
     }
 
+    public function testGetReportReturnsEmptyForFreshProcessor(): void
+    {
+        $processor = new UseOfRegistry();
+        $report = $processor->getReport();
+        $this->assertIsArray($report);
+        $this->assertEmpty($report);
+    }
+
+    public function testProcessIgnoresFileWithConstructorButNoRegistry(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_registry_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module;
+
+use Magento\Framework\App\Config\ScopeConfigInterface;
+
+class GoodClass
+{
+    public function __construct(
+        private ScopeConfigInterface $scopeConfig
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/GoodClass.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfRegistry();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
     public function testEmptyReportWhenNoIssues(): void
     {
         $goodFile = $this->fixturesPath . '/GoodWithoutRegistry.php';

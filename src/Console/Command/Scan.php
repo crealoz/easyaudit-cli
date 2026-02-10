@@ -10,10 +10,14 @@ use EasyAudit\Core\Report\JsonReporter;
 use EasyAudit\Core\Report\SarifReporter;
 use EasyAudit\Core\Report\HtmlReporter;
 use EasyAudit\Service\CliWriter;
-use EasyAudit\Support\ProjectIdentifier;
+use EasyAudit\Service\ProjectIdentifier;
 
 final class Scan implements CommandInterface
 {
+    public function __construct(
+        private Scanner $scanner,
+    ) {}
+
     public function getDescription(): string
     {
         return 'Perform a security scan on Magento 2 codebase';
@@ -73,8 +77,7 @@ HELP;
         $path        = $rest ?: '.';
         define('EA_SCAN_PATH', $path);
 
-        $scanner  = new Scanner();
-        $result   = $scanner->run($exclude, $excludedExt);
+        $result   = $this->scanner->run($exclude, $excludedExt);
 
         $findings = $result['findings'];
         $toolSuggestions = $result['toolSuggestions'];

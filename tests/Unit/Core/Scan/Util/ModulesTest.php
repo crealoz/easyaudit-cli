@@ -116,4 +116,53 @@ class ModulesTest extends TestCase
     {
         $this->assertNull(Modules::findDiXmlForFile('/nonexistent/path/File.php'));
     }
+
+    public function testFindDiXmlForFileAppCodePattern(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_modules_test_' . uniqid();
+        mkdir($tempDir . '/app/code/Vendor/Module/etc', 0777, true);
+        mkdir($tempDir . '/app/code/Vendor/Module/Model', 0777, true);
+
+        $diFile = $tempDir . '/app/code/Vendor/Module/etc/di.xml';
+        file_put_contents($diFile, '<?xml version="1.0"?><config/>');
+
+        $phpFile = $tempDir . '/app/code/Vendor/Module/Model/Product.php';
+        file_put_contents($phpFile, '<?php // dummy');
+
+        $result = Modules::findDiXmlForFile($phpFile);
+        $this->assertEquals($diFile, $result);
+
+        @unlink($phpFile);
+        @unlink($diFile);
+        @rmdir($tempDir . '/app/code/Vendor/Module/Model');
+        @rmdir($tempDir . '/app/code/Vendor/Module/etc');
+        @rmdir($tempDir . '/app/code/Vendor/Module');
+        @rmdir($tempDir . '/app/code/Vendor');
+        @rmdir($tempDir . '/app/code');
+        @rmdir($tempDir . '/app');
+        @rmdir($tempDir);
+    }
+
+    public function testFindDiXmlForFileFallbackWalkUp(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_modules_test_' . uniqid();
+        mkdir($tempDir . '/SomeDir/etc', 0777, true);
+        mkdir($tempDir . '/SomeDir/Model', 0777, true);
+
+        $diFile = $tempDir . '/SomeDir/etc/di.xml';
+        file_put_contents($diFile, '<?xml version="1.0"?><config/>');
+
+        $phpFile = $tempDir . '/SomeDir/Model/Product.php';
+        file_put_contents($phpFile, '<?php // dummy');
+
+        $result = Modules::findDiXmlForFile($phpFile);
+        $this->assertEquals($diFile, $result);
+
+        @unlink($phpFile);
+        @unlink($diFile);
+        @rmdir($tempDir . '/SomeDir/Model');
+        @rmdir($tempDir . '/SomeDir/etc');
+        @rmdir($tempDir . '/SomeDir');
+        @rmdir($tempDir);
+    }
 }

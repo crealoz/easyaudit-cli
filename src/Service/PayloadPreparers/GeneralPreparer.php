@@ -3,7 +3,7 @@
 namespace EasyAudit\Service\PayloadPreparers;
 
 use EasyAudit\Exception\Fixer\CouldNotPreparePayloadException;
-use EasyAudit\Support\Paths;
+use EasyAudit\Service\Paths;
 
 class GeneralPreparer extends AbstractPreparer
 {

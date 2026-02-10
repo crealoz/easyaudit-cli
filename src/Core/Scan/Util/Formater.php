@@ -2,7 +2,7 @@
 
 namespace EasyAudit\Core\Scan\Util;
 
-use EasyAudit\Support\Paths;
+use EasyAudit\Service\Paths;
 
 class Formater
 {

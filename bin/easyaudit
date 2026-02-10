@@ -36,11 +36,16 @@ spl_autoload_register(function ($class) {
     }
 });
 
+// Service creation
+$scanner = new \EasyAudit\Core\Scan\Scanner();
+$logger  = new \EasyAudit\Service\Logger();
+$api     = new \EasyAudit\Service\Api();
+
 // Command registry
 $commands = [
-    'scan' => fn() => new \EasyAudit\Console\Command\Scan(),
-    'auth' => fn() => new \EasyAudit\Console\Command\Auth(),
-    'fix-apply' => fn() => new \EasyAudit\Console\Command\FixApply(),
+    'scan'                 => fn() => new \EasyAudit\Console\Command\Scan($scanner),
+    'auth'                 => fn() => new \EasyAudit\Console\Command\Auth(),
+    'fix-apply'            => fn() => new \EasyAudit\Console\Command\FixApply($logger, $api),
     'activate-self-signed' => fn() => new \EasyAudit\Console\Command\ActivateSelfSigned(),
 ];
 
@@ -63,6 +68,7 @@ if ($cmdName === '-h' || $cmdName === '--help' || $cmdName === null) {
 
     // Get descriptions from each command
     foreach ($commands as $name => $factory) {
+        /** @var \EasyAudit\Console\CommandInterface $cmd */
         $cmd = $factory();
         $synopsis = $cmd->getSynopsis();
         $desc = $cmd->getDescription();

@@ -229,4 +229,93 @@ class UseOfObjectManagerTest extends TestCase
             $this->assertNotEmpty($rule['files']);
         }
     }
+
+    public function testProcessDetectsGetInstanceUsage(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // ObjectManager::getInstance() pattern (direct, no constructor injection)
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\App\ObjectManager;
+
+class DirectUsage
+{
+    public function doStuff(): void
+    {
+        $logger = ObjectManager::getInstance()->get('Psr\Log\LoggerInterface');
+        $logger->info('test');
+    }
+}
+PHP;
+        $file = $tempDir . '/DirectUsage.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsPropertyAssignedFromGetInstance(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // $this->property = ObjectManager::getInstance() then $this->property->get(...)
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\App\ObjectManager;
+
+class PropertyUsage
+{
+    private $om;
+
+    public function initOm(): void
+    {
+        $this->om = ObjectManager::getInstance();
+    }
+
+    public function doStuff(): void
+    {
+        $logger = $this->om->get('Psr\Log\LoggerInterface');
+        $logger->info('test');
+    }
+}
+PHP;
+        $file = $tempDir . '/PropertyUsage.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testGetReportEmptyWhenNoIssues(): void
+    {
+        $processor = new UseOfObjectManager();
+        $report = $processor->getReport();
+        $this->assertIsArray($report);
+        $this->assertEmpty($report);
+    }
 }

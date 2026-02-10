@@ -263,6 +263,27 @@ class CliWriterTest extends TestCase
         $this->assertStringContainsString("\033[31m", $output);
     }
 
+    public function testLabelValueWithYellowColor(): void
+    {
+        ob_start();
+        CliWriter::labelValue('Warning', 'Degraded', 'yellow');
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString("\033[33m", $output);
+        $this->assertStringContainsString('Warning', $output);
+        $this->assertStringContainsString('Degraded', $output);
+    }
+
+    public function testLabelValueWithBlueColor(): void
+    {
+        ob_start();
+        CliWriter::labelValue('Info', 'Details', 'blue');
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString("\033[34m", $output);
+        $this->assertStringContainsString('Info', $output);
+    }
+
     public function testClearLine(): void
     {
         ob_start();

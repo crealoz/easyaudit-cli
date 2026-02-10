@@ -97,4 +97,28 @@ class TypesTest extends TestCase
         $result = Types::getApiInterface('Vendor\Module\Model\Product');
         $this->assertEquals('Vendor\Module\Api\Data\ProductInterface', $result);
     }
+
+    public function testHasApiInterfaceReturnsTrueForClassWithApiInterface(): void
+    {
+        // Create a temporary interface and class that implements it
+        $code = <<<'PHP'
+namespace EasyAuditTestApiTypes;
+interface ApiDataInterface {}
+class TestModelWithApi implements ApiDataInterface {}
+PHP;
+        eval($code);
+
+        $this->assertTrue(Types::hasApiInterface('EasyAuditTestApiTypes\TestModelWithApi'));
+    }
+
+    public function testGetApiInterfaceReturnsActualInterfaceName(): void
+    {
+        // The class was already created by the test above
+        if (!class_exists('EasyAuditTestApiTypes\TestModelWithApi')) {
+            eval('namespace EasyAuditTestApiTypes; interface ApiDataInterface {} class TestModelWithApi implements ApiDataInterface {}');
+        }
+
+        $result = Types::getApiInterface('EasyAuditTestApiTypes\TestModelWithApi');
+        $this->assertEquals('EasyAuditTestApiTypes\ApiDataInterface', $result);
+    }
 }

@@ -119,4 +119,35 @@ PHP;
         $code = "first target\nsecond target";
         $this->assertEquals(1, Functions::getOccuringLineInFunction($code, 'target'));
     }
+
+    // --- extractBraceBlock() tests ---
+
+    public function testExtractBraceBlockReturnsContent(): void
+    {
+        $code = 'function foo() { return 1; }';
+        $result = Functions::extractBraceBlock($code, 0);
+        $this->assertStringContainsString('return 1;', $result);
+    }
+
+    public function testExtractBraceBlockReturnsNullWhenNoBrace(): void
+    {
+        $code = 'function foo() return 1;';
+        $result = Functions::extractBraceBlock($code, 0);
+        $this->assertNull($result);
+    }
+
+    public function testExtractBraceBlockReturnsNullWhenUnbalanced(): void
+    {
+        $code = 'function foo() { if (true) { return 1;';
+        $result = Functions::extractBraceBlock($code, 0);
+        $this->assertNull($result);
+    }
+
+    public function testExtractBraceBlockWithNestedBraces(): void
+    {
+        $code = 'function foo() { if (true) { return 1; } return 0; }';
+        $result = Functions::extractBraceBlock($code, 0);
+        $this->assertStringContainsString('if (true)', $result);
+        $this->assertStringContainsString('return 0;', $result);
+    }
 }

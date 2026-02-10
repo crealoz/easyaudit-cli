@@ -1,6 +1,6 @@
 <?php
 
-namespace EasyAudit\Support;
+namespace EasyAudit\Service;
 
 final class Paths
 {

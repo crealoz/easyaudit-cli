@@ -86,6 +86,78 @@ class DiAreaScopeTest extends TestCase
         $this->assertEquals(0, $this->processor->getFoundCount());
     }
 
+    public function testGetMessageContainsPlugin(): void
+    {
+        $this->assertStringContainsString('plugin', strtolower($this->processor->getMessage()));
+    }
+
+    public function testGetLongDescriptionExplainsProblem(): void
+    {
+        $description = $this->processor->getLongDescription();
+        $this->assertStringContainsString('global', strtolower($description));
+        $this->assertStringContainsString('area', strtolower($description));
+    }
+
+    public function testDetectsPreferenceInGlobalScopeForFrontendClass(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_diarea_test_' . uniqid();
+        mkdir($tempDir . '/etc', 0777, true);
+
+        // Global di.xml with preference for a frontend-only class (Block)
+        $diContent = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <preference for="Vendor\Module\Block\ProductView" type="Vendor\Module\Block\Custom\ProductView"/>
+</config>
+XML;
+        file_put_contents($tempDir . '/etc/di.xml', $diContent);
+
+        $processor = new DiAreaScope();
+        $files = ['di' => [$tempDir . '/etc/di.xml']];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // Block classes are frontend-specific, should be flagged in global di.xml
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        unlink($tempDir . '/etc/di.xml');
+        rmdir($tempDir . '/etc');
+        rmdir($tempDir);
+    }
+
+    public function testSkipsMalformedXml(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_diarea_test_' . uniqid();
+        mkdir($tempDir . '/etc', 0777, true);
+
+        $diContent = '<?xml version="1.0"?><config><type name="broken"';
+        file_put_contents($tempDir . '/etc/di.xml', $diContent);
+
+        $processor = new DiAreaScope();
+        $files = ['di' => [$tempDir . '/etc/di.xml']];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($tempDir . '/etc/di.xml');
+        rmdir($tempDir . '/etc');
+        rmdir($tempDir);
+    }
+
+    public function testGetReportHasEmptyFilesWhenNoIssues(): void
+    {
+        $processor = new DiAreaScope();
+        $report = $processor->getReport();
+        $this->assertIsArray($report);
+        $this->assertNotEmpty($report);
+        $this->assertEmpty($report[0]['files']);
+    }
+
     public function testGetReportFormat(): void
     {
         $files = ['di' => [$this->fixturesPath . '/Bad/etc/di.xml']];

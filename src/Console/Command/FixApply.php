@@ -13,25 +13,22 @@ use EasyAudit\Service\Logger;
 use EasyAudit\Service\PayloadPreparers\DiPreparer;
 use EasyAudit\Service\PayloadPreparers\GeneralPreparer;
 use EasyAudit\Service\PayloadPreparers\PreparerInterface;
-use EasyAudit\Support\Paths;
-use EasyAudit\Support\ProjectIdentifier;
+use EasyAudit\Service\Paths;
+use EasyAudit\Service\ProjectIdentifier;
 
 final class FixApply implements \EasyAudit\Console\CommandInterface
 {
     private int $currentFile = 0;
     private int $totalFiles = 0;
-    private Logger $logger;
-    private Api $api;
     private array $diffs = [];
     private int $creditsRemaining = 0;
     private string $projectId = '';
     private array $processErrors = [];
 
-    public function __construct()
-    {
-        $this->logger = new Logger();
-        $this->api = new Api();
-    }
+    public function __construct(
+        private Logger $logger,
+        private Api $api,
+    ) {}
 
     public function getDescription(): string
     {

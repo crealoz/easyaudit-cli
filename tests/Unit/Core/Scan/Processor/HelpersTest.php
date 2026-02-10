@@ -254,6 +254,51 @@ PHP;
         $this->assertEquals(0, $this->processor->getFoundCount());
     }
 
+    public function testProcessIgnoresIgnoredHelpers(): void
+    {
+        // Use temp files because processor skips /tests/ directory
+        $tempDir = sys_get_temp_dir() . '/easyaudit_helper_test_' . uniqid();
+        mkdir($tempDir . '/view/frontend/templates', 0777, true);
+
+        // phtml using an ignored helper (Magento\Tax\Helper\Data)
+        $phtmlContent = <<<'PHTML'
+<?php
+/** @var $block \Magento\Framework\View\Element\Template */
+?>
+<div><?= $this->helper('Magento\Tax\Helper\Data')->getCalculationSequence() ?></div>
+PHTML;
+        $phtmlFile = $tempDir . '/view/frontend/templates/tax.phtml';
+        file_put_contents($phtmlFile, $phtmlContent);
+
+        $processor = new Helpers();
+        $files = [
+            'phtml' => [$phtmlFile],
+            'php' => [],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        // Ignored helpers should not be flagged
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($phtmlFile);
+        rmdir($tempDir . '/view/frontend/templates');
+        rmdir($tempDir . '/view/frontend');
+        rmdir($tempDir . '/view');
+        rmdir($tempDir);
+    }
+
+    public function testGetReportEmptyWhenNoIssues(): void
+    {
+        $processor = new Helpers();
+        $report = $processor->getReport();
+        $this->assertIsArray($report);
+        $this->assertEmpty($report);
+    }
+
     public function testReportHasExtensionAndUsageRules(): void
     {
         // Use temp files because processor skips /tests/ directory

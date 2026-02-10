@@ -4,7 +4,7 @@ namespace EasyAudit\Core\Scan;
 
 use EasyAudit\Service\Api;
 use EasyAudit\Service\CliWriter;
-use EasyAudit\Support\Paths;
+use EasyAudit\Service\Paths;
 
 class Scanner
 {

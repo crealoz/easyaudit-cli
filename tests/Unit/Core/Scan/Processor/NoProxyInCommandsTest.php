@@ -5,6 +5,10 @@ namespace EasyAudit\Tests\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Processor\NoProxyInCommands;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
+ */
 class NoProxyInCommandsTest extends TestCase
 {
     private NoProxyInCommands $processor;
@@ -43,27 +47,20 @@ class NoProxyInCommandsTest extends TestCase
 
     public function testProcessWithEmptyDiFiles(): void
     {
-        // Processor expects 'di' key in files
         $files = ['di' => []];
 
         ob_start();
-        try {
-            $this->processor->process($files);
-        } catch (\TypeError $e) {
-            // Expected when di key is empty array
-        }
-        $report = $this->processor->getReport();
+        $this->processor->process($files);
         ob_end_clean();
 
         $this->assertEquals(0, $this->processor->getFoundCount());
     }
 
-    public function testProcessWithValidDiXml(): void
+    public function testProcessWithValidDiXmlWithoutCommands(): void
     {
         $tempDir = sys_get_temp_dir() . '/easyaudit_command_test_' . uniqid();
         mkdir($tempDir, 0777, true);
 
-        // di.xml without CommandList - should not find any commands
         $diContent = <<<'XML'
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -82,10 +79,8 @@ XML;
 
         ob_start();
         $processor->process($files);
-        $report = $processor->getReport();
         ob_end_clean();
 
-        // No commands, no issues
         $this->assertEquals(0, $processor->getFoundCount());
 
         unlink($diFile);
@@ -97,7 +92,6 @@ XML;
         $tempDir = sys_get_temp_dir() . '/easyaudit_command_test_' . uniqid();
         mkdir($tempDir, 0777, true);
 
-        // Malformed XML
         $diContent = '<?xml version="1.0"?><config><type name="broken"';
         $diFile = $tempDir . '/di.xml';
         file_put_contents($diFile, $diContent);
@@ -107,10 +101,8 @@ XML;
 
         ob_start();
         $processor->process($files);
-        $report = $processor->getReport();
         ob_end_clean();
 
-        // Should gracefully skip malformed XML
         $this->assertEquals(0, $processor->getFoundCount());
 
         unlink($diFile);
@@ -119,32 +111,328 @@ XML;
 
     public function testGetReportReturnsNoFilesWhenNoIssues(): void
     {
-        // Create a fresh processor to ensure no state from previous tests
         $processor = new NoProxyInCommands();
         $report = $processor->getReport();
 
-        // AbstractProcessor always returns structure with files array
         $this->assertIsArray($report);
         $this->assertNotEmpty($report);
-        // The files array should be empty when no issues found
         $this->assertEmpty($report[0]['files']);
     }
 
     public function testProcessWithMissingDiKey(): void
     {
-        $files = ['php' => ['/some/file.php']];  // Missing 'di' key
+        $files = ['php' => ['/some/file.php']];
 
-        // Process should handle missing 'di' key gracefully or throw
-        $caughtException = false;
         ob_start();
-        try {
-            $this->processor->process($files);
-        } catch (\TypeError|\Error $e) {
-            $caughtException = true;
-        }
+        $this->processor->process($files);
         ob_end_clean();
 
-        // Either caught exception or silently handled (both acceptable)
-        $this->assertTrue(true); // Test passes if we get here
+        $this->assertEquals(0, $this->processor->getFoundCount());
+    }
+
+    public function testProcessDetectsCommandWithoutProxy(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cmd_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        if (!defined('EA_SCAN_PATH')) {
+            define('EA_SCAN_PATH', $tempDir);
+        }
+
+        // Create a command PHP file with constructor dependencies but no proxy
+        $commandContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Console\Command;
+
+use Vendor\Module\Model\SomeService;
+use Vendor\Module\Api\SomeRepositoryInterface;
+
+class MyCommand extends \Symfony\Component\Console\Command\Command
+{
+    public function __construct(
+        private SomeService $someService,
+        private SomeRepositoryInterface $someRepository
+    ) {
+        parent::__construct();
+    }
+}
+PHP;
+        // Store at the path the resolver expects (Strategy 2: strip Vendor\Module prefix)
+        mkdir($tempDir . '/Console/Command', 0777, true);
+        file_put_contents($tempDir . '/Console/Command/MyCommand.php', $commandContent);
+
+        // Create di.xml that references this command in CommandList
+        $diContent = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="myCommand" xsi:type="object">Vendor\Module\Console\Command\MyCommand</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
+XML;
+        $diFile = $tempDir . '/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new NoProxyInCommands();
+        $files = ['di' => [$diFile]];
+
+        ob_start();
+        $processor->process($files);
+        $output = ob_get_clean();
+
+        // Should detect parameters without proxy
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        // Should output summary message
+        $this->assertStringContainsString('Commands without proxy', $output);
+
+        // Check report format
+        $report = $processor->getReport();
+        $this->assertIsArray($report);
+        $this->assertNotEmpty($report);
+        $this->assertNotEmpty($report[0]['files']);
+
+        // Verify file entries contain expected structure
+        $fileEntry = $report[0]['files'][0];
+        $this->assertArrayHasKey('file', $fileEntry);
+        $this->assertArrayHasKey('message', $fileEntry);
+        $this->assertArrayHasKey('severity', $fileEntry);
+        $this->assertEquals('warning', $fileEntry['severity']);
+
+        // Cleanup
+        @unlink($tempDir . '/Console/Command/MyCommand.php');
+        @unlink($diFile);
+        @rmdir($tempDir . '/Console/Command');
+        @rmdir($tempDir . '/Console');
+        @rmdir($tempDir);
+    }
+
+    public function testProcessAllowsCommandsWithProxy(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cmd_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        if (!defined('EA_SCAN_PATH')) {
+            define('EA_SCAN_PATH', $tempDir);
+        }
+
+        // Command with a single dependency
+        $commandContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Console\Command;
+
+use Vendor\Module\Model\SomeService;
+
+class ProxyCommand extends \Symfony\Component\Console\Command\Command
+{
+    public function __construct(
+        private SomeService $someService
+    ) {
+        parent::__construct();
+    }
+}
+PHP;
+        mkdir($tempDir . '/Console/Command', 0777, true);
+        file_put_contents($tempDir . '/Console/Command/ProxyCommand.php', $commandContent);
+
+        // di.xml with both CommandList and proxy configuration
+        $diContent = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="proxyCommand" xsi:type="object">Vendor\Module\Console\Command\ProxyCommand</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Vendor\Module\Console\Command\ProxyCommand">
+        <arguments>
+            <argument name="someService" xsi:type="object">Vendor\Module\Model\SomeService\Proxy</argument>
+        </arguments>
+    </type>
+</config>
+XML;
+        $diFile = $tempDir . '/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new NoProxyInCommands();
+        $files = ['di' => [$diFile]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // All proxies are configured, should find 0 issues
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        @unlink($tempDir . '/Console/Command/ProxyCommand.php');
+        @unlink($diFile);
+        @rmdir($tempDir . '/Console/Command');
+        @rmdir($tempDir . '/Console');
+        @rmdir($tempDir);
+    }
+
+    public function testProcessHandlesUnresolvableClassGracefully(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cmd_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        if (!defined('EA_SCAN_PATH')) {
+            define('EA_SCAN_PATH', $tempDir);
+        }
+
+        // di.xml references a class that doesn't exist as a file
+        $diContent = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="ghostCommand" xsi:type="object">Vendor\Module\Console\Command\NonexistentCommand</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
+XML;
+        $diFile = $tempDir . '/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new NoProxyInCommands();
+        $files = ['di' => [$diFile]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // Should skip gracefully when class file not found
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($diFile);
+        rmdir($tempDir);
+    }
+
+    public function testProcessSkipsFactoryDependencies(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cmd_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        if (!defined('EA_SCAN_PATH')) {
+            define('EA_SCAN_PATH', $tempDir);
+        }
+
+        // Command with only Factory dependencies (should be skipped)
+        $commandContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Console\Command;
+
+use Vendor\Module\Model\ProductFactory;
+
+class FactoryCommand extends \Symfony\Component\Console\Command\Command
+{
+    public function __construct(
+        private ProductFactory $productFactory
+    ) {
+        parent::__construct();
+    }
+}
+PHP;
+        mkdir($tempDir . '/Console/Command', 0777, true);
+        file_put_contents($tempDir . '/Console/Command/FactoryCommand.php', $commandContent);
+
+        $diContent = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="factoryCommand" xsi:type="object">Vendor\Module\Console\Command\FactoryCommand</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
+XML;
+        $diFile = $tempDir . '/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new NoProxyInCommands();
+        $files = ['di' => [$diFile]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // Factory dependencies are lazy-loaded by design, should not be flagged
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        @unlink($tempDir . '/Console/Command/FactoryCommand.php');
+        @unlink($diFile);
+        @rmdir($tempDir . '/Console/Command');
+        @rmdir($tempDir . '/Console');
+        @rmdir($tempDir);
+    }
+
+    public function testProcessWithCommandListInterface(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cmd_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        if (!defined('EA_SCAN_PATH')) {
+            define('EA_SCAN_PATH', $tempDir);
+        }
+
+        $commandContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Console\Command;
+
+use Vendor\Module\Model\SomeService;
+
+class InterfaceCommand extends \Symfony\Component\Console\Command\Command
+{
+    public function __construct(
+        private SomeService $someService
+    ) {
+        parent::__construct();
+    }
+}
+PHP;
+        mkdir($tempDir . '/Console/Command', 0777, true);
+        file_put_contents($tempDir . '/Console/Command/InterfaceCommand.php', $commandContent);
+
+        // Use CommandListInterface instead of CommandList
+        $diContent = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="interfaceCommand" xsi:type="object">Vendor\Module\Console\Command\InterfaceCommand</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
+XML;
+        $diFile = $tempDir . '/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new NoProxyInCommands();
+        $files = ['di' => [$diFile]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        // Should also detect via CommandListInterface
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        @unlink($tempDir . '/Console/Command/InterfaceCommand.php');
+        @unlink($diFile);
+        @rmdir($tempDir . '/Console/Command');
+        @rmdir($tempDir . '/Console');
+        @rmdir($tempDir);
     }
 }
