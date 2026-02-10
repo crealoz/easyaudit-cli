@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Writing Processors](docs/developer-guide/processors.md) — architecture, step-by-step guide, best practices, testing
   - [Utilities Reference](docs/developer-guide/utilities.md) — all 8 utility classes with method signatures and examples
 
+### Fixed
+- **AuthTest** no longer writes test credentials to real config directory (uses temp `XDG_CONFIG_HOME`)
+
 ### Removed
 - `src/Support/` namespace (replaced by `src/Service/`)
 
