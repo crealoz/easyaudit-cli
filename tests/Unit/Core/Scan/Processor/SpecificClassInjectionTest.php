@@ -1439,13 +1439,12 @@ PHP;
         $this->assertEmpty($report);
     }
 
-    public function testProcessRepositoryInNonModelClassTriggersGenericRule(): void
+    public function testProcessRepositoryInNonModelClassTriggersRepositoryRule(): void
     {
         $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
         mkdir($tempDir, 0777, true);
 
-        // Class name does NOT contain "Model" so handleModelViolation is not called
-        // But the class injects a Repository, so genericClass rule should apply
+        // Repository injected in a non-Model class should still trigger repositoryMustUseInterface
         $content = <<<'PHP'
 <?php
 namespace Test\Module\Service;
@@ -1473,7 +1472,7 @@ PHP;
 
         $this->assertGreaterThan(0, $processor->getFoundCount());
         $ruleIds = array_column($report, 'ruleId');
-        $this->assertContains('specificClassInjection', $ruleIds);
+        $this->assertContains('repositoryMustUseInterface', $ruleIds);
 
         unlink($file);
         rmdir($tempDir);

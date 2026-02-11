@@ -311,6 +311,84 @@ PHP;
         rmdir($tempDir);
     }
 
+    public function testMetadataDistinguishesGetAndCreate(): void
+    {
+        $badFile = $this->fixturesPath . '/BadObjectManagerUsage.php';
+        $files = ['php' => [$badFile]];
+
+        ob_start();
+        $this->processor->process($files);
+        ob_end_clean();
+
+        $report = $this->processor->getReport();
+        $this->assertNotEmpty($report);
+
+        // Collect all injections from error entries
+        $injections = [];
+        foreach ($report[0]['files'] as $entry) {
+            foreach ($entry['metadata']['injections'] as $className => $info) {
+                $injections[$className] = $info;
+            }
+        }
+
+        // BadObjectManagerUsage.php uses ->create(ProductRepositoryInterface::class) (short name via import)
+        $this->assertArrayHasKey('ProductRepositoryInterface', $injections);
+        $this->assertEquals('create', $injections['ProductRepositoryInterface']['method']);
+        $this->assertArrayHasKey('property', $injections['ProductRepositoryInterface']);
+
+        // BadObjectManagerUsage.php uses ->get(\Psr\Log\LoggerInterface::class) (FQCN inline)
+        $this->assertArrayHasKey('Psr\Log\LoggerInterface', $injections);
+        $this->assertEquals('get', $injections['Psr\Log\LoggerInterface']['method']);
+        $this->assertArrayHasKey('property', $injections['Psr\Log\LoggerInterface']);
+    }
+
+    public function testMetadataForGetInstanceDirectUsage(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\App\ObjectManager;
+
+class DirectGetCreate
+{
+    public function doStuff(): void
+    {
+        $repo = ObjectManager::getInstance()->create('Magento\Catalog\Model\Product');
+        $logger = ObjectManager::getInstance()->get('Psr\Log\LoggerInterface');
+    }
+}
+PHP;
+        $file = $tempDir . '/DirectGetCreate.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $report = $processor->getReport();
+        $this->assertNotEmpty($report);
+
+        $injections = [];
+        foreach ($report[0]['files'] as $entry) {
+            foreach ($entry['metadata']['injections'] as $className => $info) {
+                $injections[$className] = $info;
+            }
+        }
+
+        $this->assertEquals('create', $injections['Magento\Catalog\Model\Product']['method']);
+        $this->assertEquals('get', $injections['Psr\Log\LoggerInterface']['method']);
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
     public function testGetReportEmptyWhenNoIssues(): void
     {
         $processor = new UseOfObjectManager();

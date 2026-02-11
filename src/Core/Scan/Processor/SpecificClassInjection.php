@@ -268,7 +268,7 @@ class SpecificClassInjection extends AbstractProcessor
 
         $lineNumber = Content::getLineNumber($fileContent, $paramName);
 
-        if (str_contains($className, 'Model') && $this->handleModelViolation($file, $lineNumber, $paramName, $paramClass, $className)) {
+        if ($this->handleModelViolation($file, $lineNumber, $paramName, $paramClass, $className)) {
             return;
         }
 
@@ -297,19 +297,23 @@ class SpecificClassInjection extends AbstractProcessor
     private function handleModelViolation(string $file, int $lineNumber, string $paramName, string $paramClass, string $className): bool
     {
         $handled = false;
+        $shouldCheckModel = false;
         try {
             $children = Classes::getChildren($paramClass);
         } catch (\Exception $e) {
             $children = [];
         }
-        if (str_contains($className, 'Collection')) {
+
+        if (Types::isCollectionType($paramClass)) {
             $this->addCollectionError($file, $lineNumber, $paramName, $paramClass, $children);
             $handled = true;
+            $shouldCheckModel = true;
         }
 
         if (Types::isRepository($paramClass)) {
             $this->addRepositoryError($file, $lineNumber, $paramName, $paramClass, $children);
             $handled = true;
+            $shouldCheckModel = true;
         }
 
         if (Types::hasApiInterface($paramClass)) {
@@ -331,15 +335,18 @@ class SpecificClassInjection extends AbstractProcessor
             $handled = true;
         }
 
-        if (Types::isResourceModel($paramClass) && $this->shouldFlagResourceModel($paramClass, $className)) {
-            $message = sprintf(
-                'Resource Model "%s" injected in %s. Resource models should not be directly '
-                . 'injected. Use a repository instead for better separation of concerns. '
-                . '(Manual refactoring required - no auto-fix available)',
-                $paramClass,
-                $paramName
-            );
-            $this->addViolation('resourceModel', $file, $lineNumber, $message, 'warning');
+        if (!$shouldCheckModel && Types::isResourceModel($paramClass)) {
+            if ($this->shouldFlagResourceModel($paramClass, $className)) {
+                $message = sprintf(
+                    'Resource Model "%s" injected in %s. Resource models should not be directly '
+                    . 'injected. Use a repository instead for better separation of concerns. '
+                    . '(Manual refactoring required - no auto-fix available)',
+                    $paramClass,
+                    $paramName
+                );
+                $this->addViolation('resourceModel', $file, $lineNumber, $message, 'warning');
+            }
+            // Always handled — legitimate resource model injections shouldn't trigger generic rule
             $handled = true;
         }
 
@@ -351,8 +358,7 @@ class SpecificClassInjection extends AbstractProcessor
      */
     private function shouldFlagResourceModel(string $paramClass, string $className): bool
     {
-        return !Types::isRepository($paramClass)
-            && !Types::isResourceModel($className)
+        return !Types::isResourceModel($className)
             && !Types::isRepository($className);
     }
 

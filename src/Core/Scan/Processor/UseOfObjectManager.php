@@ -176,33 +176,34 @@ class UseOfObjectManager extends AbstractProcessor
         $patterns = [];
 
         if ($directUsage) {
-            $patterns[] = '/ObjectManager::getInstance\s*\(\s*\)\s*->(?:get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
+            $patterns[] = '/ObjectManager::getInstance\s*\(\s*\)\s*->(get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
         }
 
         if ($localProperty) {
             preg_match_all('/(\$\w+)\s*=\s*\\\\?(?:Magento\\\\Framework\\\\App\\\\)?ObjectManager::getInstance/', $this->fileContent, $varMatches);
             foreach ($varMatches[1] as $varName) {
                 $escapedVar = preg_quote($varName, '/');
-                $patterns[] = '/' . $escapedVar . '\s*->(?:get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
+                $patterns[] = '/' . $escapedVar . '\s*->(get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
             }
         }
 
         if ($property) {
             $escapedProp = preg_quote($property, '/');
-            $patterns[] = '/' . $escapedProp . '\s*->(?:get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
+            $patterns[] = '/' . $escapedProp . '\s*->(get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
         }
 
         // Track properties assigned via getInstance()
         foreach ($this->assignedProperties as $propName) {
-            $patterns[] = '/\$this->' . preg_quote($propName, '/') . '\s*->(?:get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
+            $patterns[] = '/\$this->' . preg_quote($propName, '/') . '\s*->(get|create)\s*\(\s*[\'"]?\\\\?([A-Za-z0-9_\\\\]+)(?:::class|[\'"])/';
         }
 
         foreach ($patterns as $pattern) {
             preg_match_all($pattern, $this->fileContent, $matches, PREG_SET_ORDER);
             foreach ($matches as $match) {
                 $lineNumber = Content::getLineNumber($this->fileContent, $match[0]);
-                $className = $match[1];
-                $this->addObjectManagerUsage($this->file, $lineNumber, $className);
+                $method = $match[1];
+                $className = $match[2];
+                $this->addObjectManagerUsage($this->file, $lineNumber, $className, $method);
                 $usageCount++;
             }
         }
@@ -217,7 +218,7 @@ class UseOfObjectManager extends AbstractProcessor
      * @param int $lineNumber Line number of the usage
      * @param string $className Class being fetched via ObjectManager
      */
-    private function addObjectManagerUsage(string $file, int $lineNumber, string $className): void
+    private function addObjectManagerUsage(string $file, int $lineNumber, string $className, string $method): void
     {
         $propertyName = Classes::derivePropertyName($className);
         $message = "Direct use of ObjectManager to get '$className'. Use dependency injection instead.";
@@ -229,7 +230,7 @@ class UseOfObjectManager extends AbstractProcessor
             'error',
             0,
             [
-                'injections' => [$className => $propertyName],
+                'injections' => [$className => ['property' => $propertyName, 'method' => $method]],
             ]
         );
         $this->foundCount++;

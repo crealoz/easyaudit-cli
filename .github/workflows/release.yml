@@ -56,17 +56,43 @@ jobs:
         run: |
           php easyaudit.phar --version
           echo "PHAR size: $(du -h easyaudit.phar | cut -f1)"
-
-      - name: Notify middleware webhook
-        if: ${{ vars.MIDDLEWARE_WEBHOOK_URL != '' }}
+      - name: Check middleware readiness
+        if: ${{ vars.DEPLOY_WEBHOOK_URL != '' }}
         run: |
-          PAYLOAD='{"version":"${{ steps.version.outputs.VERSION }}","hash":"${{ steps.hash.outputs.HASH }}","released_at":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}'
-          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha512 -hmac "${{ secrets.WEBHOOK_SECRET }}" | cut -d' ' -f2)
-          curl -X POST "${{ vars.MIDDLEWARE_WEBHOOK_URL }}" \
+          PAYLOAD='{"action":"status","version":"${{ steps.version.outputs.VERSION }}"}'
+          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha512 -hmac "${{ secrets.DEPLOY_SECRET }}" | cut -d' ' -f2)
+
+          RESPONSE=$(curl -s -X POST "${{ vars.DEPLOY_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -H "X-Webhook-Signature: sha512=$SIGNATURE" \
+            -H "X-Deploy-Signature: sha512=$SIGNATURE" \
             -d "$PAYLOAD" \
-            --fail-with-body || echo "Warning: Failed to notify middleware webhook"
+            --max-time 30)
+
+          STATUS=$(echo "$RESPONSE" | jq -r '.status')
+
+          if [ "$STATUS" != "ready" ]; then
+            echo "::error::Middleware v${{ steps.version.outputs.VERSION }} not deployed. Deploy middleware first."
+            exit 1
+          fi
+
+      - name: Switch middleware to new version
+        if: ${{ vars.DEPLOY_WEBHOOK_URL != '' }}
+        run: |
+          PAYLOAD='{"action":"switch","version":"${{ steps.version.outputs.VERSION }}"}'
+          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha512 -hmac "${{ secrets.DEPLOY_SECRET }}" | cut -d' ' -f2)
+
+          HTTP_CODE=$(curl -s -o /tmp/switch.json -w "%{http_code}" \
+            -X POST "${{ vars.DEPLOY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "X-Deploy-Signature: sha512=$SIGNATURE" \
+            -d "$PAYLOAD" \
+            --max-time 60)
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Failed to switch middleware to v${{ steps.version.outputs.VERSION }}"
+            cat /tmp/switch.json
+            exit 1
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

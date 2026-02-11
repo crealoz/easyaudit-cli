@@ -5,6 +5,20 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.0]
+
+### Changed
+- **Release workflow**: Replaced `Notify middleware webhook` step with version-aligned deployment — CLI release now checks middleware readiness and triggers symlink switch via deploy webhook before publishing, ensuring CLI and middleware versions are always in sync
+
+### Fixed
+- **UseOfObjectManager**: Metadata now distinguishes `get` vs `create` calls — `injections` values changed from `$propertyName` to `['property' => $propertyName, 'method' => 'get'|'create']` so the middleware fixer can inject a Factory for `create()` calls instead of always generating singleton DI
+- **SpecificClassInjection**: Removed `str_contains($className, 'Model')` guard that prevented collection, repository, resource model, and API interface detection when the containing class was outside a `Model` namespace (e.g., controllers, services, helpers)
+- **SpecificClassInjection**: Collection check now inspects the injected parameter class instead of the containing class, fixing misclassification of collections as resource models
+- **SpecificClassInjection**: Added `$shouldCheckModel` cascade to prevent double-detection (collections/repositories in `ResourceModel` namespace no longer also flagged as resource model injections)
+- **SpecificClassInjection**: Legitimate resource model injections (in repositories, in other resource models) no longer fall through to the generic `specificClassInjection` rule
+
+---
+
 ## [v0.4.0]
 
 ### Added
