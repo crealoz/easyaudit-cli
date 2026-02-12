@@ -56,6 +56,13 @@ jobs:
         run: |
           php easyaudit.phar --version
           echo "PHAR size: $(du -h easyaudit.phar | cut -f1)"
+
+      - name: Calculate final PHAR hash
+        id: final_hash
+        run: |
+          HASH=$(sha512sum easyaudit.phar | cut -d' ' -f1)
+          echo "HASH=$HASH" >> $GITHUB_OUTPUT
+
       - name: Check middleware readiness
         if: ${{ vars.DEPLOY_WEBHOOK_URL != '' }}
         run: |
@@ -75,10 +82,11 @@ jobs:
             exit 1
           fi
 
-      - name: Switch middleware to new version
+      - name: Switch middleware and register CLI release
         if: ${{ vars.DEPLOY_WEBHOOK_URL != '' }}
         run: |
-          PAYLOAD='{"action":"switch","version":"${{ steps.version.outputs.VERSION }}"}'
+          RELEASED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          PAYLOAD='{"action":"switch","version":"${{ steps.version.outputs.VERSION }}","hash":"${{ steps.final_hash.outputs.HASH }}","released_at":"'"$RELEASED_AT"'"}'
           SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha512 -hmac "${{ secrets.DEPLOY_SECRET }}" | cut -d' ' -f2)
 
           HTTP_CODE=$(curl -s -o /tmp/switch.json -w "%{http_code}" \
