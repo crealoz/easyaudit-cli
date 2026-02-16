@@ -121,9 +121,12 @@ class Classes
                 $paramClass = trim($part);
                 break;
             }
+            if ($paramClass === null || $paramClass === '') {
+                continue;
+            }
             // Strip nullable prefix (e.g. ?int → int) for type checking
             $paramClass = ltrim($paramClass, '?');
-            if (empty($paramClass) || in_array($paramClass, self::BASIC_TYPES, true)) {
+            if (in_array($paramClass, self::BASIC_TYPES, true)) {
                 continue;
             }
             if (isset($importedClasses[$paramClass])) {
