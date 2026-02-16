@@ -72,9 +72,9 @@ class HtmlReporter implements ReporterInterface
                 if ($scanPath !== 'Unknown' && str_starts_with($rawPath, $scanPath)) {
                     $rawPath = ltrim(substr($rawPath, strlen($scanPath)), '/');
                 }
-                $filePath = htmlspecialchars($rawPath, ENT_QUOTES, 'UTF-8');
+                $filePath = htmlspecialchars($rawPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
                 $line = (int)($file['startLine'] ?? $file['line'] ?? 1);
-                $message = htmlspecialchars($file['message'] ?? '', ENT_QUOTES, 'UTF-8');
+                $message = htmlspecialchars($file['message'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
                 $fileSev = $file['severity'] ?? 'warning';
                 $sevBadge = $this->severityBadge($fileSev);
 
@@ -88,8 +88,8 @@ class HtmlReporter implements ReporterInterface
 ROW;
             }
 
-            $ruleName = htmlspecialchars($rule['name'], ENT_QUOTES, 'UTF-8');
-            $ruleDesc = htmlspecialchars($rule['shortDescription'], ENT_QUOTES, 'UTF-8');
+            $ruleName = htmlspecialchars($rule['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $ruleDesc = htmlspecialchars($rule['shortDescription'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
             $rulesHtml .= <<<RULE
             <details class="rule-card" data-severity="{$severity}" closed>
@@ -118,8 +118,8 @@ ROW;
 RULE;
         }
 
-        $scanPathHtml = htmlspecialchars($scanPath, ENT_QUOTES, 'UTF-8');
-        $scanDateHtml = htmlspecialchars($scanDate, ENT_QUOTES, 'UTF-8');
+        $scanPathHtml = htmlspecialchars($scanPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $scanDateHtml = htmlspecialchars($scanDate, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         if ($total === 0) {
             $rulesHtml = '<div class="no-issues">No issues found.</div>';
@@ -133,6 +133,7 @@ RULE;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src https://crealoz.fr; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';">
 <title>EasyAudit Report</title>
 <style>
 {$css}

@@ -153,7 +153,7 @@ class SpecificClassInjection extends AbstractProcessor
     /**
      * Suffixes that indicate a legitimate injection pattern
      */
-    private const LEGITIMATE_SUFFIXES = ['Interface', 'Factory', 'Provider', 'Resolver'];
+    private const LEGITIMATE_SUFFIXES = ['Interface', 'Factory', 'Provider', 'Resolver', 'Pool', 'Logger', 'Config'];
 
 
     /**

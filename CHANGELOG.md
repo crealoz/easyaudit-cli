@@ -5,6 +5,23 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.6.0]
+
+### Added
+- **Content-Security-Policy** meta tag in HTML reports — restricts scripts, styles, and external resources to prevent XSS in report files
+- **New legitimate suffixes** in `SpecificClassInjection`: `Pool`, `Logger`, and `Config` suffixes are no longer flagged as concrete class injections
+- **Expanded `Classes::BASIC_TYPES`** — now includes `object`, `callable`, `iterable`, `void`, `never`, `self`, `static`, `parent`, `true`, `false`, PHP standard classes (`DateTime`, `DateTimeImmutable`, `Closure`, `stdClass`, `JsonSerializable`), and exception types (`Throwable`, `Exception`, `RuntimeException`)
+- **New tests** for `SpecificClassInjection`: Pool/Logger/Config suffix handling, PHP standard class detection, nullable basic type handling
+
+### Fixed
+- **HtmlReporter**: Added `ENT_SUBSTITUTE` flag to all `htmlspecialchars()` calls — prevents silent data loss on malformed UTF-8 sequences in file paths and messages
+- **Classes utility**: Nullable type hints (e.g. `?int`, `?string`) are now properly stripped before basic-type checking, preventing false positives in constructor analysis
+
+### Changed
+- **Release workflow** fixes (v0.5.1)
+
+---
+
 ## [v0.5.0]
 
 ### Changed

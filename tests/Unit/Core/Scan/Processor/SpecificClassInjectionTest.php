@@ -1567,4 +1567,151 @@ PHP;
         unlink($file);
         rmdir($tempDir);
     }
+
+    public function testProcessIgnoresPoolSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\PaymentMethodPool;
+
+class PaymentService
+{
+    public function __construct(
+        private PaymentMethodPool $paymentPool
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/PaymentService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Pool suffix');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresLoggerSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Service\AuditLogger;
+
+class AuditService
+{
+    public function __construct(
+        private AuditLogger $logger
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/AuditService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Logger suffix');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresConfigSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Gdpr\Model\GdprConfig;
+
+class GdprService
+{
+    public function __construct(
+        private GdprConfig $config
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/GdprService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Config suffix');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresPhpStandardClasses(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use DateTime;
+use DateTimeImmutable;
+use Closure;
+use Throwable;
+
+class ServiceWithStandardTypes
+{
+    public function __construct(
+        private DateTime $createdAt,
+        private ?DateTimeImmutable $updatedAt,
+        private Closure $callback,
+        private ?int $count,
+        private ?string $label
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/ServiceWithStandardTypes.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore PHP standard classes and nullable basic types');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
 }

@@ -13,7 +13,14 @@ class Classes
     /**
      * Basic PHP types
      */
-    public const BASIC_TYPES = ['string', 'int', 'float', 'bool', 'array', 'mixed'];
+    public const BASIC_TYPES = [
+        'string', 'int', 'float', 'bool', 'array', 'mixed',
+        'object', 'callable', 'iterable', 'null', 'void', 'never',
+        'self', 'static', 'parent', 'true', 'false',
+        'DateTime', 'DateTimeImmutable', 'DateTimeInterface',
+        'Throwable', 'Exception', 'RuntimeException',
+        'Closure', 'stdClass', 'JsonSerializable',
+    ];
 
     public static function parseImportedClasses(string $fileContent): array
     {
@@ -114,6 +121,8 @@ class Classes
                 $paramClass = trim($part);
                 break;
             }
+            // Strip nullable prefix (e.g. ?int → int) for type checking
+            $paramClass = ltrim($paramClass, '?');
             if (empty($paramClass) || in_array($paramClass, self::BASIC_TYPES, true)) {
                 continue;
             }
