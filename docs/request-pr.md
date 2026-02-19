@@ -1,25 +1,86 @@
-# EasyAudit — Paid PR Request (GitHub Actions)
+# EasyAudit — Paid PR Request
 
-This guide explains how to install and use the **EasyAudit – Automated PR (paid)** workflow in your repository.
-With one click, it runs `easyaudit-cli`, calls `easyaudit-api` for billing/authorization, and creates a Pull Request with the generated changes.
+This guide explains how to use the **EasyAudit fix-apply** command to automatically fix issues found by the scanner and create a Pull Request with the generated changes. You can run it locally via the CLI or automate it with GitHub Actions.
 
 > **Billing notice**
-> Running this workflow will call the paid EasyAudit service and may incur charges. Make sure you have purchased credits before use.
+> Running `fix-apply` calls the paid EasyAudit service and may incur charges. Make sure you have purchased credits before use.
 > Purchase credits: https://shop.crealoz.fr/shop/credits-for-easyaudit-fixer/
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [How to run](#how-to-run)
-- [Expected outputs](#expected-outputs)
+- [CLI Usage](#cli-usage)
+- [GitHub Actions](#github-actions)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [How to run](#how-to-run)
+  - [Expected outputs](#expected-outputs)
 - [Troubleshooting](#troubleshooting)
 - [Credits & Billing](#credits--billing)
 - [TLS / self-signed certificates](#tls--self-signed-certificates)
 
 ---
 
-## Prerequisites
+## CLI Usage
+
+First, run a scan to generate a JSON report, then use `fix-apply` to request patches from the EasyAudit API:
+
+```bash
+# 1. Scan and generate a JSON report
+php bin/easyaudit scan /path/to/magento --format=json
+
+# 2. Apply fixes from the report
+php bin/easyaudit fix-apply report/easyaudit-report.json
+```
+
+### Authentication
+
+Before running `fix-apply`, authenticate with your EasyAudit credentials:
+
+```bash
+php bin/easyaudit auth
+```
+
+This stores your token locally. Alternatively, set the `EASYAUDIT_AUTH` environment variable:
+
+```bash
+export EASYAUDIT_AUTH="Bearer <key>:<hash>"
+```
+
+### Options
+
+| Option                  | Description                                          |
+|-------------------------|------------------------------------------------------|
+| `--confirm`             | Skip confirmation prompt                             |
+| `--patch-out=<dir>`     | Directory to save patch files (default: `patches`)   |
+| `--format=<format>`     | Output format: `git` or `patch` (default: `git`)     |
+| `--project-name=<name>` | Explicit project identifier (slug)                   |
+| `--scan-path=<path>`    | Path to scan root for auto-detection (default: `.`)  |
+| `--fix-by-rule`         | Fix one rule at a time (interactive selection)        |
+
+### Output
+
+The command generates **patch files** in the output directory (default: `patches/`). Each patch corresponds to a file that was fixed. You can then apply them with `git apply`:
+
+```bash
+git apply patches/**/*.patch
+```
+
+### Docker
+
+```bash
+docker run --rm -v $PWD:/workspace \
+  -e EASYAUDIT_AUTH="Bearer <key>:<hash>" \
+  ghcr.io/crealoz/easyaudit:latest \
+  fix-apply --confirm /workspace/report/easyaudit-report.json
+```
+
+---
+
+## GitHub Actions
+
+Automate the entire flow — scan, fix, and PR creation — with a GitHub Actions workflow.
+
+### Prerequisites
 
 - **GitHub permissions**: the workflow needs `contents: write` and `pull-requests: write`. (It is set in the sample workflow below.)
 - **Secret**: add a repository or organization secret named **`EASYAUDIT_AUTH`** with the exact format:
@@ -27,9 +88,7 @@ With one click, it runs `easyaudit-cli`, calls `easyaudit-api` for billing/autho
 - **Optional environment**: create an environment named **`billable-pr`** and add *Required reviewers* if you want manual approval before billing/PR creation.
 - **Runner**: `ubuntu-latest`.
 
----
-
-## Installation
+### Installation
 
 1. In your repository, create the file **`.github/workflows/easyaudit.yml`** with the content below.
 2. Add the secret **`EASYAUDIT_AUTH`** in **Settings → Secrets and variables → Actions → New repository secret**.
@@ -165,7 +224,7 @@ jobs:
 
 ---
 
-## How to run
+### How to run
 
 1. Go to **Actions → EasyAudit - Automated PR (paid)**.
 2. At the top, pick **Use workflow from → Branch** (this becomes the PR’s base).
@@ -176,7 +235,7 @@ The job summary will show a billing notice and, once complete, a link to the cre
 
 ---
 
-## Expected outputs
+### Expected outputs
 
 - A new branch is pushed (or reused if provided by the CLI).
 - A PR is created against the base branch you selected in the UI.
