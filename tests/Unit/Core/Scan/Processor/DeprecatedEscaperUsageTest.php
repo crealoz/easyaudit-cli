@@ -18,7 +18,7 @@ class DeprecatedEscaperUsageTest extends TestCase
 
     public function testGetIdentifier(): void
     {
-        $this->assertEquals('magento.frontend.deprecated-escaper', $this->processor->getIdentifier());
+        $this->assertEquals('useEscaper', $this->processor->getIdentifier());
     }
 
     public function testGetFileType(): void
@@ -46,7 +46,7 @@ class DeprecatedEscaperUsageTest extends TestCase
 
         $report = $this->processor->getReport();
         $this->assertCount(1, $report);
-        $this->assertEquals('magento.frontend.deprecated-escaper', $report[0]['ruleId']);
+        $this->assertEquals('useEscaper', $report[0]['ruleId']);
 
         // Both findings should be warnings (from $block->)
         foreach ($report[0]['files'] as $entry) {
