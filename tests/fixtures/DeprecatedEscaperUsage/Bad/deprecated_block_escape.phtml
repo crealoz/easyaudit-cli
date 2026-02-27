@@ -1,0 +1,8 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<div class="product-info">
+    <h1><?= $block->escapeHtml($block->getProductName()) ?></h1>
+    <a href="<?= $block->escapeUrl($block->getProductUrl()) ?>">View Product</a>
+</div>

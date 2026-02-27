@@ -5,6 +5,20 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0] - 2026-02-27
+
+### Added
+- **DeprecatedEscaper processor**: Detects deprecated `$block->escapeHtml()` / `$this->escapeHtml()` usage in phtml templates — should use `$escaper->escapeHtml()` instead (Magento 2.4+ best practice)
+
+### Fixed
+- **ltrim** fix in path handling
+- **False positive** reductions across processors
+
+### Changed
+- Documentation updates
+
+---
+
 ## [v0.6.0]
 
 ### Added

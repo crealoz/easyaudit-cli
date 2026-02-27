@@ -1,6 +1,6 @@
 # Available Processors
 
-EasyAudit includes **19 static analysis processors** for Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
+EasyAudit includes **20 static analysis processors** for Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
 
 ## Summary
 
@@ -21,6 +21,7 @@ EasyAudit includes **19 static analysis processors** for Magento 2 codebases. Ea
 | [Cacheable](#cacheable) | Templates | Warning | Blocks with `cacheable="false"` in layout XML |
 | [AdvancedBlockVsViewModel](#advancedblockvsviewmodel) | Templates | Note | `$this` usage and data processing in phtml |
 | [Helpers](#helpers) | Templates | Warning | Deprecated Helper patterns |
+| [DeprecatedEscaperUsage](#deprecatedescaperusage) | Templates | Warning/Error | Deprecated escape methods on $block/$this |
 | [CollectionInLoop](#collectioninloop) | Performance | Warning | N+1 queries: model/repository loading inside loops |
 | [CountOnCollection](#countoncollection) | Performance | Warning | count() on collections instead of getSize() |
 | [BlockViewModelRatio](#blockviewmodelratio) | Architecture | Note | High block-to-viewmodel ratio per module |
@@ -132,6 +133,14 @@ Detects deprecated Helper patterns.
 - **Why it matters**:
   - Extending `AbstractHelper` is deprecated
   - Using helpers directly in templates (`$this->helper()`) should be replaced with ViewModels
+
+### DeprecatedEscaperUsage
+Detects deprecated escape method calls on `$block` or `$this` instead of `$escaper` in phtml templates.
+
+- **Severity**: Warning (`$block->escapeHtml()`), Error (`$this->escapeHtml()`)
+- **Why it matters**: Since Magento 2.3.5, escape methods (`escapeHtml`, `escapeUrl`, `escapeJs`, `escapeHtmlAttr`, `escapeCss`, `escapeQuote`) should be called on the `$escaper` variable. Using `$block->escape*()` is deprecated, and `$this->escape*()` combines the deprecated escaper pattern with the `$this` anti-pattern.
+- **Detection**: Regex matching `$block->escape*()` and `$this->escape*()` calls in `.phtml` files
+- **Fix**: Replace `$block->escapeHtml($value)` and `$this->escapeHtml($value)` with `$escaper->escapeHtml($value)`
 
 ---
 

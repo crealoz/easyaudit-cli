@@ -1,0 +1,7 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+?>
+<div class="product-info">
+    <h1><?= $this->escapeHtml($block->getProductName()) ?></h1>
+    <script>var name = '<?= $this->escapeJs($block->getProductName()) ?>';</script>
+</div>
