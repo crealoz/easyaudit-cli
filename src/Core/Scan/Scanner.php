@@ -76,10 +76,13 @@ class Scanner
             $magentoDirs = ['vendor', 'generated', 'var', 'pub', 'setup', 'lib', 'dev', 'phpserver', 'update'];
             CliWriter::line("  Magento installation detected.");
             CliWriter::line("  Auto-excluded directories: " . implode(', ', $magentoDirs));
-            $ciDetector = new CiEnvironmentDetector();
-            $includeVendor = $ciDetector->isRunningInCi()
-                ? $allMagento
-                : Confirm::confirm("Include vendor directory in scan?", false);
+            if ($allMagento) {
+                $includeVendor = true;
+            } elseif ((new CiEnvironmentDetector())->isRunningInCi()) {
+                $includeVendor = false;
+            } else {
+                $includeVendor = Confirm::confirm("Include vendor directory in scan?", false);
+            }
             if ($includeVendor) {
                 $this->excludedDirs = array_values(array_diff($this->excludedDirs, ['vendor']));
             }

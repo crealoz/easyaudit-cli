@@ -14,6 +14,8 @@ COPY easyaudit.phar /usr/local/bin/easyaudit.phar
 RUN printf '#!/bin/sh\nphp /usr/local/bin/easyaudit.phar "$@"\n' > /usr/local/bin/easyaudit \
     && chmod +x /usr/local/bin/easyaudit
 
+WORKDIR /workspace
+
 ENTRYPOINT ["php", "/usr/local/bin/easyaudit.phar"]
 
 CMD ["--help"]

@@ -125,32 +125,32 @@ php bin/easyaudit scan /path/to/magento --format=json --output=report.json
 php bin/easyaudit fix-apply report.json
 ```
 
+> **Note**: `fix-apply` requires API credentials stored in `~/.config/easyaudit/`. Use the PHAR directly or `bin/easyaudit` for fix-apply — Docker is not recommended for this command.
+
 Automated PR creation is available as a paid feature. See [Automated PR workflow](request-pr.md) for CI/CD integration.
 
 ---
 
 ## Docker Usage
 
+> **Tip**: Use `--user "$(id -u):$(id -g)"` so report files are owned by your user instead of root.
+
 ### Basic scan
 ```bash
-docker run --rm -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
+docker run --rm --user "$(id -u):$(id -g)" -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
   scan /workspace --format=json
 ```
 
 ### Generate SARIF report
 ```bash
-docker run --rm -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
-  scan /workspace \
-  --format=sarif \
-  --output=/workspace/report/easyaudit.sarif
+docker run --rm --user "$(id -u):$(id -g)" -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
+  scan /workspace --format=sarif
 ```
 
-### Scan with exclusions
+### Scan a specific subdirectory
 ```bash
-docker run --rm -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
-  scan /workspace \
-  --exclude="vendor,generated,var,pub/static,pub/media" \
-  --format=json
+docker run --rm --user "$(id -u):$(id -g)" -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
+  scan /workspace/app/code --format=json
 ```
 
 ---

@@ -34,8 +34,7 @@ php easyaudit.phar scan /path/to/magento --format=sarif
 
 ### Using Docker
 ```bash
-docker run --rm -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
-  scan /workspace --format=sarif --output=/workspace/report/easyaudit.sarif
+docker run --rm --user "$(id -u):$(id -g)" -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest scan /workspace
 ```
 
 ### From Source

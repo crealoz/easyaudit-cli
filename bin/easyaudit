@@ -36,16 +36,17 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Service creation
+// Service creation (lazy where possible to avoid config dir access on scan)
 $scanner = new \EasyAudit\Core\Scan\Scanner();
-$logger  = new \EasyAudit\Service\Logger();
-$api     = new \EasyAudit\Service\Api();
 
 // Command registry
 $commands = [
     'scan'                 => fn() => new \EasyAudit\Console\Command\Scan($scanner),
     'auth'                 => fn() => new \EasyAudit\Console\Command\Auth(),
-    'fix-apply'            => fn() => new \EasyAudit\Console\Command\FixApply($logger, $api),
+    'fix-apply'            => fn() => new \EasyAudit\Console\Command\FixApply(
+        new \EasyAudit\Service\Logger(),
+        new \EasyAudit\Service\Api()
+    ),
     'activate-self-signed' => fn() => new \EasyAudit\Console\Command\ActivateSelfSigned(),
 ];
 
