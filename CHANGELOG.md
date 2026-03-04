@@ -5,6 +5,20 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.2] - 2026-03-04
+
+### Added
+- **Magento root auto-detection**: When scanning a Magento installation root, EasyAudit now detects it automatically (2+ indicators: `bin/magento`, `nginx.conf.sample`, `app/etc/env.php`, `generated/`, `pub/`) and displays the list of auto-excluded directories
+- **Default exclusion of Magento noise directories**: `vendor`, `generated`, `var`, `pub`, `setup`, `lib`, `dev`, `phpserver`, `update` are now always excluded — no need to pass `--exclude` manually
+- **Interactive vendor prompt**: When a Magento root is detected in interactive mode, the user is asked whether to include the `vendor/` directory in the scan (default: no)
+- **`--all-magento` flag**: In CI/CD environments, pass `--all-magento` to include `vendor/` in the scan (auto-excluded by default)
+- **`Scanner::isMagentoRoot()`** public static method for Magento root detection
+
+### Fixed
+- **`--exclude` now matches directory basenames**: Previously, `--exclude=custom` only matched full paths; now it correctly skips directories by name during recursive scanning
+
+---
+
 ## [v1.0.1] - 2026-03-04
 
 ### Fixed

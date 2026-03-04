@@ -64,7 +64,19 @@ Use exit codes to fail builds on critical issues.
 
 ---
 
-## Auto-Detection
+## Magento Root Detection
+
+When scanning a Magento installation root, EasyAudit automatically excludes noise directories (`vendor`, `generated`, `var`, `pub`, `setup`, `lib`, `dev`, `phpserver`, `update`). No `--exclude` flag needed.
+
+In CI, `vendor/` is excluded by default. Pass `--all-magento` to include it:
+
+```bash
+easyaudit scan --format=sarif --all-magento /path/to/magento
+```
+
+---
+
+## CI Environment Detection
 
 EasyAudit automatically detects CI environments and adds metadata to API requests. Supported detection:
 

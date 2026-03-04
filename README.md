@@ -76,8 +76,7 @@ jobs:
       - uses: actions/checkout@v6
       - run: |
           mkdir -p report
-          easyaudit scan --format=sarif --output=report/easyaudit.sarif \
-            --exclude="vendor,generated,var,pub/static,pub/media" "$GITHUB_WORKSPACE"
+          easyaudit scan --format=sarif --output=report/easyaudit.sarif "$GITHUB_WORKSPACE"
       - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report/easyaudit.sarif

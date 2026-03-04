@@ -74,6 +74,7 @@ php bin/easyaudit scan /path/to/magento --exclude-ext="js,css"
 | `--output` | Output file path | `report/easyaudit-report.(json\|sarif\|html)` |
 | `--exclude` | Comma-separated directories to exclude | none |
 | `--exclude-ext` | Comma-separated file extensions to exclude | none |
+| `--all-magento` | Include `vendor/` when scanning a Magento root (CI only) | `false` |
 
 ### Help
 
@@ -95,13 +96,20 @@ php bin/easyaudit scan /path/to/magento/app/code --format=json
 php bin/easyaudit scan /path/to/magento/app/code/Vendor/Module --format=json
 ```
 
-### Scan with all exclusions (production-like)
+### Scan a Magento root
+
+When pointing at a Magento installation root, noise directories (`vendor`, `generated`, `var`, `pub`, `setup`, `lib`, `dev`, `phpserver`, `update`) are **automatically excluded**. No `--exclude` needed.
+
 ```bash
-php bin/easyaudit scan /path/to/magento \
-  --exclude="vendor,generated,var,pub/static,pub/media,dev,setup" \
-  --format=sarif \
-  --output=report/easyaudit.sarif
+# Interactive: you'll be asked whether to include vendor/
+php bin/easyaudit scan /path/to/magento --format=sarif
+
+# CI/CD: vendor is excluded by default
+# Pass --all-magento to also scan vendor/
+php bin/easyaudit scan /path/to/magento --format=sarif --all-magento
 ```
+
+Detection is based on Magento indicators (`bin/magento`, `nginx.conf.sample`, `app/etc/env.php`, `generated/`, `pub/`). At least 2 must be present.
 
 ### Quick check before commit
 ```bash

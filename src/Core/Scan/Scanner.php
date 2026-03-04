@@ -2,7 +2,9 @@
 
 namespace EasyAudit\Core\Scan;
 
+use EasyAudit\Console\Util\Confirm;
 use EasyAudit\Service\Api;
+use EasyAudit\Service\CiEnvironmentDetector;
 use EasyAudit\Service\CliWriter;
 use EasyAudit\Service\Paths;
 
@@ -18,6 +20,15 @@ class Scanner
         '.idea',
         'node_modules',
         'Tests',
+        'vendor',
+        'generated',
+        'var',
+        'pub',
+        'setup',
+        'lib',
+        'dev',
+        'phpserver',
+        'update',
     ];
 
     private array $excludedFiles = [
@@ -41,8 +52,12 @@ class Scanner
         'di',
     ];
 
-    public function run(string $exclude = '', array $excludedExtensions = [], $onlyFixable = false): array
-    {
+    public function run(
+        string $exclude = '',
+        array $excludedExtensions = [],
+        $onlyFixable = false,
+        bool $allMagento = false
+    ): array {
         if (empty(EA_SCAN_PATH)) {
             $path = getcwd();
         } else {
@@ -55,6 +70,19 @@ class Scanner
 
         if ($exclude != '') {
             $this->excludePatterns = array_map('trim', explode(',', $exclude));
+        }
+
+        if (self::isMagentoRoot($path)) {
+            $magentoDirs = ['vendor', 'generated', 'var', 'pub', 'setup', 'lib', 'dev', 'phpserver', 'update'];
+            CliWriter::line("  Magento installation detected.");
+            CliWriter::line("  Auto-excluded directories: " . implode(', ', $magentoDirs));
+            $ciDetector = new CiEnvironmentDetector();
+            $includeVendor = $ciDetector->isRunningInCi()
+                ? $allMagento
+                : Confirm::confirm("Include vendor directory in scan?", false);
+            if ($includeVendor) {
+                $this->excludedDirs = array_values(array_diff($this->excludedDirs, ['vendor']));
+            }
         }
 
         $findings = [];
@@ -121,6 +149,31 @@ class Scanner
     }
 
     /**
+     * Detect if the given path is the root of a Magento 2 installation.
+     * Returns true if 2 or more indicators are found.
+     */
+    public static function isMagentoRoot(string $path): bool
+    {
+        $indicators = 0;
+        if (file_exists($path . '/nginx.conf.sample')) {
+            $indicators++;
+        }
+        if (file_exists($path . '/bin/magento')) {
+            $indicators++;
+        }
+        if (file_exists($path . '/app/etc/env.php') || file_exists($path . '/app/etc/config.php')) {
+            $indicators++;
+        }
+        if (is_dir($path . '/generated')) {
+            $indicators++;
+        }
+        if (is_dir($path . '/pub')) {
+            $indicators++;
+        }
+        return $indicators >= 2;
+    }
+
+    /**
      * Recursively scan paths and return list of files to scan. Exclude dirs, files and extensions as configured.
      *
      * @param  string $path
@@ -134,11 +187,15 @@ class Scanner
             if (in_array($entry, $this->excludedDirs)) {
                 continue;
             }
-            $entry = $path . DIRECTORY_SEPARATOR . $entry;
-            if (is_dir($entry)) {
-                $files = $this->scanPaths($entry, $files);
+            $fullPath = $path . DIRECTORY_SEPARATOR . $entry;
+            if (is_dir($fullPath)) {
+                if (in_array($entry, $this->excludePatterns)) {
+                    continue;
+                }
+                $files = $this->scanPaths($fullPath, $files);
                 continue;
             }
+            $entry = $fullPath;
             // Skip excluded extensions
             $ext = pathinfo($entry, PATHINFO_EXTENSION);
             if (!in_array(strtolower($ext), $this->allowedExtensions)) {

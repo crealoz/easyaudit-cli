@@ -45,6 +45,7 @@ Options:
   --exclude-ext=<exts>         Comma-separated list of file extensions to exclude (e.g. .log,.tmp)
   --output=<file>              Output file path. Default: report/easyaudit-report.<format>
   --project-name=<name>        Explicit project identifier (slug)
+  --all-magento                Include vendor directory when scanning a Magento root (CI only)
   -h, --help                   Show this help message
 
 Examples:
@@ -75,10 +76,11 @@ HELP;
         $output      = Args::optStr($opts, 'output');
         $excludedExt = Args::optArr($opts, 'exclude-ext');
         $projectName = Args::optStr($opts, 'project-name');
+        $allMagento  = Args::optBool($opts, 'all-magento');
         $path        = $rest ?: '.';
         define('EA_SCAN_PATH', $path);
 
-        $result   = $this->scanner->run($exclude, $excludedExt);
+        $result   = $this->scanner->run($exclude, $excludedExt, false, $allMagento);
 
         $findings = $result['findings'];
         $toolSuggestions = $result['toolSuggestions'];
