@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [v1.0.3] - 2026-03-04
 
 ### Fixed
-- **Lazy service instantiation**: `Api` and `Logger` are now created only when `fix-apply` is invoked — fixes config directory error when running `scan` in Docker without a home directory
+- **Lazy service instantiation**: All services (`Scanner`, `Api`, `Logger`) are now created lazily inside the command registry — fixes config directory error when running `scan` in Docker without a home directory
 
 ### Changed
 - **Dockerfile**: Added `WORKDIR /workspace` so default report output lands inside the mounted volume
