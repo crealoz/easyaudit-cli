@@ -8,6 +8,9 @@ namespace EasyAudit\Service;
  */
 class CliWriter
 {
+    /** @var resource|null Overridable STDERR stream (for testing). */
+    public static $stderr = null;
+
     // Color codes
     private const RESET = "\033[0m";
     private const GREEN = "\033[32m";
@@ -200,7 +203,8 @@ class CliWriter
      */
     public static function errorToStderr(string $message): void
     {
-        fwrite(STDERR, self::RED . $message . self::RESET . "\n");
+        $stream = self::$stderr ?? STDERR;
+        fwrite($stream, self::RED . $message . self::RESET . "\n");
     }
 
     /**

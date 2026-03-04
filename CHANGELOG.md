@@ -5,17 +5,42 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.1] - 2026-03-04
+
+### Fixed
+- **Content::removeComments**: Now throws `InvalidArgumentException` on `preg_replace` failure instead of silently returning null — prevents downstream errors on malformed files
+- **CollectionInLoop**: Gracefully handles `removeComments` failures with a warning instead of crashing the scan
+- **HardWrittenSQL**: Gracefully handles `removeComments` failures with a warning instead of crashing the scan
+- **Content::findApproximateLine**: Moved `preg_replace` for needle normalization outside the loop — minor performance improvement
+
+### Added
+- **PHAR provenance attestation** in release workflow via `actions/attest-build-provenance@v2`
+- **Security & Privacy documentation** (`docs/security.md`)
+- **CliWriter**: Overridable `$stderr` stream for testability
+
+### Changed
+- README updated with privacy notice and 20 processors count
+
+---
+
 ## [v1.0.0] - 2026-02-27
 
 ### Added
 - **DeprecatedEscaper processor**: Detects deprecated `$block->escapeHtml()` / `$this->escapeHtml()` usage in phtml templates — should use `$escaper->escapeHtml()` instead (Magento 2.4+ best practice)
 
-### Fixed
-- **ltrim** fix in path handling
-- **False positive** reductions across processors
+---
+
+## [v0.6.2] - 2026-02-19
 
 ### Changed
 - Documentation updates
+
+---
+
+## [v0.6.1] - 2026-02-16
+
+### Fixed
+- **ltrim** fix in path handling
 
 ---
 

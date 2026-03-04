@@ -4,6 +4,7 @@ namespace EasyAudit\Tests\Console\Command;
 
 use EasyAudit\Console\Command\Scan;
 use EasyAudit\Core\Scan\Scanner;
+use EasyAudit\Service\CliWriter;
 use PHPUnit\Framework\TestCase;
 
 class ScanTest extends TestCase
@@ -96,8 +97,13 @@ class ScanTest extends TestCase
         $scanner->expects($this->never())->method('run');
         $cmd = new Scan($scanner);
 
-        // errorToStderr writes to STDERR via fwrite — no PHP output buffer impact
+        // Redirect STDERR to suppress error output during test
+        CliWriter::$stderr = fopen('php://memory', 'rw');
+
         $result = $cmd->run(['--format=xml', '/tmp']);
+
+        fclose(CliWriter::$stderr);
+        CliWriter::$stderr = null;
 
         $this->assertSame(1, $result);
     }

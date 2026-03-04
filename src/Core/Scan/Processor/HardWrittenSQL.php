@@ -144,8 +144,16 @@ class HardWrittenSQL extends AbstractProcessor
                 continue;
             }
 
-            $cleanedContent = Content::removeComments($fileContent);
-            $this->detectSQL($cleanedContent, $file, $fileContent);
+            try {
+                $cleanedContent = Content::removeComments($fileContent);
+                if ($cleanedContent === '') {
+                    continue;
+                }
+                $this->detectSQL($cleanedContent, $file, $fileContent);
+            } catch (\InvalidArgumentException $exception) {
+                CliWriter::warning('Scanner could not read content on file ' . $file . '. Error was : ' . $exception->getMessage());
+                continue;
+            }
         }
 
         $this->reportResults();

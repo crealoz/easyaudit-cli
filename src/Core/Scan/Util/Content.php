@@ -24,12 +24,18 @@ class Content
 
     /**
      * Remove PHP comments (block, line, and hash) from content.
+     * @throws \InvalidArgumentException
      */
     public static function removeComments(string $content): string
     {
-        $content = preg_replace('/\/\*.*?\*\//s', '', $content);
-        $content = preg_replace('/\/\/.*$/m', '', $content);
-        $content = preg_replace('/#.*$/m', '', $content);
+        $regexes = ['/\/\*.*?\*\//s', '/\/\/.*$/m', '/#.*$/m'];
+
+        foreach ($regexes as $regex) {
+            $content = preg_replace($regex, '', $content);
+            if ($content === null) {
+                throw new \InvalidArgumentException('preg_replace_error : ' . preg_last_error_msg() . ' on regex: ' . $regex);
+            }
+        }
 
         return $content;
     }
@@ -49,11 +55,11 @@ class Content
         $lines = explode("\n", $original);
         $searchStart = max(0, $approxLine - 10);
         $searchEnd = min(count($lines), $approxLine + 10);
+        $normalizedNeedle = preg_replace('/\s+/', ' ', $needle);
 
         for ($i = $searchStart; $i < $searchEnd; $i++) {
             if ($normalizeWhitespace) {
                 $normalizedLine = preg_replace('/\s+/', ' ', $lines[$i]);
-                $normalizedNeedle = preg_replace('/\s+/', ' ', $needle);
                 if (str_contains($normalizedLine, trim($normalizedNeedle))) {
                     return $i + 1;
                 }

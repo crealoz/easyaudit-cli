@@ -10,12 +10,16 @@ Static analysis tool for Magento 2 codebases. Detects anti-patterns, security ri
 
 ## Features
 
-- **19 processors** for DI, code quality, templates, performance, and architecture
+- **20 processors** for DI, code quality, templates, performance, and architecture
 - **Zero dependencies** - standalone PHAR (~455KB)
 - **CI/CD ready** - SARIF output for GitHub Code Scanning
 - **Docker image** available
 - **Auto-fix** - Automatic patch generation via API
+- **Privacy first** 
+  - No data sent to external servers during scans ([security details](docs/security.md))
+  - No source is stored on crealoz's server after patch is generated.
 
+![workflow-schema.png](../../../Shop-Crealoz/assets/images/workflow-schema.png)
 ## Quick Start
 
 ### Using PHAR
@@ -91,6 +95,7 @@ See [Automated PR docs](docs/request-pr.md) for the full workflow file and setup
 
 ## Documentation
 
+- [Security & Privacy](docs/security.md) - What data stays local, when servers are contacted
 - [CLI Usage](docs/cli-usage.md) - Commands, options, examples
 - [Available Processors](docs/processors.md) - All 19 analysis rules
 - [CI/CD Integration](docs/ci-cd.md) - GitHub, GitLab, Bitbucket, Azure, CircleCI, Jenkins, Travis
