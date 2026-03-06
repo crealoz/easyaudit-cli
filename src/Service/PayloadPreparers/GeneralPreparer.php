@@ -13,15 +13,15 @@ class GeneralPreparer extends AbstractPreparer
      *
      * @param  array       $findings     Report findings (grouped by ruleId)
      * @param  array       $fixables     List of fixable ruleIds
-     * @param  string|null $selectedRule Optional rule filter (only process this rule)
+     * @param  array|null  $selectedRules Optional rule filter (only process these rules)
      * @return array Files grouped by path with their issues (excludes proxy rules)
      */
-    public function prepareFiles(array $findings, array $fixables, ?string $selectedRule = null): array
+    public function prepareFiles(array $findings, array $fixables, ?array $selectedRules = null): array
     {
         $byFile = [];
 
         foreach ($findings as $finding) {
-            if (empty($finding['ruleId']) || !$this->canFix($finding['ruleId'], $fixables, $selectedRule) || empty($finding['files'])) {
+            if (empty($finding['ruleId']) || !$this->canFix($finding['ruleId'], $fixables, $selectedRules) || empty($finding['files'])) {
                 continue;
             }
             $ruleId = $finding['ruleId'];
@@ -45,9 +45,9 @@ class GeneralPreparer extends AbstractPreparer
         return $byFile;
     }
 
-    protected function canFix($ruleId, array $fixables, ?string $selectedRule = null): bool
+    protected function canFix($ruleId, array $fixables, ?array $selectedRules = null): bool
     {
-        return !$this->isSpecificRule($ruleId) && $this->isRuleFixable($ruleId, $fixables, $selectedRule);
+        return !$this->isSpecificRule($ruleId) && $this->isRuleFixable($ruleId, $fixables, $selectedRules);
     }
 
     /**

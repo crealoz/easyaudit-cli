@@ -11,10 +11,10 @@ abstract class AbstractPreparer implements PreparerInterface
      *
      * @param string $ruleId
      * @param array $fixables
-     * @param string|null $selectedRule
+     * @param array|null $selectedRules
      * @return bool
      */
-    abstract protected function canFix(string $ruleId, array $fixables, ?string $selectedRule = null): bool;
+    abstract protected function canFix(string $ruleId, array $fixables, ?array $selectedRules = null): bool;
 
     protected function isSpecificRule(string $ruleId): bool
     {
@@ -26,12 +26,12 @@ abstract class AbstractPreparer implements PreparerInterface
         return self::MAPPED_RULES[$ruleId];
     }
 
-    protected function isRuleFixable(string $ruleId, array $fixables, ?string $selectedRule = null): bool
+    protected function isRuleFixable(string $ruleId, array $fixables, ?array $selectedRules = null): bool
     {
         $rule = $ruleId;
         if (isset(self::MAPPED_RULES[$ruleId])) {
             $rule = self::MAPPED_RULES[$ruleId];
         }
-        return ($selectedRule === null || $selectedRule === $ruleId) && isset($fixables[$rule]);
+        return ($selectedRules === null || in_array($ruleId, $selectedRules, true)) && isset($fixables[$rule]);
     }
 }

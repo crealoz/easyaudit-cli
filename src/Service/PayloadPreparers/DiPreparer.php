@@ -13,15 +13,15 @@ class DiPreparer extends AbstractPreparer
      *
      * @param  array       $findings     Report findings
      * @param  array       $fixables     List of fixable ruleIds
-     * @param  string|null $selectedRule Optional rule filter (only process this rule)
+     * @param  array|null  $selectedRules Optional rule filter (only process these rules)
      * @return array Grouped by diFile -> type -> proxies
      */
-    public function prepareFiles(array $findings, array $fixables, ?string $selectedRule = null): array
+    public function prepareFiles(array $findings, array $fixables, ?array $selectedRules = null): array
     {
         $byDiFile = [];
 
         foreach ($findings as $finding) {
-            if (empty($finding['ruleId']) || !$this->canFix($finding['ruleId'], $fixables, $selectedRule) || !is_array($finding['files'])) {
+            if (empty($finding['ruleId']) || !$this->canFix($finding['ruleId'], $fixables, $selectedRules) || !is_array($finding['files'])) {
                 continue;
             }
 
@@ -31,9 +31,9 @@ class DiPreparer extends AbstractPreparer
         return $byDiFile;
     }
 
-    protected function canFix($ruleId, array $fixables, ?string $selectedRule = null): bool
+    protected function canFix($ruleId, array $fixables, ?array $selectedRules = null): bool
     {
-        return $this->isSpecificRule($ruleId) && self::SPECIFIC_RULES[$ruleId] === self::class && $this->isRuleFixable($ruleId, $fixables, $selectedRule);
+        return $this->isSpecificRule($ruleId) && self::SPECIFIC_RULES[$ruleId] === self::class && $this->isRuleFixable($ruleId, $fixables, $selectedRules);
     }
 
     private function processFiles(&$byDiFile, array $files): void

@@ -79,6 +79,29 @@ class CliWriter
     }
 
     /**
+     * Return magenta text (no newline).
+     */
+    public static function magenta(string $text): string
+    {
+        return self::MAGENTA . $text . self::RESET;
+    }
+
+    /**
+     * Output a call-to-action banner (magenta border with message).
+     */
+    public static function cta(string $message, string $url): void
+    {
+        $inner = "  $message $url  ";
+        // mb_strwidth counts double-width chars (e.g. emoji) as 2
+        $visibleWidth = mb_strwidth($inner);
+        $line = str_repeat('─', $visibleWidth);
+        echo "\n" . self::MAGENTA . "╭" . $line . "╮" . self::RESET . "\n";
+        echo self::MAGENTA . "│  " . $message . self::RESET . " " . self::BLUE . $url . self::RESET
+            . self::MAGENTA . "  │" . self::RESET . "\n";
+        echo self::MAGENTA . "╰" . $line . "╯" . self::RESET . "\n\n";
+    }
+
+    /**
      * Output a section header (yellow, bold-like).
      */
     public static function section(string $title): void
@@ -188,14 +211,15 @@ class CliWriter
      * @param string $label Menu item label
      * @param int|null $count Optional count to display
      */
-    public static function menuItem(int|string $index, string $label, ?int $count = null): void
+    public static function menuItem(int|string $index, string $label, ?int $count = null, ?string $suffix = null): void
     {
         $countStr = '';
         if ($count !== null) {
             $plural = $count > 1 ? 's' : '';
             $countStr = " ($count issue$plural)";
         }
-        echo "[" . self::BLUE . $index . self::RESET . "] " . $label . $countStr . "\n";
+        $suffixStr = $suffix !== null ? " — $suffix" : '';
+        echo "[" . self::BLUE . $index . self::RESET . "] " . $label . $countStr . $suffixStr . "\n";
     }
 
     /**
@@ -205,6 +229,14 @@ class CliWriter
     {
         $stream = self::$stderr ?? STDERR;
         fwrite($stream, self::RED . $message . self::RESET . "\n");
+    }
+
+    /**
+     * Wrap text in an OSC 8 hyperlink for supported terminals.
+     */
+    public static function link(string $text, string $url): string
+    {
+        return "\033]8;;{$url}\033\\{$text}\033]8;;\033\\";
     }
 
     /**

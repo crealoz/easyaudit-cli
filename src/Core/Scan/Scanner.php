@@ -2,14 +2,14 @@
 
 namespace EasyAudit\Core\Scan;
 
-use EasyAudit\Console\Util\Confirm;
 use EasyAudit\Service\Api;
-use EasyAudit\Service\CiEnvironmentDetector;
 use EasyAudit\Service\CliWriter;
 use EasyAudit\Service\Paths;
 
 class Scanner
 {
+    private string $scanRoot = '';
+
     private array $excludePatterns = [];
 
     private array $excludedDirs = [
@@ -56,7 +56,6 @@ class Scanner
         string $exclude = '',
         array $excludedExtensions = [],
         $onlyFixable = false,
-        bool $allMagento = false
     ): array {
         if (empty(EA_SCAN_PATH)) {
             $path = getcwd();
@@ -73,19 +72,8 @@ class Scanner
         }
 
         if (self::isMagentoRoot($path)) {
-            $magentoDirs = ['vendor', 'generated', 'var', 'pub', 'setup', 'lib', 'dev', 'phpserver', 'update'];
             CliWriter::line("  Magento installation detected.");
-            CliWriter::line("  Auto-excluded directories: " . implode(', ', $magentoDirs));
-            if ($allMagento) {
-                $includeVendor = true;
-            } elseif ((new CiEnvironmentDetector())->isRunningInCi()) {
-                $includeVendor = false;
-            } else {
-                $includeVendor = Confirm::confirm("Include vendor directory in scan?", false);
-            }
-            if ($includeVendor) {
-                $this->excludedDirs = array_values(array_diff($this->excludedDirs, ['vendor']));
-            }
+            CliWriter::line("  Auto-excluded directories: " . implode(', ', $this->excludedDirs));
         }
 
         $findings = [];
@@ -99,6 +87,7 @@ class Scanner
         if (!is_dir($path) && !is_file($path)) {
             $findings[] = "Path '$path' is not a valid directory or file.";
         }
+        $this->scanRoot = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $files = $this->scanPaths($path, $files);
 
         $fixableTypes = [];
@@ -192,7 +181,7 @@ class Scanner
             }
             $fullPath = $path . DIRECTORY_SEPARATOR . $entry;
             if (is_dir($fullPath)) {
-                if (in_array($entry, $this->excludePatterns)) {
+                if ($this->isExcluded($fullPath)) {
                     continue;
                 }
                 $files = $this->scanPaths($fullPath, $files);
@@ -208,7 +197,7 @@ class Scanner
             if (in_array(basename($entry), $this->excludedFiles)) {
                 continue;
             }
-            if (in_array($entry, $this->excludePatterns)) {
+            if ($this->isExcluded($entry)) {
                 continue;
             }
             $ext = strtolower($ext);
@@ -219,6 +208,32 @@ class Scanner
             $files[$ext][] = $entry;
         }
         return $files;
+    }
+
+    /**
+     * Check if a full path should be excluded based on exclude patterns.
+     * Patterns without '/' match the basename (directory or file name).
+     * Patterns with '/' match as a prefix of the relative path from the scan root.
+     */
+    private function isExcluded(string $fullPath): bool
+    {
+        $basename = basename($fullPath);
+        $relativePath = str_replace($this->scanRoot, '', $fullPath);
+
+        foreach ($this->excludePatterns as $pattern) {
+            if (str_contains($pattern, '/')) {
+                // Path pattern: match relative path prefix
+                if (str_starts_with($relativePath, $pattern)) {
+                    return true;
+                }
+            } else {
+                // Simple name pattern: match basename
+                if ($basename === $pattern) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

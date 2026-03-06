@@ -227,6 +227,10 @@ details[open] > .rule-header::before {
     color: #6c757d;
     font-size: 13px;
 }
+.footer a { color: #6c757d; text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+.footer a.support { color: #a855f7; font-size: 18px; }
+.footer .print-only { display: none; }
 
 /* Print styles */
 @media print {
@@ -266,4 +270,6 @@ details[open] > .rule-header::before {
     .summary-card[data-filter] { cursor: default; }
     .container[data-filter] .rule-card { display: block !important; }
     .container[data-filter] .summary-card { opacity: 1 !important; }
+    .footer .screen-only { display: none; }
+    .footer .print-only { display: inline; }
 }

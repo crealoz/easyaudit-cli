@@ -2,6 +2,8 @@
 
 namespace EasyAudit\Core\Scan\Util;
 
+use EasyAudit\Exception\Scanner\FunctionNotFoundException;
+
 class Functions
 {
     /**
@@ -44,7 +46,7 @@ class Functions
         }
 
         if (!isset($lineNumber)) {
-            throw new \RuntimeException("Function starting at line $startLine not found.");
+            throw new FunctionNotFoundException("Function starting at line $startLine not found.");
         }
 
         return [

@@ -45,7 +45,6 @@ Options:
   --exclude-ext=<exts>         Comma-separated list of file extensions to exclude (e.g. .log,.tmp)
   --output=<file>              Output file path. Default: report/easyaudit-report.<format>
   --project-name=<name>        Explicit project identifier (slug)
-  --all-magento                Include vendor directory when scanning a Magento root (CI only)
   -h, --help                   Show this help message
 
 Examples:
@@ -76,11 +75,10 @@ HELP;
         $output      = Args::optStr($opts, 'output');
         $excludedExt = Args::optArr($opts, 'exclude-ext');
         $projectName = Args::optStr($opts, 'project-name');
-        $allMagento  = Args::optBool($opts, 'all-magento');
         $path        = $rest ?: '.';
         define('EA_SCAN_PATH', $path);
 
-        $result   = $this->scanner->run($exclude, $excludedExt, false, $allMagento);
+        $result   = $this->scanner->run($exclude, $excludedExt);
 
         $findings = $result['findings'];
         $toolSuggestions = $result['toolSuggestions'];
@@ -111,7 +109,9 @@ HELP;
             @mkdir('report', 0775, true);
             file_put_contents($defaultPath, $payload);
         }
-        CliWriter::line("Report was written to " . ($output ?: $defaultPath));
+        $reportPath = realpath($output ?: $defaultPath) ?: ($output ?: $defaultPath);
+        $fileUrl = 'file://' . $reportPath;
+        CliWriter::line("Report was written to " . CliWriter::link($reportPath, $fileUrl));
 
         // Print tool suggestions for issues that can be fixed by external tools
         if (!empty($toolSuggestions)) {
@@ -122,6 +122,8 @@ HELP;
                 CliWriter::line("  $count $description found - run: " . CliWriter::green($command));
             }
         }
+
+        CliWriter::cta("💜 Like it? Fund it!", "https://github.com/sponsors/crealoz");
 
         $errors   = (int)($findings['summary']['errors']   ?? 0);
         $warnings = (int)($findings['summary']['warnings'] ?? 0);

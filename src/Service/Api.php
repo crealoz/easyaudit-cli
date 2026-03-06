@@ -3,6 +3,7 @@
 namespace EasyAudit\Service;
 
 use EasyAudit\Exception\Fixer\CurlResponseException;
+use EasyAudit\Exception\Fixer\EncodingException;
 use EasyAudit\Exception\GitHubAuthException;
 use EasyAudit\Exception\RateLimitedException;
 use EasyAudit\Exception\UpgradeRequiredException;
@@ -54,7 +55,7 @@ class Api
         ];
         $json = json_encode($body, JSON_UNESCAPED_SLASHES);
         if ($json === false) {
-            throw new RuntimeException('Failed to encode request body.');
+            throw new EncodingException('Failed to encode request body.');
         }
 
         $ch = $this->initCurl(

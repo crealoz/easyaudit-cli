@@ -63,7 +63,7 @@ class CountOnCollection extends AbstractProcessor
                 }
 
                 $this->analyzeFile($file, $fileContent);
-                $this->mapCollectionReturningMethods($file, $fileContent);
+                $this->mapCollectionReturningMethods($fileContent);
             }
         }
 
@@ -166,7 +166,7 @@ class CountOnCollection extends AbstractProcessor
     /**
      * Build a map of methods that return collections created from CollectionFactory.
      */
-    private function mapCollectionReturningMethods(string $file, string $fileContent): void
+    private function mapCollectionReturningMethods(string $fileContent): void
     {
         $constructorParams = Classes::parseConstructorParameters($fileContent);
         if (empty($constructorParams)) {

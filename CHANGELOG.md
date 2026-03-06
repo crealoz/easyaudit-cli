@@ -5,6 +5,24 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.4] - 2026-03-06
+
+### Added
+- **Multi-select rule fixing**: `--fix-by-rule` now supports comma-separated input (e.g., `1,3,5`) and `all` to select every fixable rule at once
+- **Credit cost display**: Rule selection menu now shows the credit cost per file for each rule
+- **Path-based exclude patterns**: `--exclude` now supports patterns with `/` that match relative path prefixes (e.g., `--exclude=app/code/SomeVendor`), in addition to simple basename matching
+- **Clickable report path**: Report file path in CLI output is now a clickable hyperlink (OSC 8) in supported terminals (PHPStorm, iTerm2, GNOME Terminal, Windows Terminal, etc.)
+- **HTML report sponsor link**: Footer now links to the GitHub repository and includes a sponsor link
+
+### Removed
+- **`--all-magento` flag**: `vendor/` is now always excluded when scanning — no option to include it (too slow, not useful for static analysis)
+
+### Changed
+- **`PreparerInterface::prepareFiles()`**: `$selectedRule` parameter changed from `?string` to `?array` (`$selectedRules`) to support multi-rule selection
+- **`FixApply`**: When multiple rules are selected, patches use the default layout (`patches/{path}/File.patch`); single-rule selection keeps the rule-specific layout (`patches/{ruleId}/{path}/File.patch`)
+
+---
+
 ## [v1.0.3] - 2026-03-04
 
 ### Fixed

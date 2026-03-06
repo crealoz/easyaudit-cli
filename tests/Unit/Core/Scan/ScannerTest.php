@@ -257,6 +257,33 @@ PHTML;
         $this->assertArrayHasKey('findings', $result);
     }
 
+    public function testExcludePatternMatchesRelativePath(): void
+    {
+        // Create two vendor dirs under app/code/
+        mkdir($this->scanDir . '/app/code/SomeVendor', 0777, true);
+        mkdir($this->scanDir . '/app/code/OtherVendor', 0777, true);
+        file_put_contents($this->scanDir . '/app/code/SomeVendor/File.php', '<?php class SomeFile {}');
+        file_put_contents($this->scanDir . '/app/code/OtherVendor/File.php', '<?php class OtherFile {}');
+
+        $scanner = new Scanner();
+
+        ob_start();
+        $result = $scanner->run('app/code/SomeVendor');
+        ob_end_clean();
+
+        $this->assertArrayHasKey('findings', $result);
+        // Verify SomeVendor files were excluded but OtherVendor files were not
+        $allFindings = $result['findings'];
+        foreach ($allFindings as $finding) {
+            if (is_array($finding) && isset($finding['files'])) {
+                foreach ($finding['files'] as $file) {
+                    $filePath = is_array($file) ? ($file['file'] ?? '') : $file;
+                    $this->assertStringNotContainsString('SomeVendor', $filePath);
+                }
+            }
+        }
+    }
+
     public function testExcludePatternMatchesDirBasename(): void
     {
         // Create a subdir named "custom" with a PHP file

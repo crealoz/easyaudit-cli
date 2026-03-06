@@ -58,15 +58,16 @@ Options:
   --format=<format>        Output format (git, patch). Default: git
   --project-name=<name>    Explicit project identifier (slug)
   --scan-path=<path>       Path to scan root for auto-detection (default: .)
-  --fix-by-rule            Fix one rule at a time (interactive selection)
+  --fix-by-rule            Interactive rule selection (multi-select with credit costs)
   -h, --help               Show this help message
 
 Modes:
   Default mode:    All fixes for a file combined into one patch
                    Output: patches/{relative/path/to/File}.patch
 
-  --fix-by-rule:   Interactive rule selection, one patch per fix
-                   Output: patches/{ruleId}/{relative/path/to/File}.patch
+  --fix-by-rule:   Interactive rule selection with comma-separated input or "all"
+                   Single rule: patches/{ruleId}/{relative/path/to/File}.patch
+                   Multiple rules: patches/{relative/path/to/File}.patch
 
 Examples:
   easyaudit fix-apply report/easyaudit-report.json
@@ -95,9 +96,14 @@ HELP;
         CliWriter::line("Project: " . CliWriter::blue($this->projectId));
 
         $fixables = $this->api->getAllowedType();
-        $selectedRule = $options['fixByRule'] ? $this->handleRuleSelection($errors, $fixables) : null;
 
-        $prepared = $this->prepareFiles($errors, $fixables, $selectedRule);
+        $selectedRules = null;
+        if ($options['fixByRule']) {
+            $selectedRules = $this->handleRuleSelection($errors, $fixables);
+            $options['confirm'] = true;
+        }
+
+        $prepared = $this->prepareFiles($errors, $fixables, $selectedRules);
         if (empty($prepared['byFile']) && empty($prepared['byDiFile'])) {
             throw new CliException("No fixable issues found in the report.");
         }
@@ -117,7 +123,15 @@ HELP;
             throw new CliException("No patches were generated.");
         }
 
-        $savedCount = $this->savePatches($options['patchOut'], $scanPath, $options['fixByRule'], $selectedRule);
+        $singleRule = ($options['fixByRule'] && $selectedRules !== null && count($selectedRules) === 1)
+            ? $selectedRules[0]
+            : null;
+        $savedCount = $this->savePatches(
+            $options['patchOut'],
+            $scanPath,
+            $singleRule !== null,
+            $singleRule
+        );
         $this->showSummary($savedCount, $options['patchOut'], $startingCredits, $cost);
 
         return 0;
@@ -151,14 +165,14 @@ HELP;
     /**
      * Prepare files for fixing using both preparers.
      */
-    private function prepareFiles(array $errors, array $fixables, ?string $selectedRule = null): array
+    private function prepareFiles(array $errors, array $fixables, ?array $selectedRules = null): array
     {
         $generalPreparer = new GeneralPreparer();
         $diPreparer = new DiPreparer();
 
         return [
-            'byFile' => $generalPreparer->prepareFiles($errors, $fixables, $selectedRule),
-            'byDiFile' => $diPreparer->prepareFiles($errors, $fixables, $selectedRule),
+            'byFile' => $generalPreparer->prepareFiles($errors, $fixables, $selectedRules),
+            'byDiFile' => $diPreparer->prepareFiles($errors, $fixables, $selectedRules),
             'generalPreparer' => $generalPreparer,
             'diPreparer' => $diPreparer,
         ];
@@ -241,21 +255,21 @@ HELP;
     /**
      * Handle --fix-by-rule interactive selection with output messages.
      */
-    private function handleRuleSelection(array $errors, array $fixables): ?string
+    private function handleRuleSelection(array $errors, array $fixables): ?array
     {
         try {
-            $selectedRule = $this->selectRule($errors, $fixables);
+            $selectedRules = $this->selectRules($errors, $fixables);
         } catch (RuleNotAppliedException $e) {
             CliWriter::line();
             CliWriter::error($e->getMessage());
-            $selectedRule = null;
+            $selectedRules = null;
         }
 
         CliWriter::line();
         CliWriter::warning("Warning: Apply these patches before requesting another rule.");
         CliWriter::line();
 
-        return $selectedRule;
+        return $selectedRules;
     }
 
     /**
@@ -399,14 +413,14 @@ HELP;
     }
 
     /**
-     * Display interactive rule selection menu.
+     * Display interactive rule selection menu with multi-select support.
      *
      * @param  array $errors   Parsed report data (array of findings)
-     * @param  array $fixables Fixable rule types
-     * @return string|null Selected rule ID or null if cancelled
+     * @param  array $fixables Fixable rule types with credit costs
+     * @return array Selected rule IDs
      * @throws RuleNotAppliedException
      */
-    private function selectRule(array $errors, array $fixables): ?string
+    private function selectRules(array $errors, array $fixables): array
     {
         // Count issues per rule (count files, not findings)
         $ruleCounts = [];
@@ -423,14 +437,17 @@ HELP;
         }
 
         // Display menu
-        CliWriter::line("\nWhich rule do you want to fix?");
+        CliWriter::line("\nWhich rule(s) do you want to fix?");
         $index = 1;
         $ruleMap = [];
         foreach ($ruleCounts as $ruleId => $count) {
             $ruleMap[$index] = $ruleId;
-            CliWriter::menuItem($index, $ruleId, $count);
+            $cost = $fixables[$ruleId] ?? 1;
+            $creditPlural = $cost > 1 ? 's' : '';
+            CliWriter::menuItem($index, $ruleId, $count, "$cost credit$creditPlural each");
             $index++;
         }
+        CliWriter::menuItem('all', "Select all");
         CliWriter::menuItem(0, "Cancel");
         echo "> ";
 
@@ -441,14 +458,25 @@ HELP;
             throw new RuleNotAppliedException('User did not choose any rule.');
         }
 
-        $selection = (int) $input;
-        if (!isset($ruleMap[$selection])) {
-            throw new RuleNotAppliedException('User selection does not exist.');
+        if ($input === 'all') {
+            $selected = array_values($ruleMap);
+            CliWriter::line("Selected: " . CliWriter::green('all rules'));
+            return $selected;
         }
 
-        $selectedRule = $ruleMap[$selection];
-        CliWriter::line("Selected: " . CliWriter::green($selectedRule));
+        $parts = array_map('trim', explode(',', $input));
+        $selected = [];
+        foreach ($parts as $part) {
+            $num = (int) $part;
+            if (!isset($ruleMap[$num])) {
+                throw new RuleNotAppliedException("Invalid selection: $part");
+            }
+            $selected[] = $ruleMap[$num];
+        }
 
-        return $selectedRule;
+        $selected = array_unique($selected);
+        CliWriter::line("Selected: " . CliWriter::green(implode(', ', $selected)));
+
+        return $selected;
     }
 }
