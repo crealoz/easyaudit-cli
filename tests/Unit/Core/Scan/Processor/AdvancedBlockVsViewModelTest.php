@@ -82,6 +82,37 @@ class AdvancedBlockVsViewModelTest extends TestCase
         $this->assertContains('dataCrunchInPhtml', $ruleIds);
     }
 
+    public function testDataCrunchReportsCorrectLineNumber(): void
+    {
+        $file = $this->fixturesPath . '/bad_data_crunch.phtml';
+        $this->assertFileExists($file);
+
+        $processor = new AdvancedBlockVsViewModel();
+        $files = ['phtml' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $dataCrunch = array_values(array_filter($report, fn($e) => $e['ruleId'] === 'dataCrunchInPhtml'));
+        $this->assertNotEmpty($dataCrunch);
+
+        $entries = $dataCrunch[0]['files'];
+        // Multiple entries, each with its own line
+        $this->assertGreaterThan(1, count($entries));
+
+        $lines = array_column($entries, 'startLine');
+        // All lines > 1 (no hardcoded fallback)
+        foreach ($lines as $line) {
+            $this->assertGreaterThan(1, $line);
+        }
+        // Lines are in ascending order
+        $sorted = $lines;
+        sort($sorted);
+        $this->assertSame($sorted, $lines);
+    }
+
     public function testProcessPassesCleanTemplateWithViewModel(): void
     {
         $file = $this->fixturesPath . '/good_with_viewmodel.phtml';

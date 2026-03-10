@@ -389,11 +389,270 @@ PHP;
         rmdir($tempDir);
     }
 
+    public function testProcessSkipsSetupPath(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir . '/Setup/Patch/Data', 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Setup\Patch\Data;
+
+use Magento\Framework\App\ObjectManager;
+
+class AddData
+{
+    public function apply(): void
+    {
+        $logger = ObjectManager::getInstance()->get('Psr\Log\LoggerInterface');
+        $logger->info('patch applied');
+    }
+}
+PHP;
+        $file = $tempDir . '/Setup/Patch/Data/AddData.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Setup patches should not be flagged');
+
+        unlink($file);
+        rmdir($tempDir . '/Setup/Patch/Data');
+        rmdir($tempDir . '/Setup/Patch');
+        rmdir($tempDir . '/Setup');
+        rmdir($tempDir);
+    }
+
+    public function testProcessSkipsConsolePath(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir . '/Console/Command', 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Console\Command;
+
+use Magento\Framework\App\ObjectManager;
+
+class ImportCommand
+{
+    public function execute(): void
+    {
+        $logger = ObjectManager::getInstance()->get('Psr\Log\LoggerInterface');
+        $logger->info('running');
+    }
+}
+PHP;
+        $file = $tempDir . '/Console/Command/ImportCommand.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Console commands should not be flagged');
+
+        unlink($file);
+        rmdir($tempDir . '/Console/Command');
+        rmdir($tempDir . '/Console');
+        rmdir($tempDir);
+    }
+
     public function testGetReportEmptyWhenNoIssues(): void
     {
         $processor = new UseOfObjectManager();
         $report = $processor->getReport();
         $this->assertIsArray($report);
         $this->assertEmpty($report);
+    }
+
+    public function testProcessDetectsVariableArgumentUsage(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\ObjectManagerInterface;
+
+class VariableUsage
+{
+    public function __construct(
+        private ObjectManagerInterface $objectManager
+    ) {
+    }
+
+    public function getService(string $className): object
+    {
+        return $this->objectManager->get($className);
+    }
+}
+PHP;
+        $file = $tempDir . '/VariableUsage.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount(), 'Variable-argument OM usage should be detected');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testConfigClassVariableUsageHasNoteSeverity(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module\Model\Config;
+
+use Magento\Framework\Config\Data;
+use Magento\Framework\ObjectManagerInterface;
+
+class TypePool extends Data
+{
+    private ObjectManagerInterface $objectManager;
+
+    public function __construct(
+        ObjectManagerInterface $objectManager
+    ) {
+        $this->objectManager = $objectManager;
+    }
+
+    public function getInstanceByType(string $type): object
+    {
+        $className = $this->get($type);
+        return $this->objectManager->create($className);
+    }
+}
+PHP;
+        $file = $tempDir . '/TypePool.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount(), 'Config class OM usage should still be detected');
+
+        $report = $processor->getReport();
+        $this->assertNotEmpty($report);
+
+        // Should have 'note' severity, not 'error'
+        $found = false;
+        foreach ($report[0]['files'] as $entry) {
+            if ($entry['severity'] === 'note') {
+                $found = true;
+                $this->assertStringContainsString('configuration', $entry['message']);
+                $this->assertStringContainsString('Factory', $entry['message']);
+            }
+        }
+        $this->assertTrue($found, 'Config class variable OM usage should have note severity');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testNonConfigClassVariableUsageHasErrorSeverity(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\ObjectManagerInterface;
+
+class ServiceLocator
+{
+    public function __construct(
+        private ObjectManagerInterface $objectManager
+    ) {
+    }
+
+    public function resolve(string $className): object
+    {
+        return $this->objectManager->get($className);
+    }
+}
+PHP;
+        $file = $tempDir . '/ServiceLocator.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $report = $processor->getReport();
+        $this->assertNotEmpty($report);
+
+        // Should have 'error' severity for non-config class
+        foreach ($report[0]['files'] as $entry) {
+            $this->assertEquals('error', $entry['severity'], 'Non-config variable OM usage should be error severity');
+        }
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessSkipsTestPath(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_om_test_' . uniqid();
+        mkdir($tempDir . '/Test/Unit', 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Test\Unit;
+
+use Magento\Framework\App\ObjectManager;
+
+class SomeTest
+{
+    public function testSomething(): void
+    {
+        $logger = ObjectManager::getInstance()->get('Psr\Log\LoggerInterface');
+    }
+}
+PHP;
+        $file = $tempDir . '/Test/Unit/SomeTest.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfObjectManager();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Test files should not be flagged');
+
+        unlink($file);
+        rmdir($tempDir . '/Test/Unit');
+        rmdir($tempDir . '/Test');
+        rmdir($tempDir);
     }
 }

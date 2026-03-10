@@ -36,6 +36,27 @@ class ContentTest extends TestCase
         $this->assertEquals(-1, Content::getLineNumber('', 'anything'));
     }
 
+    public function testGetLineNumberWithAfterLineSkipsEarlierMatches(): void
+    {
+        $content = "use MyClass;\nother line\n__construct(MyClass \$myClass)\n{\n\$this->myClass = \$myClass;";
+        // Without afterLine, finds 'MyClass' on line 1 (use statement)
+        $this->assertEquals(1, Content::getLineNumber($content, 'MyClass'));
+        // With afterLine=2, skips line 1 and 2, finds 'MyClass' on line 3 (constructor)
+        $this->assertEquals(3, Content::getLineNumber($content, 'MyClass', 2));
+    }
+
+    public function testGetLineNumberWithAfterLineReturnsNegativeOneWhenNoLaterMatch(): void
+    {
+        $content = "first line\nsecond line\nthird line";
+        $this->assertEquals(-1, Content::getLineNumber($content, 'first', 1));
+    }
+
+    public function testGetLineNumberWithAfterLineZeroBehavesLikeDefault(): void
+    {
+        $content = "first line\nsecond line";
+        $this->assertEquals(1, Content::getLineNumber($content, 'first', 0));
+    }
+
     public function testExtractContentSingleLine(): void
     {
         $content = "line 1\nline 2\nline 3\nline 4\nline 5";

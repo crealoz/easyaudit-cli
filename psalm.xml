@@ -33,6 +33,7 @@
                 <file name="src/Version.php" />
                 <file name="src/Service/PayloadPreparers/AbstractPreparer.php" />
                 <file name="src/Service/CiEnvironmentDetector.php" />
+                <file name="src/Service/CliWriter.php" />
             </errorLevel>
         </PossiblyUnusedMethod>
 

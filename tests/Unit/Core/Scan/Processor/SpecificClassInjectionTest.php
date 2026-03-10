@@ -1714,4 +1714,327 @@ PHP;
         unlink($file);
         rmdir($tempDir);
     }
+
+    public function testProcessSkipsSetupPath(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir . '/Setup/Patch/Data', 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Setup\Patch\Data;
+
+use Magento\Catalog\Model\ResourceModel\Product\Collection;
+
+class AddData
+{
+    public function __construct(
+        private Collection $productCollection
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/Setup/Patch/Data/AddData.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Setup patches should be excluded');
+
+        unlink($file);
+        rmdir($tempDir . '/Setup/Patch/Data');
+        rmdir($tempDir . '/Setup/Patch');
+        rmdir($tempDir . '/Setup');
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresReaderSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\ConfigReader;
+
+class SomeModel
+{
+    public function __construct(
+        private ConfigReader $reader
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Reader suffix');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresServiceSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\PaymentService;
+
+class SomeModel
+{
+    public function __construct(
+        private PaymentService $paymentService
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Service suffix');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresSettingsSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\SearchSettings;
+
+class SomeModel
+{
+    public function __construct(
+        private SearchSettings $settings
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SomeModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Should ignore Settings suffix');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessSkipsParentConstructorPassthroughParams(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Class that passes $context to parent::__construct — should not be flagged
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Block;
+
+use Vendor\Module\Model\SomeConcreteClass;
+
+class MyBlock
+{
+    public function __construct(
+        private SomeConcreteClass $concrete,
+        $context,
+        array $data = []
+    ) {
+        parent::__construct($context, $data);
+    }
+}
+PHP;
+        $file = $tempDir . '/MyBlock.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        // $concrete should be flagged, but $context should NOT (parent passthrough)
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        // Verify only 1 issue (for $concrete), not 2
+        $totalFiles = 0;
+        foreach ($report as $entry) {
+            $totalFiles += count($entry['files']);
+        }
+        $this->assertEquals(1, $totalFiles, 'Only $concrete should be flagged, not parent passthrough $context');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testLineNumberReportsConstructorArgNotProperty(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Property $productRepository appears on line 9, constructor arg on line 15
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Vendor\Module\Model\ProductRepository;
+
+class ProductModel
+{
+    /**
+     * @var ProductRepository
+     */
+    private $productRepository;
+
+    public function __construct(
+        ProductRepository $productRepository
+    ) {
+        $this->productRepository = $productRepository;
+    }
+}
+PHP;
+        $file = $tempDir . '/ProductModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+
+        // The reported line should be in the constructor range (after __construct), not at the property
+        $constructorLine = 13; // line where __construct appears
+        foreach ($report as $entry) {
+            foreach ($entry['files'] as $fileEntry) {
+                $this->assertGreaterThan(
+                    $constructorLine,
+                    $fileEntry['startLine'],
+                    'Line number should be in constructor, not at property declaration'
+                );
+            }
+        }
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessIgnoresBuilderSuffix(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Catalog\Model\Product\SearchCriteria\Builder;
+
+class Service
+{
+    public function __construct(
+        private Builder $searchCriteriaBuilder
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/Service.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Builder suffix should be ignored');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testSingleLineConstructorReportsCorrectLineNumber(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_sci_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Single-line constructor: __construct and parameter on same line
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module\Block;
+
+use Magento\Framework\View\Element\Template\Context;
+use Vendor\Module\Model\ItemList;
+
+class Dashboard extends \Magento\Framework\View\Element\Template
+{
+    public function __construct(Context $context, ItemList $itemList, array $data = [])
+    {
+        $this->itemList = $itemList;
+        parent::__construct($context, $data);
+    }
+}
+PHP;
+        $file = $tempDir . '/Dashboard.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount(), 'Should detect specific class injection');
+
+        $report = $processor->getReport();
+        $lineNumber = $report[0]['files'][0]['startLine'];
+        // Line 9 is the constructor line where the parameter is declared
+        $this->assertEquals(9, $lineNumber, 'Should report line of constructor parameter, not assignment');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
 }

@@ -1,0 +1,10 @@
+<?php /** @var \Magento\Framework\View\Element\Template $block */ ?>
+<style>
+    .custom-class {
+        color: blue;
+        font-size: 14px;
+    }
+</style>
+<div class="custom-class">
+    <p><?= $block->escapeHtml($block->getText()) ?></p>
+</div>

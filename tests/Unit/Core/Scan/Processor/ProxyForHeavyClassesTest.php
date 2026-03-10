@@ -502,6 +502,56 @@ PHP;
         rmdir($tempDir);
     }
 
+    public function testProcessSkipsControllerFiles(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_proxy_test_' . uniqid();
+        mkdir($tempDir . '/etc', 0777, true);
+
+        $phpContent = <<<'PHP'
+<?php
+namespace Test\Module\Controller\Index;
+
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Customer\Model\Session;
+
+class Index implements HttpGetActionInterface
+{
+    public function __construct(
+        private Session $customerSession
+    ) {
+    }
+
+    public function execute()
+    {
+        return $this->customerSession->getCustomerId();
+    }
+}
+PHP;
+        $phpFile = $tempDir . '/Index.php';
+        file_put_contents($phpFile, $phpContent);
+
+        $diContent = '<?xml version="1.0"?><config></config>';
+        $diFile = $tempDir . '/etc/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new ProxyForHeavyClasses();
+        $files = [
+            'php' => [$phpFile],
+            'di' => [$diFile],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Controllers should not be flagged for missing proxy');
+
+        unlink($phpFile);
+        unlink($diFile);
+        rmdir($tempDir . '/etc');
+        rmdir($tempDir);
+    }
+
     public function testGetReportEmptyWhenNoIssues(): void
     {
         $processor = new ProxyForHeavyClasses();

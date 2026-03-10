@@ -60,7 +60,10 @@ class Classes
         $constructorParameters = [];
         $pattern = '/function\s+__construct\s*\(([^)]*)\)/';
         if (str_contains($fileContent, '__construct') && preg_match($pattern, $fileContent, $m)) {
-            $constructorParameters = array_map('trim', explode(',', $m[1]));
+            // Remove inline comments from constructor body before splitting
+            $constructorBody = preg_replace('#//.*$#m', '', $m[1]);
+            $constructorBody = preg_replace('#/\*.*?\*/#s', '', $constructorBody);
+            $constructorParameters = array_map('trim', explode(',', $constructorBody));
         }
         return $constructorParameters;
     }
@@ -122,6 +125,17 @@ class Classes
                 break;
             }
             if ($paramClass === null || $paramClass === '') {
+                continue;
+            }
+            // Skip tokens that aren't valid class names
+            if (
+                str_starts_with($paramClass, '$') || str_starts_with($paramClass, '[')
+                || str_starts_with($paramClass, '//') || str_starts_with($paramClass, '/*')
+            ) {
+                continue;
+            }
+            // Skip if it doesn't look like a class name (must start with uppercase or backslash, or be a type)
+            if (!preg_match('/^[A-Z?\\\\]/', $paramClass) && !in_array($paramClass, self::BASIC_TYPES, true)) {
                 continue;
             }
             // Strip nullable prefix (e.g. ?int → int) for type checking
@@ -239,6 +253,16 @@ class Classes
     }
 
     /**
+     * Check if a constructor parameter is passed through to parent::__construct().
+     * Handles both $paramName (with $) and paramName (without $).
+     */
+    public static function isParentPassthrough(string $fileContent, string $paramName): bool
+    {
+        $parentParams = self::getParentConstructorParams($fileContent);
+        return in_array(ltrim($paramName, '$'), $parentParams, true);
+    }
+
+    /**
      * Resolve a fully qualified class name to its file path.
      *
      * Tries two strategies:
@@ -265,6 +289,11 @@ class Classes
             if (file_exists($relativePath)) {
                 return $relativePath;
             }
+        }
+
+        // Strategy 3: Look up in the classToFile map built by buildClassHierarchy()
+        if (isset(self::$hierarchy['classToFile'][$className])) {
+            return self::$hierarchy['classToFile'][$className];
         }
 
         return null;
@@ -325,6 +354,17 @@ class Classes
         }
         $pattern = '/class\s+\w+\s+extends\s+(?:\\\\?Symfony\\\\Component\\\\Console\\\\Command\\\\)?Command\b/';
         return preg_match($pattern, $fileContent) === 1;
+    }
+
+    /**
+     * Check if file content defines a Magento Controller class.
+     */
+    public static function isControllerClass(string $fileContent): bool
+    {
+        return str_contains($fileContent, 'Magento\Framework\App\Action\Action')
+            || str_contains($fileContent, 'Magento\Framework\App\Action\HttpGetActionInterface')
+            || str_contains($fileContent, 'Magento\Framework\App\Action\HttpPostActionInterface')
+            || str_contains($fileContent, 'Magento\Backend\App\Action');
     }
 
     /**

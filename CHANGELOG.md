@@ -5,6 +5,46 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] 2026-03-10
+
+### Added
+- **InlineStyles processor** (21st processor): Detects inline CSS (`style=""` attributes and `<style>` blocks) in phtml/html templates — flags CSP violations and maintainability issues. Email and PDF templates are excluded as they legitimately require inline CSS
+- **HTML file scanning**: Scanner now collects `.html` files alongside phtml for template analysis
+
+### Fine-tuning after benchmark
+
+Processors were tested against a real Magento 2 codebase. The following changes reduce false positives and improve detection accuracy.
+
+#### New utilities
+- **`Classes::isControllerClass()`**: Detects Magento controller classes (Action, HttpGet/PostActionInterface, Backend Action)
+- **`Classes::getParentConstructorParams()`**: Extracts parameter names passed to `parent::__construct()`
+- **`Classes::isParentPassthrough()`**: Shared utility to check if a constructor param is forwarded to `parent::__construct()` — used by SpecificClassInjection and UseOfRegistry
+- **`Content::getLineNumber()` `$afterLine` parameter**: Optional parameter to skip matches before a given line — enables reporting constructor arg lines instead of property lines
+- **`Modules::isEmailTemplate()`**: Detects files in `/email/` directories
+- **`Modules::isPdfTemplate()`**: Detects files in `/pdf/`, `/invoice/`, `/shipment/`, `/creditmemo/` directories
+
+#### Processor improvements
+- **AroundPlugins**: Around plugins using `$proceed()` conditionally (ternary, if/else, short-circuit `&&`/`||`) are no longer flagged — conditional execution is a legitimate around plugin pattern. `try/catch/finally` blocks and closing braces are now treated as structural lines when classifying before/after plugins
+- **AdvancedBlockVsViewModel**: Suffix-based exclusion (`*Url`, `*Html`) replaces redundant entries in `allowedMethods`. Threshold lowered from 5 to 1 suspicious call
+- **HardWrittenSQL**: Setup/Patch files are no longer skipped entirely — SQL is still detected but severity is reduced to `note`
+- **UseOfObjectManager**: Now skips `Setup/Patch`, `Console/Command`, and `Test` paths entirely (legitimate ObjectManager usage). Detects variable-argument OM usage (`->get($variable)`). Config classes (extending `Magento\Framework\Config\Data`) get reduced severity (`note`) for variable-argument usage since the real fix is to use Factory types in configuration XML
+- **UseOfRegistry**: Registry injected only to pass to `parent::__construct()` (no active `->registry()`/`->register()`/`->unregister()` calls) is no longer flagged
+- **SpecificClassInjection**: Setup directories are now skipped. `AbstractModel` and `AbstractExtensibleModel` added to ignored substrings. `Builder`, `Emulation`, `Reader`, `Service`, `Settings` added to legitimate suffixes. Collection injection inside `AbstractModel` subclasses is no longer flagged (legitimate `$resourceCollection` pattern). Line numbers now report constructor arg position instead of property declaration
+- **SameModulePlugins**: Line numbers now use the plugged class (target) instead of the plugin class — prevents duplicate lines when the same plugin targets multiple classes
+- **ProxyForHeavyClasses**: Controller classes are now skipped (non-shared, always execute their dependencies)
+- **Cacheable**: Admin (`/adminhtml/`) and email template layouts are now skipped (caching not applicable)
+- **Scanner**: `Test` directory (singular, Magento convention) added to default exclusions alongside `Tests`
+- **Classes::getConstructorParameters()**: Now strips inline comments (`//` and `/* */`) from constructor body before parsing, preventing misidentified parameters
+- **Classes::parseConstructorParameters()**: Added validation to skip tokens that aren't valid class names (comments, array syntax, variables)
+
+#### Fixes
+- **SpecificClassInjection**: Parent constructor params were never excluded due to `$` prefix mismatch (`$context` vs `context`) — fixed via `Classes::isParentPassthrough()`
+- **SameModulePlugins**: Two `<type>` nodes with the same plugin class no longer report the same line number
+- **AdvancedBlockVsViewModel**: Fixed `Array to string conversion` error when building data crunch message
+- **Psalm**: Added `CliWriter.php` to `PossiblyUnusedMethod` suppression list
+
+---
+
 ## [v1.0.4] - 2026-03-06
 
 ### Added

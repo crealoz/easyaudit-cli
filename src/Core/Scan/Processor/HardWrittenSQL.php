@@ -135,10 +135,6 @@ class HardWrittenSQL extends AbstractProcessor
         }
 
         foreach ($files['php'] as $file) {
-            if (Modules::isSetupDirectory($file)) {
-                continue;
-            }
-
             $fileContent = file_get_contents($file);
             if ($fileContent === false) {
                 continue;
@@ -195,11 +191,23 @@ class HardWrittenSQL extends AbstractProcessor
             );
 
             $message = $this->createMessage($sqlType, $matchedText, $config['recommendation']);
+            $severity = $this->adjustSeverity($file, $config['severity']);
 
-            $error = Formater::formatError($file, $actualLineNumber, $message, $config['severity']);
+            $error = Formater::formatError($file, $actualLineNumber, $message, $severity);
             $this->storeResult($sqlType, $error);
             $this->foundCount++;
         }
+    }
+
+    /**
+     * Adjust severity based on file location (Setup patches get reduced severity)
+     */
+    private function adjustSeverity(string $file, string $baseSeverity): string
+    {
+        if (Modules::isSetupDirectory($file)) {
+            return 'note';
+        }
+        return $baseSeverity;
     }
 
     /**

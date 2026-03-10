@@ -21,6 +21,11 @@ class NoProxyInCommands extends AbstractProcessor
      */
     public function process(array $files): void
     {
+        // Build class hierarchy from PHP files so resolveClassToFile can use the classToFile map
+        if (!empty($files['php'])) {
+            Classes::buildClassHierarchy($files['php']);
+        }
+
         foreach ($files['di'] ?? [] as $file) {
             $content = Xml::loadFile($file);
 

@@ -211,6 +211,66 @@ XML;
         $this->assertEquals(0, $this->processor->getFoundCount());
     }
 
+    public function testProcessSkipsAdminhtmlLayouts(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cacheable_test_' . uniqid();
+        mkdir($tempDir . '/adminhtml', 0777, true);
+
+        $xml = <<<XML
+<?xml version="1.0"?>
+<page>
+    <body>
+        <block name="admin.form" cacheable="false"/>
+    </body>
+</page>
+XML;
+        $file = $tempDir . '/adminhtml/layout.xml';
+        file_put_contents($file, $xml);
+
+        $processor = new Cacheable();
+        $files = ['xml' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Admin layouts should be skipped');
+
+        unlink($file);
+        rmdir($tempDir . '/adminhtml');
+        rmdir($tempDir);
+    }
+
+    public function testProcessSkipsEmailTemplates(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_cacheable_test_' . uniqid();
+        mkdir($tempDir . '/email', 0777, true);
+
+        $xml = <<<XML
+<?xml version="1.0"?>
+<page>
+    <body>
+        <block name="email.content" cacheable="false"/>
+    </body>
+</page>
+XML;
+        $file = $tempDir . '/email/template.xml';
+        file_put_contents($file, $xml);
+
+        $processor = new Cacheable();
+        $files = ['xml' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Email templates should be skipped');
+
+        unlink($file);
+        rmdir($tempDir . '/email');
+        rmdir($tempDir);
+    }
+
     public function testProcessHandlesMalformedXml(): void
     {
         $tempDir = sys_get_temp_dir() . '/easyaudit_cacheable_test_' . uniqid();

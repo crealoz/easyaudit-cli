@@ -302,6 +302,85 @@ PHP;
         rmdir($tempDir);
     }
 
+    public function testSkipsParentPassthrough(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_registry_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\Registry;
+
+class ChildModel extends ParentModel
+{
+    public function __construct(
+        Registry $registry,
+        array $data = []
+    ) {
+        parent::__construct($registry, $data);
+    }
+}
+PHP;
+        $file = $tempDir . '/ChildModel.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfRegistry();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Parent passthrough should not be flagged');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testFlagsActiveRegistryUsage(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_registry_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\Registry;
+
+class ActiveUsage extends ParentModel
+{
+    public function __construct(
+        private Registry $registry,
+        array $data = []
+    ) {
+        parent::__construct($registry, $data);
+    }
+
+    public function getCurrentProduct()
+    {
+        return $this->registry->registry('current_product');
+    }
+}
+PHP;
+        $file = $tempDir . '/ActiveUsage.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfRegistry();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount(), 'Active registry usage should be flagged');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
     public function testEmptyReportWhenNoIssues(): void
     {
         $goodFile = $this->fixturesPath . '/GoodWithoutRegistry.php';
@@ -314,5 +393,49 @@ PHP;
         ob_end_clean();
 
         $this->assertEmpty($report);
+    }
+
+    public function testLineNumberPointsToConstructorNotProperty(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_registry_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // $registry appears on line 9 (property) and line 12 (constructor param)
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Model;
+
+use Magento\Framework\Registry;
+
+class ProductRepository
+{
+    /** @var Registry */
+    private $registry;
+
+    public function __construct(
+        Registry $registry
+    ) {
+        $this->registry = $registry;
+    }
+}
+PHP;
+        $file = $tempDir . '/ProductRepository.php';
+        file_put_contents($file, $content);
+
+        $processor = new UseOfRegistry();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertNotEmpty($report);
+        // Line number should point to the constructor parameter (line 12), not the property (line 9)
+        $lineNumber = $report[0]['files'][0]['startLine'];
+        $this->assertEquals(12, $lineNumber, 'Line number should point to constructor parameter, not property declaration');
+
+        unlink($file);
+        rmdir($tempDir);
     }
 }

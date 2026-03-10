@@ -5,6 +5,7 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Modules;
 use EasyAudit\Core\Scan\Util\Types;
 use EasyAudit\Service\ClassToProxy;
 use EasyAudit\Service\CliWriter;
@@ -141,19 +142,21 @@ class SpecificClassInjection extends AbstractProcessor
         'Magento\Directory\Model\Region',
         'Magento\Quote\Model\Quote\Address\RateResult\Method',
         'Magento\Quote\Model\Quote\Item\Option',
+        'Magento\Config\Model\Config\Structure',
     ];
 
     /**
      * Substrings that indicate an argument should be ignored
      */
     private const IGNORED_SUBSTRINGS = [
-        'Magento\Framework', 'Context', 'Session', 'Helper', 'Stdlib', 'Serializer', 'Generator'
+        'Magento\Framework', 'Context', 'Session', 'Helper', 'Stdlib', 'Serializer', 'Generator',
+        'AbstractModel', 'AbstractExtensibleModel',
     ];
 
     /**
      * Suffixes that indicate a legitimate injection pattern
      */
-    private const LEGITIMATE_SUFFIXES = ['Interface', 'Factory', 'Provider', 'Resolver', 'Pool', 'Logger', 'Config'];
+    private const LEGITIMATE_SUFFIXES = ['Interface', 'Factory', 'Provider', 'Resolver', 'Pool', 'Logger', 'Config', 'Builder', 'Emulation', 'Reader', 'Service', 'Settings'];
 
 
     /**
@@ -229,6 +232,10 @@ class SpecificClassInjection extends AbstractProcessor
             return;
         }
 
+        if (Modules::isSetupDirectory($file)) {
+            return;
+        }
+
         $constructorParameters = Classes::parseConstructorParameters($fileContent);
         if (empty($constructorParameters)) {
             return;
@@ -242,13 +249,15 @@ class SpecificClassInjection extends AbstractProcessor
         }
 
         $className = Classes::extractClassName($fileContent);
-        $parentConstructorParams = Classes::getParentConstructorParams($fileContent);
+        $constructorLine = Content::getLineNumber($fileContent, '__construct');
+        // Use constructorLine - 1 so single-line constructors include the parameter on the same line
+        $searchAfterLine = max(0, $constructorLine - 1);
 
         foreach ($consolidatedParameters as $paramName => $paramClass) {
-            if (in_array($paramName, $parentConstructorParams, true)) {
+            if (Classes::isParentPassthrough($fileContent, $paramName)) {
                 continue;
             }
-            $this->analyzeParameter($file, $fileContent, $className, $paramName, $paramClass);
+            $this->analyzeParameter($file, $fileContent, $className, $paramName, $paramClass, $searchAfterLine);
         }
     }
 
@@ -260,15 +269,16 @@ class SpecificClassInjection extends AbstractProcessor
         string $fileContent,
         string $className,
         string $paramName,
-        string $paramClass
+        string $paramClass,
+        int $constructorLine = 0
     ): void {
         if (in_array($paramClass, self::IGNORED_CLASSES, true) || $this->isArgumentIgnored($paramClass)) {
             return;
         }
 
-        $lineNumber = Content::getLineNumber($fileContent, $paramName);
+        $lineNumber = Content::getLineNumber($fileContent, $paramName, $constructorLine);
 
-        if ($this->handleModelViolation($file, $lineNumber, $paramName, $paramClass, $className)) {
+        if ($this->handleModelViolation($file, $lineNumber, $paramName, $paramClass, $className, $fileContent)) {
             return;
         }
 
@@ -294,8 +304,14 @@ class SpecificClassInjection extends AbstractProcessor
      * Handle model-specific violations (collection, repository, API interface, resource model)
      * Returns true if a violation was recorded
      */
-    private function handleModelViolation(string $file, int $lineNumber, string $paramName, string $paramClass, string $className): bool
-    {
+    private function handleModelViolation(
+        string $file,
+        int $lineNumber,
+        string $paramName,
+        string $paramClass,
+        string $className,
+        string $fileContent = ''
+    ): bool {
         $handled = false;
         $shouldCheckModel = false;
         try {
@@ -305,7 +321,9 @@ class SpecificClassInjection extends AbstractProcessor
         }
 
         if (Types::isCollectionType($paramClass)) {
-            $this->addCollectionError($file, $lineNumber, $paramName, $paramClass, $children);
+            if ($fileContent !== '' && !Classes::extendsClass($fileContent, 'Magento\Framework\Model\AbstractModel')) {
+                $this->addCollectionError($file, $lineNumber, $paramName, $paramClass, $children);
+            }
             $handled = true;
             $shouldCheckModel = true;
         }

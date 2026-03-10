@@ -121,11 +121,22 @@ class UseOfRegistry extends AbstractProcessor
 
         // Extract the class name from the file for context
         $className = $this->extractClassName($fileContent);
+        $constructorLine = Content::getLineNumber($fileContent, '__construct');
+        // Use constructorLine - 1 so single-line constructors include the parameter on the same line
+        $searchAfterLine = max(0, $constructorLine - 1);
 
         // Check each parameter for Registry
         foreach ($consolidatedParameters as $paramName => $paramClass) {
             if (ltrim($paramClass, '\\') === self::REGISTRY_CLASS) {
-                $this->addRegistryUsage($file, $fileContent, $className, $paramName);
+                // Skip if only passing Registry to parent without active usage
+                if (Classes::isParentPassthrough($fileContent, $paramName)
+                    && !str_contains($fileContent, '->registry(')
+                    && !str_contains($fileContent, '->register(')
+                    && !str_contains($fileContent, '->unregister(')
+                ) {
+                    continue;
+                }
+                $this->addRegistryUsage($file, $fileContent, $className, $paramName, $searchAfterLine);
             }
         }
     }
@@ -159,10 +170,11 @@ class UseOfRegistry extends AbstractProcessor
         string $file,
         string $fileContent,
         string $className,
-        string $paramName
+        string $paramName,
+        int $constructorLine = 0
     ): void {
-        // Get line number for the parameter
-        $lineNumber = Content::getLineNumber($fileContent, $paramName);
+        // Get line number for the parameter, searching from constructor line
+        $lineNumber = Content::getLineNumber($fileContent, $paramName, $constructorLine);
 
         $message = sprintf(
             'Class "%s" uses deprecated Magento\Framework\Registry in constructor parameter "%s". ' .

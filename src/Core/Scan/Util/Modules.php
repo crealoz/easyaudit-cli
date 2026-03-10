@@ -95,6 +95,24 @@ class Modules
     }
 
     /**
+     * Check if a file is in an email template directory.
+     */
+    public static function isEmailTemplate(string $filePath): bool
+    {
+        return str_contains($filePath, '/email/') ||
+               str_contains($filePath, DIRECTORY_SEPARATOR . 'email' . DIRECTORY_SEPARATOR);
+    }
+
+    /**
+     * Check if a file is in a PDF/invoice/shipment/creditmemo template directory.
+     */
+    public static function isPdfTemplate(string $filePath): bool
+    {
+        $filePath = str_replace('\\', '/', $filePath);
+        return (bool) preg_match('#/(pdf|invoice|shipment|creditmemo)/#i', $filePath);
+    }
+
+    /**
      * Find the di.xml file for a given PHP file by walking up directories.
      */
     public static function findDiXmlForFile(string $phpFile): ?string

@@ -19,18 +19,28 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
     /**
      * Methods that are allowed/common in phtml files and shouldn't trigger warnings
      */
+    /**
+     * Methods only matched by regex /$block->(get|is)(\w+)/ — no need to list
+     * escape*, format*, toHtml (not captured) or methods ending with Url/Html
+     * (caught by $excludedSuffixes).
+     */
     private array $allowedMethods = [
         'getJsLayout',
-        'getChildHtml',
-        'getChildChildHtml',
-        'getBlockHtml',
-        'escapeHtml',
-        'escapeUrl',
-        'escapeJs',
-        'getUrl',
-        'getBaseUrl',
-        'getViewFileUrl',
+        'getRenderer',
+        'getFormRenderer',
+        'getNameInLayout',
+        'getId',
+        'getHtmlId',
+        'getCssClass',
+        'getTemplate',
+        'getHelper',
+        'getButtonData'
     ];
+
+    /**
+     * Method suffixes that indicate rendering/display calls (not data crunching)
+     */
+    private array $excludedSuffixes = ['Url', 'Html', 'Pager', 'Toolbar'];
 
     /**
      * Patterns that indicate ViewModel usage (should not trigger warnings)
@@ -164,14 +174,13 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
         $pattern = '/\$block->(get|is)(\w+)\s*\(/';
 
         if (preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
-            $this->getDataCrunchWarnings($file, $matches);
+            $this->getDataCrunchWarnings($file, $content, $matches);
         }
     }
 
-    private function getDataCrunchWarnings(string $file, array $matches = []): void
+    private function getDataCrunchWarnings(string $file, string $content, array $matches = []): void
     {
-
-        $suspiciousCalls = [];
+        $afterLine = 0;
 
         foreach ($matches as $match) {
             $fullMatch = $match[0];
@@ -180,32 +189,31 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
             $fullMethodName = $methodType . $methodName;
 
             // Skip allowed methods or common Magento block methods
-            if ((in_array($fullMethodName, $this->allowedMethods)) || (in_array($methodName, ['Child', 'ChildHtml', 'Html']))) {
+            if (in_array($fullMethodName, $this->allowedMethods)
+                || str_contains($fullMethodName, 'Child')
+            ) {
                 continue;
             }
 
-            $suspiciousCalls[] = $fullMatch;
-        }
-
-        // Only report if there are multiple suspicious calls and no ViewModel usage
-        if (count($suspiciousCalls) >= 3) {
-            $this->foundCount++;
-
-            $uniqueCalls = array_unique($suspiciousCalls);
-            $callsList = implode(', ', array_slice($uniqueCalls, 0, 5));
-            if (count($uniqueCalls) > 5) {
-                $callsList .= ', ... (' . (count($uniqueCalls) - 5) . ' more)';
+            // Skip methods ending with rendering-related suffixes
+            $skipSuffix = false;
+            foreach ($this->excludedSuffixes as $suffix) {
+                if (str_ends_with($methodName, $suffix)) {
+                    $skipSuffix = true;
+                    break;
+                }
+            }
+            if ($skipSuffix) {
+                continue;
             }
 
-            $lineNumber = 1; // Default to line 1
-
-            $callCount = count($uniqueCalls);
-            $msg = "Template has $callCount data retrieval calls: $callsList. Consider "
-                . "using a ViewModel for better separation of concerns.";
+            $lineNumber = Content::getLineNumber($content, $fullMatch, $afterLine);
+            $afterLine = $lineNumber;
+            $this->foundCount++;
             $this->dataCrunchWarnings[] = Formater::formatError(
                 $file,
                 $lineNumber,
-                $msg
+                "\$block->$fullMethodName() - consider using a ViewModel for data retrieval."
             );
         }
     }

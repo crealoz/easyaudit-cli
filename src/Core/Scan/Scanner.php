@@ -19,6 +19,7 @@ class Scanner
         '.svn',
         '.idea',
         'node_modules',
+        'Test',
         'Tests',
         'vendor',
         'generated',
@@ -50,6 +51,7 @@ class Scanner
         'xml',
         'js',
         'di',
+        'html',
     ];
 
     public function run(

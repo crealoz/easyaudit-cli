@@ -79,7 +79,7 @@ class HardWrittenSQLTest extends TestCase
         $this->assertLessThan(5, $processor->getFoundCount(), 'Should filter out most commented SQL');
     }
 
-    public function testProcessSkipsSetupDirectory(): void
+    public function testProcessReducesSeverityForSetupDirectory(): void
     {
         $setupFile = $this->fixturesPath . '/Setup/InstallSchema.php';
         $this->assertFileExists($setupFile, 'Setup fixture file should exist');
@@ -92,8 +92,13 @@ class HardWrittenSQLTest extends TestCase
         $report = $processor->getReport();
         ob_end_clean();
 
-        // Setup files should be skipped
-        $this->assertEquals(0, $processor->getFoundCount());
+        // Setup files should be detected but at reduced severity (note)
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        foreach ($report as $rule) {
+            foreach ($rule['files'] as $entry) {
+                $this->assertEquals('note', $entry['severity'], 'Setup file SQL should have note severity');
+            }
+        }
     }
 
     public function testGetReportSeparatesByQueryType(): void

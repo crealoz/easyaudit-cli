@@ -195,6 +195,11 @@ class AroundPlugins extends AbstractProcessor
         }
 
         $innerContent = Functions::getFunctionInnerContent($functionContent['content']);
+
+        if ($this->isConditionalProceed($innerContent, $callableName)) {
+            return;
+        }
+
         $lines = explode("\n", $innerContent);
 
         if ($this->isAfterPlugin($lines, $callableName)) {
@@ -232,7 +237,7 @@ class AroundPlugins extends AbstractProcessor
     private function isAfterPlugin(array $lines, string $callableName): bool
     {
         foreach ($lines as $line) {
-            if (trim($line) === '') {
+            if ($this->isStructuralLine($line)) {
                 continue;
             }
             return str_contains($line, $callableName . '();');
@@ -251,11 +256,74 @@ class AroundPlugins extends AbstractProcessor
     {
         $reversedLines = array_reverse($lines);
         foreach ($reversedLines as $line) {
-            if (trim($line) === '') {
+            if ($this->isStructuralLine($line)) {
                 continue;
             }
             return str_contains($line, $callableName . '();');
         }
+        return false;
+    }
+
+    /**
+     * Check if a line is purely structural (empty, braces, try/catch/finally).
+     * These lines don't represent meaningful code for plugin classification.
+     */
+    private function isStructuralLine(string $line): bool
+    {
+        $trimmed = trim($line);
+        return $trimmed === ''
+            || $trimmed === '}'
+            || $trimmed === 'try {'
+            || preg_match('/^\}\s*(catch|finally)\s*\(/', $trimmed)
+            || preg_match('/^\}\s*(catch|finally)\s*\{/', $trimmed);
+    }
+
+    /**
+     * Check if the callable is used conditionally (ternary, if/else, short-circuit).
+     * Conditional usage is a legitimate around plugin pattern.
+     */
+    private function isConditionalProceed(string $innerContent, string $callableName): bool
+    {
+        $callableCall = $callableName . '()';
+        $lines = explode("\n", $innerContent);
+
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if ($trimmed === '' || !str_contains($line, $callableCall)) {
+                continue;
+            }
+
+            // Ternary: line contains '?' before the callable
+            if (str_contains(strstr($line, $callableCall, true), '?')) {
+                return true;
+            }
+
+            // Short-circuit: && $proceed() or || $proceed()
+            if (
+                str_contains($line, '&& ' . $callableCall) ||
+                str_contains($line, '|| ' . $callableCall)
+            ) {
+                return true;
+            }
+        }
+
+        // Conditional block: only count braces opened by conditional keywords
+        $conditionalDepth = 0;
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+
+            if (preg_match('/\b(if|elseif|else|switch|match)\b/', $trimmed)) {
+                $conditionalDepth += substr_count($line, '{');
+            }
+
+            $conditionalDepth -= substr_count($line, '}');
+            $conditionalDepth = max(0, $conditionalDepth);
+
+            if ($conditionalDepth > 0 && str_contains($line, $callableCall)) {
+                return true;
+            }
+        }
+
         return false;
     }
 

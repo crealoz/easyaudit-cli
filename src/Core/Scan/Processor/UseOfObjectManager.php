@@ -5,6 +5,7 @@ namespace EasyAudit\Core\Scan\Processor;
 use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Modules;
 
 /**
  * Class UseOfObjectManager
@@ -109,6 +110,11 @@ class UseOfObjectManager extends AbstractProcessor
      */
     private function analyzeFile(string $file, string $fileContent): void
     {
+        // Skip Setup/Patch, Console/Command, and Test paths (legitimate OM usage)
+        if (Modules::isSetupDirectory($file) || $this->isConsolePath($file) || $this->isTestPath($file)) {
+            return;
+        }
+
         // Check if ObjectManager is mentioned in the file
         if (
             Classes::isFactoryClass($fileContent) ||
@@ -162,7 +168,12 @@ class UseOfObjectManager extends AbstractProcessor
         $this->fileContent = $fileContent;
         $this->file = $file;
 
-        $hasUsage = $this->trackUsage($directUsage, $omProperty, $localProperty) > 0;
+        // Config classes use OM to instantiate from config — reduced severity
+        $isConfigContext = str_contains($fileContent, 'extends')
+            && (str_contains($fileContent, 'Magento\Framework\Config\Data')
+                || str_contains($fileContent, 'Config\Data'));
+
+        $hasUsage = $this->trackUsage($directUsage, $omProperty, $localProperty, $isConfigContext) > 0;
 
         // If imported but not used, it's a useless import
         if ($hasImport && !$hasUsage) {
@@ -170,7 +181,12 @@ class UseOfObjectManager extends AbstractProcessor
         }
     }
 
-    private function trackUsage(bool $directUsage, ?string $property = null, bool $localProperty = false): int
+    private function trackUsage(
+        bool $directUsage,
+        ?string $property = null,
+        bool $localProperty = false,
+        bool $isConfigContext = false
+    ): int
     {
         $usageCount = 0;
         $patterns = [];
@@ -208,6 +224,61 @@ class UseOfObjectManager extends AbstractProcessor
             }
         }
 
+        // Fallback: detect variable-argument OM usage like ->get($variable) or ->create($variable, ...)
+        $usageCount += $this->trackVariableUsage($directUsage, $property, $localProperty, $isConfigContext);
+
+        return $usageCount;
+    }
+
+    /**
+     * Detect OM usage with variable arguments (e.g. ->get($variable) or ->create($variable, ...))
+     * This catches cases where the class name isn't a literal string or ::class constant.
+     */
+    private function trackVariableUsage(
+        bool $directUsage,
+        ?string $property,
+        bool $localProperty,
+        bool $isConfigContext = false
+    ): int
+    {
+        $usageCount = 0;
+        $varPatterns = [];
+
+        if ($directUsage) {
+            $varPatterns[] = '/ObjectManager::getInstance\s*\(\s*\)\s*->(get|create)\s*\(\s*\$/';
+        }
+
+        if ($localProperty) {
+            preg_match_all('/(\$\w+)\s*=\s*\\\\?(?:Magento\\\\Framework\\\\App\\\\)?ObjectManager::getInstance/', $this->fileContent, $varMatches);
+            foreach ($varMatches[1] as $varName) {
+                $varPatterns[] = '/' . preg_quote($varName, '/') . '\s*->(get|create)\s*\(\s*\$/';
+            }
+        }
+
+        if ($property) {
+            $varPatterns[] = '/' . preg_quote($property, '/') . '\s*->(get|create)\s*\(\s*\$/';
+        }
+
+        foreach ($this->assignedProperties as $propName) {
+            $varPatterns[] = '/\$this->' . preg_quote($propName, '/') . '\s*->(get|create)\s*\(\s*\$/';
+        }
+
+        foreach ($varPatterns as $pattern) {
+            preg_match_all($pattern, $this->fileContent, $matches, PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                $lineNumber = Content::getLineNumber($this->fileContent, $match[0]);
+                $method = $match[1];
+                $severity = $isConfigContext ? 'note' : 'error';
+                $message = $isConfigContext
+                    ? 'Code uses ObjectManager to instantiate classes from configuration. '
+                        . 'Consider using Factory in your configuration instead of plain class names.'
+                    : 'Direct use of ObjectManager with variable argument. '
+                        . 'Use dependency injection instead.';
+                $this->addObjectManagerUsage($this->file, $lineNumber, '(variable)', $method, $severity, $message);
+                $usageCount++;
+            }
+        }
+
         return $usageCount;
     }
 
@@ -218,16 +289,24 @@ class UseOfObjectManager extends AbstractProcessor
      * @param int $lineNumber Line number of the usage
      * @param string $className Class being fetched via ObjectManager
      */
-    private function addObjectManagerUsage(string $file, int $lineNumber, string $className, string $method): void
-    {
+    private function addObjectManagerUsage(
+        string $file,
+        int $lineNumber,
+        string $className,
+        string $method,
+        string $severity = 'error',
+        string $message = ''
+    ): void {
         $propertyName = Classes::derivePropertyName($className);
-        $message = "Direct use of ObjectManager to get '$className'. Use dependency injection instead.";
+        if ($message === '') {
+            $message = "Direct use of ObjectManager to get '$className'. Use dependency injection instead.";
+        }
 
         $this->objectManagerUsages[] = Formater::formatError(
             $file,
             $lineNumber,
             $message,
-            'error',
+            $severity,
             0,
             [
                 'injections' => [$className => ['property' => $propertyName, 'method' => $method]],
@@ -247,6 +326,17 @@ class UseOfObjectManager extends AbstractProcessor
         $message = 'ObjectManager imported but not used. Remove the unused import.';
         $this->uselessImports[] = Formater::formatError($file, $lineNumber, $message, 'warning');
         $this->foundCount++;
+    }
+
+    private function isConsolePath(string $file): bool
+    {
+        return str_contains($file, '/Console/Command/')
+            || str_contains($file, DIRECTORY_SEPARATOR . 'Console' . DIRECTORY_SEPARATOR . 'Command' . DIRECTORY_SEPARATOR);
+    }
+
+    private function isTestPath(string $file): bool
+    {
+        return (bool) preg_match('#(^|/)(Test|Tests)/#', $file);
     }
 
     /**

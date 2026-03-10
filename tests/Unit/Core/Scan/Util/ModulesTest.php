@@ -112,6 +112,32 @@ class ModulesTest extends TestCase
         $this->assertFalse(Modules::isSetupDirectory('/app/code/Vendor/Module/Model/Product.php'));
     }
 
+    public function testIsEmailTemplateTrue(): void
+    {
+        $this->assertTrue(Modules::isEmailTemplate('/app/code/Vendor/Module/view/frontend/email/order_new.html'));
+        $this->assertTrue(Modules::isEmailTemplate('/app/code/Vendor/Module/email/template.phtml'));
+    }
+
+    public function testIsEmailTemplateFalse(): void
+    {
+        $this->assertFalse(Modules::isEmailTemplate('/app/code/Vendor/Module/view/frontend/templates/page.phtml'));
+        $this->assertFalse(Modules::isEmailTemplate('/app/code/Vendor/Module/Block/Product.php'));
+    }
+
+    public function testIsPdfTemplateTrue(): void
+    {
+        $this->assertTrue(Modules::isPdfTemplate('/app/code/Vendor/Module/view/frontend/pdf/invoice.phtml'));
+        $this->assertTrue(Modules::isPdfTemplate('/app/code/Vendor/Module/invoice/template.phtml'));
+        $this->assertTrue(Modules::isPdfTemplate('/app/code/Vendor/Module/shipment/packing_slip.phtml'));
+        $this->assertTrue(Modules::isPdfTemplate('/app/code/Vendor/Module/creditmemo/refund.phtml'));
+    }
+
+    public function testIsPdfTemplateFalse(): void
+    {
+        $this->assertFalse(Modules::isPdfTemplate('/app/code/Vendor/Module/view/frontend/templates/page.phtml'));
+        $this->assertFalse(Modules::isPdfTemplate('/app/code/Vendor/Module/Block/Product.php'));
+    }
+
     public function testFindDiXmlForFileReturnsNullWhenNotFound(): void
     {
         $this->assertNull(Modules::findDiXmlForFile('/nonexistent/path/File.php'));

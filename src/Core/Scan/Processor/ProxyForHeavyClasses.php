@@ -103,6 +103,11 @@ class ProxyForHeavyClasses extends AbstractProcessor
             return;
         }
 
+        // Skip controller classes (non-shared, always execute dependencies)
+        if (Classes::isControllerClass($fileContent)) {
+            return;
+        }
+
         // Get class name from file
         $className = Classes::extractClassName($fileContent);
         if ($className === 'UnknownClass') {

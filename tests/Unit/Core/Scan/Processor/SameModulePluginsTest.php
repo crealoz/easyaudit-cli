@@ -185,6 +185,89 @@ XML;
         rmdir($tempDir);
     }
 
+    public function testTwoTypeNodesWithSamePluginGetDifferentLines(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_samemod_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Same plugin class used for two different type nodes
+        $diContent = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <type name="Vendor\Module\Model\Product">
+        <plugin name="productPlugin" type="Vendor\Module\Plugin\SharedPlugin"/>
+    </type>
+    <type name="Vendor\Module\Model\Category">
+        <plugin name="categoryPlugin" type="Vendor\Module\Plugin\SharedPlugin"/>
+    </type>
+</config>
+XML;
+        $diFile = $tempDir . '/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new SameModulePlugins();
+        $files = ['di' => [$diFile]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertEquals(2, $processor->getFoundCount());
+
+        // Each violation should have a different line number (based on plugged class, not plugin class)
+        $lines = [];
+        foreach ($report as $entry) {
+            foreach ($entry['files'] as $fileEntry) {
+                $lines[] = $fileEntry['startLine'];
+            }
+        }
+        $this->assertCount(2, $lines);
+        $this->assertNotEquals($lines[0], $lines[1], 'Two violations with same plugin class should have different line numbers');
+
+        unlink($diFile);
+        rmdir($tempDir);
+    }
+
+    public function testLineNumberPointsToTypeDeclaration(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_samemod_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        // Class name appears earlier as an argument value, then later as a <type> with plugin
+        $diContent = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <type name="Vendor\Module\Model\SomeService">
+        <arguments>
+            <argument name="handler" xsi:type="object">Vendor\Module\Model\Product</argument>
+        </arguments>
+    </type>
+    <type name="Vendor\Module\Model\Product">
+        <plugin name="productPlugin" type="Vendor\Module\Plugin\ProductPlugin"/>
+    </type>
+</config>
+XML;
+        $diFile = $tempDir . '/di.xml';
+        file_put_contents($diFile, $diContent);
+
+        $processor = new SameModulePlugins();
+        $files = ['di' => [$diFile]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertEquals(1, $processor->getFoundCount());
+        // Line should point to line 8 (the <type name="...Product"> declaration), not line 5 (argument reference)
+        $lineNumber = $report[0]['files'][0]['startLine'];
+        $this->assertEquals(8, $lineNumber, 'Line number should point to <type> declaration, not earlier argument reference');
+
+        unlink($diFile);
+        rmdir($tempDir);
+    }
+
     public function testGetReportReturnsCorrectFormat(): void
     {
         $tempDir = sys_get_temp_dir() . '/easyaudit_samemod_test_' . uniqid();

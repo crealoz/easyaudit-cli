@@ -4,10 +4,13 @@ namespace EasyAudit\Core\Scan\Util;
 
 class Content
 {
-    public static function getLineNumber(string $fileContent, string $searchString): int
+    public static function getLineNumber(string $fileContent, string $searchString, int $afterLine = 0): int
     {
         $lines = explode("\n", $fileContent);
         foreach ($lines as $lineNumber => $line) {
+            if ($afterLine > 0 && ($lineNumber + 1) <= $afterLine) {
+                continue;
+            }
             if (str_contains($line, $searchString)) {
                 return $lineNumber + 1; // Line numbers start at 1
             }

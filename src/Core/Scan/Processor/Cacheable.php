@@ -4,6 +4,7 @@ namespace EasyAudit\Core\Scan\Processor;
 
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
+use EasyAudit\Core\Scan\Util\Modules;
 use EasyAudit\Core\Scan\Util\Xml;
 
 /**
@@ -71,6 +72,11 @@ class Cacheable extends AbstractProcessor
         foreach ($files['xml'] as $file) {
             // Skip di.xml files (they're handled by other processors)
             if (str_ends_with(basename($file), 'di.xml')) {
+                continue;
+            }
+
+            // Skip admin and email layout files (caching not applicable)
+            if (str_contains($file, '/adminhtml/') || Modules::isEmailTemplate($file)) {
                 continue;
             }
 

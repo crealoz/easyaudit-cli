@@ -373,6 +373,125 @@ PHP;
         $this->assertContains('overrideNotPlugin', $ruleIds);
     }
 
+    public function testSkipsConditionalTernary(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class ConditionalPlugin
+{
+    public function aroundGetValue($subject, callable $proceed)
+    {
+        return ($this->permission->isAllAllowed()) ? true : $proceed();
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Conditional ternary $proceed() should not be flagged');
+    }
+
+    public function testSkipsConditionalIfElse(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class IfElsePlugin
+{
+    public function aroundGetValue($subject, callable $proceed)
+    {
+        if ($this->isEnabled()) {
+            return $proceed();
+        }
+        return 'default';
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Conditional if/else $proceed() should not be flagged');
+    }
+
+    public function testSkipsShortCircuit(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class ShortCircuitPlugin
+{
+    public function aroundGetValue($subject, callable $proceed)
+    {
+        return $this->condition && $proceed();
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount(), 'Short-circuit $proceed() should not be flagged');
+    }
+
+    public function testDoesNotSkipTryCatchProceed(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class TryCatchPlugin
+{
+    public function aroundGetValue($subject, callable $proceed)
+    {
+        try {
+            $result = $proceed();
+        } catch (\Exception $e) {
+            $result = 'fallback';
+        }
+        return $result;
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount(), 'try/catch wrapped $proceed() should still be detected');
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('aroundToAfterPlugin', $ruleIds, 'Should be classified as after plugin');
+    }
+
     public function testGetLongDescription(): void
     {
         $desc = $this->processor->getLongDescription();

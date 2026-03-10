@@ -511,6 +511,66 @@ PHP;
 
     // --- findClassDeclarationLine() ---
 
+    // --- isControllerClass() ---
+
+    public function testIsControllerClassWithHttpGetInterface(): void
+    {
+        $content = <<<'PHP'
+<?php
+use Magento\Framework\App\Action\HttpGetActionInterface;
+class MyController implements HttpGetActionInterface {}
+PHP;
+        $this->assertTrue(Classes::isControllerClass($content));
+    }
+
+    public function testIsControllerClassWithBackendAction(): void
+    {
+        $content = <<<'PHP'
+<?php
+use Magento\Backend\App\Action;
+class AdminController extends Action {}
+PHP;
+        $this->assertTrue(Classes::isControllerClass($content));
+    }
+
+    public function testIsControllerClassFalse(): void
+    {
+        $content = '<?php class SomeModel { }';
+        $this->assertFalse(Classes::isControllerClass($content));
+    }
+
+    // --- parseConstructorParameters with comments ---
+
+    public function testParseConstructorSkipsComments(): void
+    {
+        $content = <<<'PHP'
+<?php
+class MyClass
+{
+    public function __construct(
+        SomeClass $service, // $context is not needed
+        OtherClass $other
+    ) {
+    }
+}
+PHP;
+        $result = Classes::parseConstructorParameters($content);
+        $this->assertCount(2, $result);
+        // Comments should be stripped, not pollute param parsing
+        $this->assertStringNotContainsString('//', $result[0]);
+    }
+
+    public function testConsolidateSkipsInvalidTokens(): void
+    {
+        // Simulate tokens that look like comment/variable fragments
+        $params = ['$variable', '[] $arr', 'SomeClass $service'];
+        $result = Classes::consolidateParameters($params, []);
+
+        // Only SomeClass should survive
+        $this->assertCount(1, $result);
+        $this->assertArrayHasKey('$service', $result);
+    }
+
     public function testFindClassDeclarationLine(): void
     {
         $content = "<?php\nnamespace Test;\n\nclass MyChild extends AbstractModel\n{\n}";
