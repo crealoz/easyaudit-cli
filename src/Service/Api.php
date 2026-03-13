@@ -36,7 +36,7 @@ class Api
      * @throws CurlResponseException
      * @throws GitHubAuthException
      */
-    public function requestFilefix(string $filePath, string $content, array $rules, string $projectId): array
+    public function requestFilefix(string $filePath, string $content, array $rules, string $projectId, string $format = 'git'): array
     {
         $this->authHeader = Env::getAuthHeader();
 
@@ -51,7 +51,7 @@ class Api
                     'rules'   => $rules,
                 ],
             ],
-            'format' => 'git',
+            'format' => $format,
         ];
         $json = json_encode($body, JSON_UNESCAPED_SLASHES);
         if ($json === false) {

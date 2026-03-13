@@ -108,7 +108,7 @@ class AroundPlugins extends AbstractProcessor
      */
     private function isAroundPlugin(string $code, string $file): void
     {
-        $pattern = '/\bfunction\s+(around\w+)\s*\(([^)]*)\)/';
+        $pattern = '/\bfunction\s+(around\w+)\s*\(([\s\S]*?)\)\s*[:{]/m';
         if (!preg_match_all($pattern, $code, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE)) {
             return;
         }
@@ -119,49 +119,25 @@ class AroundPlugins extends AbstractProcessor
             $params = array_filter(array_map('trim', explode(',', $match[2][0])));
 
             $functionContent = Functions::getFunctionContent($code, $lineNumber);
-            $callableName = $this->findCallableName($params, $functionContent['content']);
+            $callableName = $this->findCallableName($params);
 
             $this->categorizePlugin($file, $functionName, $lineNumber, $functionContent, $callableName);
         }
     }
 
     /**
-     * Find the callable parameter name from function parameters
+     * In Magento around plugins, the callable is always the second parameter.
      *
      * @param array $params Array of parameter strings
-     * @param string $functionContent The function body content
-     * @return string|null The callable parameter name or null if not found
+     * @return string|null The callable parameter name or null if fewer than 2 params
      */
-    private function findCallableName(array $params, string $functionContent): ?string
+    private function findCallableName(array $params): ?string
     {
-        $paramNames = [];
-
-        foreach ($params as $param) {
-            $paramParts = preg_split('/\s+/', $param);
-            $paramName = end($paramParts);
-            $paramNames[] = $paramName;
-
-            // Check for $proceed (Magento convention)
-            if ($paramName === '$proceed') {
-                return $paramName;
-            }
-
-            // Check for callable/Closure type hint
-            $paramType = count($paramParts) > 1 ? $paramParts[0] : null;
-            if ($paramType === 'callable' || $paramType === 'Closure' || $paramType === 'mixed') {
-                return $paramName;
-            }
+        if (count($params) < 2) {
+            return null;
         }
-
-        // Fallback: check if any parameter is invoked as a function
-        foreach ($paramNames as $paramName) {
-            $callableLine = Functions::getOccuringLineInFunction($functionContent, $paramName . '();');
-            if ($callableLine !== null) {
-                return $paramName;
-            }
-        }
-
-        return null;
+        $paramParts = preg_split('/\s+/', $params[1]);
+        return end($paramParts);
     }
 
     /**
@@ -202,7 +178,7 @@ class AroundPlugins extends AbstractProcessor
 
         $lines = explode("\n", $innerContent);
 
-        if ($this->isAfterPlugin($lines, $callableName)) {
+        if ($this->checkFirstCall($lines, $callableName)) {
             $msg = "Plugin callable $callableName is invoked before other code "
                 . "in the function. So $functionName is an after plugin.";
             $this->afterPlugins[] = Formater::formatError(
@@ -213,7 +189,7 @@ class AroundPlugins extends AbstractProcessor
                 $functionContent['endLine']
             );
             $this->foundCount++;
-        } elseif ($this->isBeforePlugin($lines, $callableName)) {
+        } elseif ($this->checkFirstCall(array_reverse($lines), $callableName)) {
             $msg = "Plugin callable $callableName is invoked after other code "
                 . "in the function. So $functionName is a before plugin.";
             $this->beforePlugins[] = Formater::formatError(
@@ -227,6 +203,11 @@ class AroundPlugins extends AbstractProcessor
         }
     }
 
+    private function lineHasCallable(string $line, string $callableName): bool
+    {
+        return str_contains($line, $callableName . '(');
+    }
+
     /**
      * Check if the callable is called before anything else in the function.
      *
@@ -234,32 +215,13 @@ class AroundPlugins extends AbstractProcessor
      * @param  string $callableName
      * @return bool
      */
-    private function isAfterPlugin(array $lines, string $callableName): bool
+    private function checkFirstCall(array $lines, string $callableName): bool
     {
         foreach ($lines as $line) {
             if ($this->isStructuralLine($line)) {
                 continue;
             }
-            return str_contains($line, $callableName . '();');
-        }
-        return false;
-    }
-
-    /**
-     * Check if the callable is called after anything else in the function.
-     *
-     * @param  array  $lines
-     * @param  string $callableName
-     * @return bool
-     */
-    private function isBeforePlugin(array $lines, string $callableName): bool
-    {
-        $reversedLines = array_reverse($lines);
-        foreach ($reversedLines as $line) {
-            if ($this->isStructuralLine($line)) {
-                continue;
-            }
-            return str_contains($line, $callableName . '();');
+            return $this->lineHasCallable($line, $callableName);
         }
         return false;
     }
@@ -284,12 +246,12 @@ class AroundPlugins extends AbstractProcessor
      */
     private function isConditionalProceed(string $innerContent, string $callableName): bool
     {
-        $callableCall = $callableName . '()';
+        $callableCall = $callableName . '(';
         $lines = explode("\n", $innerContent);
 
         foreach ($lines as $line) {
             $trimmed = trim($line);
-            if ($trimmed === '' || !str_contains($line, $callableCall)) {
+            if ($trimmed === '' || !$this->lineHasCallable($line, $callableName)) {
                 continue;
             }
 
@@ -319,7 +281,7 @@ class AroundPlugins extends AbstractProcessor
             $conditionalDepth -= substr_count($line, '}');
             $conditionalDepth = max(0, $conditionalDepth);
 
-            if ($conditionalDepth > 0 && str_contains($line, $callableCall)) {
+            if ($conditionalDepth > 0 && $this->lineHasCallable($line, $callableName)) {
                 return true;
             }
         }

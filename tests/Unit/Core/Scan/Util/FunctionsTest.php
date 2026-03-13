@@ -100,6 +100,28 @@ PHP;
         $this->assertEquals('return 1;', $inner);
     }
 
+    public function testGetFunctionInnerContentMultiLineSignature(): void
+    {
+        $code = <<<'PHP'
+    public function aroundAddProduct(
+        \Magento\Quote\Model\Quote $subject,
+        callable $proceed,
+        \Magento\Catalog\Model\Product $product,
+        $request = null,
+        $processMode = \Magento\Catalog\Model\Product\Type\AbstractType::PROCESS_MODE_FULL
+    ) {
+        $result = $proceed($product, $request, $processMode);
+        return $result;
+    }
+PHP;
+        $inner = Functions::getFunctionInnerContent($code);
+        $this->assertStringContainsString('$result = $proceed(', $inner);
+        $this->assertStringContainsString('return $result', $inner);
+        // Must NOT contain parameter lines
+        $this->assertStringNotContainsString('$subject', $inner);
+        $this->assertStringNotContainsString('PROCESS_MODE_FULL', $inner);
+    }
+
     // --- getOccuringLineInFunction() tests ---
 
     public function testGetOccuringLineInFunctionFound(): void

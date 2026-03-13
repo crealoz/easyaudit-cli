@@ -116,7 +116,7 @@ HELP;
             throw new CliException('Aborted by user');
         }
 
-        $this->executeFixing($prepared);
+        $this->executeFixing($prepared, $options['format']);
         $this->reportProcessingResults();
 
         if (empty($this->diffs)) {
@@ -148,6 +148,7 @@ HELP;
             'projectName' => Args::optStr($opts, 'project-name'),
             'scanPath' => Args::optStr($opts, 'scan-path', '.'),
             'fixByRule' => Args::optBool($opts, 'fix-by-rule'),
+            'format' => Args::optStr($opts, 'format', 'git'),
         ];
     }
 
@@ -181,11 +182,11 @@ HELP;
     /**
      * Execute the fixing process.
      */
-    private function executeFixing(array $prepared): void
+    private function executeFixing(array $prepared, string $format): void
     {
         CliWriter::line("Requesting patches from EasyAudit API...");
-        $this->processPayloads($prepared['generalPreparer'], $prepared['byFile']);
-        $this->processPayloads($prepared['diPreparer'], $prepared['byDiFile']);
+        $this->processPayloads($prepared['generalPreparer'], $prepared['byFile'], $format);
+        $this->processPayloads($prepared['diPreparer'], $prepared['byDiFile'], $format);
     }
 
     /**
@@ -360,6 +361,14 @@ HELP;
                 continue;
             }
 
+            // Normalize absolute paths in diff to relative paths for git apply
+            $absPrefix = rtrim($scanPathAbsolute, '/') . '/';
+            $diffContent = str_replace(
+                ['a/' . $absPrefix, 'b/' . $absPrefix],
+                ['a/', 'b/'],
+                $diffContent
+            );
+
             file_put_contents($patchPath, $diffContent);
             $savedCount++;
         }
@@ -385,7 +394,7 @@ HELP;
     /**
      * Process files through API and collect diffs.
      */
-    private function processPayloads(PreparerInterface $preparer, array $files): void
+    private function processPayloads(PreparerInterface $preparer, array $files, string $format): void
     {
         foreach ($files as $filePath => $data) {
             CliWriter::progressBar($this->currentFile, $this->totalFiles, basename($filePath), 'processing', $this->creditsRemaining);
@@ -393,7 +402,7 @@ HELP;
 
             try {
                 $payload = $preparer->preparePayload($filePath, $data);
-                $response = $this->api->requestFilefix($filePath, $payload['content'], $payload['rules'], $this->projectId);
+                $response = $this->api->requestFilefix($filePath, $payload['content'], $payload['rules'], $this->projectId, $format);
 
                 if (!empty($response['diff'])) {
                     $this->diffs[$filePath] = $response['diff'];

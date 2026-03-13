@@ -95,7 +95,7 @@ class Functions
                 }
             }
 
-            if ($inInner) {
+            if ($inInner && $firstBraceFound) {
                 $innerLines[] = $line;
             }
         }

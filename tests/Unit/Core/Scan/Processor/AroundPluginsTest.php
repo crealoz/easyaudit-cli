@@ -492,6 +492,42 @@ PHP;
         $this->assertContains('aroundToAfterPlugin', $ruleIds, 'Should be classified as after plugin');
     }
 
+    public function testProcessDetectsAfterPluginWithMultiLineSignature(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Test\Plugin;
+
+class MultiLinePlugin
+{
+    public function aroundAddProduct(
+        \Magento\Quote\Model\Quote $subject,
+        callable $proceed,
+        \Magento\Catalog\Model\Product $product,
+        $request = null,
+        $processMode = \Magento\Catalog\Model\Product\Type\AbstractType::PROCESS_MODE_FULL
+    ) {
+        $result = $proceed($product, $request, $processMode);
+        return $result;
+    }
+}
+PHP;
+
+        $file = $this->createTempFile($content);
+        $files = ['php' => [$file]];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount(), 'Multi-line signature should be detected');
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('aroundToAfterPlugin', $ruleIds, 'Should be classified as after plugin');
+    }
+
     public function testGetLongDescription(): void
     {
         $desc = $this->processor->getLongDescription();
