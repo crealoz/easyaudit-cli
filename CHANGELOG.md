@@ -5,6 +5,20 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] 2026-03-13
+
+### Fixed
+- **AroundPlugins**: Fixed callable detection for multi-line function signatures — around plugins with parameters spanning multiple lines (common with complex type hints) are now correctly detected and classified
+- **AroundPlugins**: Callable parameter is now identified by position (always the second parameter per Magento convention) instead of heuristic name/type matching — eliminates false negatives when the callable has a non-standard name or no type hint
+- **AroundPlugins**: Callable invocation detection now matches `$proceed(` instead of `$proceed();` — correctly handles calls with arguments (e.g., `$proceed($product, $request)`)
+- **Functions::getFunctionContent()**: Fixed inner content extraction for multi-line signatures — parameter lines before the opening brace are no longer included in the function body
+
+### Changed
+- **FixApply**: Added `--format` option (default: `git`) passed through to the API for patch format selection
+- **FixApply**: Absolute paths in diffs are now normalized to relative paths for `git apply` compatibility
+
+---
+
 ## [1.0.5] 2026-03-10
 
 ### Added
