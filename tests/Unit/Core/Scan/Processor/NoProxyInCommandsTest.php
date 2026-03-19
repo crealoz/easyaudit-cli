@@ -201,7 +201,7 @@ XML;
         $this->assertArrayHasKey('file', $fileEntry);
         $this->assertArrayHasKey('message', $fileEntry);
         $this->assertArrayHasKey('severity', $fileEntry);
-        $this->assertEquals('warning', $fileEntry['severity']);
+        $this->assertEquals('medium', $fileEntry['severity']);
 
         // Cleanup
         @unlink($tempDir . '/Console/Command/MyCommand.php');

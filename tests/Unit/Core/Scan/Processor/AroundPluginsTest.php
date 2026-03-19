@@ -3,6 +3,8 @@
 namespace EasyAudit\Tests\Core\Scan\Processor;
 
 use EasyAudit\Core\Scan\Processor\AroundPlugins;
+use EasyAudit\Core\Scan\Scanner;
+use EasyAudit\Core\Scan\Util\PluginRegistry;
 use PHPUnit\Framework\TestCase;
 
 class AroundPluginsTest extends TestCase
@@ -19,12 +21,30 @@ class AroundPluginsTest extends TestCase
 
     protected function tearDown(): void
     {
+        Scanner::setGeneratedPath(null);
+        PluginRegistry::reset();
         // Clean up temp files
-        $files = glob($this->tempDir . '/*');
-        foreach ($files as $file) {
-            unlink($file);
+        $this->removeDirectory($this->tempDir);
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
         }
-        rmdir($this->tempDir);
+        $items = scandir($dir);
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+            $path = $dir . DIRECTORY_SEPARATOR . $item;
+            if (is_dir($path)) {
+                $this->removeDirectory($path);
+            } else {
+                unlink($path);
+            }
+        }
+        rmdir($dir);
     }
 
     private function createTempFile(string $content): string
@@ -562,5 +582,257 @@ PHP;
         ob_end_clean();
 
         $this->assertGreaterThan(0, $processor->getFoundCount());
+    }
+
+    public function testDeriveOriginalMethodName(): void
+    {
+        $this->assertEquals('getValue', AroundPlugins::deriveOriginalMethodName('aroundGetValue'));
+        $this->assertEquals('save', AroundPlugins::deriveOriginalMethodName('aroundSave'));
+        $this->assertEquals('setName', AroundPlugins::deriveOriginalMethodName('aroundSetName'));
+    }
+
+    public function testDeepStackDetectionWithInterceptor(): void
+    {
+        // Set up generated directory with an interceptor
+        $generatedDir = $this->tempDir . '/generated/code';
+        $interceptorDir = $generatedDir . '/Magento/Catalog/Model/Product';
+        mkdir($interceptorDir, 0777, true);
+
+        $interceptorContent = <<<'PHP'
+<?php
+namespace Magento\Catalog\Model\Product;
+
+class Interceptor extends \Magento\Catalog\Model\Product
+{
+    public function save()
+    {
+        $pluginInfo = $this->pluginList->getNext($this->subjectType, 'save');
+        return $this->___callPlugins('save', func_get_args(), $pluginInfo);
+    }
+}
+PHP;
+        file_put_contents($interceptorDir . '/Interceptor.php', $interceptorContent);
+        Scanner::setGeneratedPath($generatedDir);
+
+        // Create two plugin files that both have aroundSave
+        $pluginA = <<<'PHP'
+<?php
+namespace Vendor\ModuleA\Plugin;
+
+class ProductPlugin
+{
+    public function aroundSave($subject, callable $proceed)
+    {
+        $this->doSomething();
+        return $proceed();
+    }
+}
+PHP;
+
+        $pluginB = <<<'PHP'
+<?php
+namespace Vendor\ModuleB\Plugin;
+
+class ProductPlugin
+{
+    public function aroundSave($subject, callable $proceed)
+    {
+        $result = $proceed();
+        $this->doSomethingElse();
+        return $result;
+    }
+}
+PHP;
+
+        $fileA = $this->tempDir . '/PluginA.php';
+        $fileB = $this->tempDir . '/PluginB.php';
+        file_put_contents($fileA, $pluginA);
+        file_put_contents($fileB, $pluginB);
+
+        // Create di.xml that maps both plugins to the same target
+        $diXml = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Catalog\Model\Product">
+        <plugin name="plugin_a" type="Vendor\ModuleA\Plugin\ProductPlugin"/>
+        <plugin name="plugin_b" type="Vendor\ModuleB\Plugin\ProductPlugin"/>
+    </type>
+</config>
+XML;
+
+        $diFile = $this->tempDir . '/di.xml';
+        file_put_contents($diFile, $diXml);
+
+        $files = [
+            'php' => [$fileA, $fileB],
+            'di' => [$diFile],
+        ];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('deepPluginStack', $ruleIds, 'Should detect deep plugin stack');
+
+        // Find the deepPluginStack report
+        $deepStackReport = null;
+        foreach ($report as $rule) {
+            if ($rule['ruleId'] === 'deepPluginStack') {
+                $deepStackReport = $rule;
+                break;
+            }
+        }
+
+        $this->assertNotNull($deepStackReport);
+        $this->assertNotEmpty($deepStackReport['files']);
+        $this->assertStringContainsString('2 around plugins', $deepStackReport['files'][0]['message']);
+        $this->assertStringContainsString('save()', $deepStackReport['files'][0]['message']);
+    }
+
+    public function testNoDeepStackWithoutGeneratedDir(): void
+    {
+        Scanner::setGeneratedPath(null);
+
+        $pluginA = <<<'PHP'
+<?php
+namespace Vendor\ModuleA\Plugin;
+
+class ProductPlugin
+{
+    public function aroundSave($subject, callable $proceed)
+    {
+        $this->doSomething();
+        return $proceed();
+    }
+}
+PHP;
+
+        $pluginB = <<<'PHP'
+<?php
+namespace Vendor\ModuleB\Plugin;
+
+class ProductPlugin
+{
+    public function aroundSave($subject, callable $proceed)
+    {
+        $result = $proceed();
+        return $result;
+    }
+}
+PHP;
+
+        $fileA = $this->tempDir . '/PluginA.php';
+        $fileB = $this->tempDir . '/PluginB.php';
+        file_put_contents($fileA, $pluginA);
+        file_put_contents($fileB, $pluginB);
+
+        $diXml = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Catalog\Model\Product">
+        <plugin name="plugin_a" type="Vendor\ModuleA\Plugin\ProductPlugin"/>
+        <plugin name="plugin_b" type="Vendor\ModuleB\Plugin\ProductPlugin"/>
+    </type>
+</config>
+XML;
+
+        $diFile = $this->tempDir . '/di.xml';
+        file_put_contents($diFile, $diXml);
+
+        $files = [
+            'php' => [$fileA, $fileB],
+            'di' => [$diFile],
+        ];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertNotContains(
+            'deepPluginStack',
+            $ruleIds,
+            'Should not detect deep stack without generated directory'
+        );
+    }
+
+    public function testNoDeepStackWithSinglePlugin(): void
+    {
+        $generatedDir = $this->tempDir . '/generated/code';
+        $interceptorDir = $generatedDir . '/Magento/Catalog/Model/Product';
+        mkdir($interceptorDir, 0777, true);
+
+        $interceptorContent = <<<'PHP'
+<?php
+namespace Magento\Catalog\Model\Product;
+
+class Interceptor extends \Magento\Catalog\Model\Product
+{
+    public function save()
+    {
+        return $this->___callPlugins('save', func_get_args(), $pluginInfo);
+    }
+}
+PHP;
+        file_put_contents($interceptorDir . '/Interceptor.php', $interceptorContent);
+        Scanner::setGeneratedPath($generatedDir);
+
+        $pluginA = <<<'PHP'
+<?php
+namespace Vendor\ModuleA\Plugin;
+
+class ProductPlugin
+{
+    public function aroundSave($subject, callable $proceed)
+    {
+        $this->doSomething();
+        return $proceed();
+    }
+}
+PHP;
+
+        $fileA = $this->tempDir . '/PluginA.php';
+        file_put_contents($fileA, $pluginA);
+
+        $diXml = <<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Catalog\Model\Product">
+        <plugin name="plugin_a" type="Vendor\ModuleA\Plugin\ProductPlugin"/>
+    </type>
+</config>
+XML;
+
+        $diFile = $this->tempDir . '/di.xml';
+        file_put_contents($diFile, $diXml);
+
+        $files = [
+            'php' => [$fileA],
+            'di' => [$diFile],
+        ];
+
+        $processor = new AroundPlugins();
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertNotContains(
+            'deepPluginStack',
+            $ruleIds,
+            'Single plugin should not trigger deep stack warning'
+        );
     }
 }

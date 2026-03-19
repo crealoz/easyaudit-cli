@@ -31,7 +31,7 @@ class HardWrittenSQL extends AbstractProcessor
     private const SQL_PATTERNS = [
         'SELECT' => [
             'pattern' => '/SELECT\s+.*?\s+FROM/is',
-            'severity' => 'error',
+            'severity' => 'high',
             'ruleId' => 'magento.code.hard-written-sql-select',
             'name' => 'Hard Written SQL SELECT',
             'shortDescription' => 'SELECT queries must be avoided',
@@ -43,7 +43,7 @@ class HardWrittenSQL extends AbstractProcessor
         ],
         'DELETE' => [
             'pattern' => '/DELETE\s+.*?\s+FROM/is',
-            'severity' => 'error',
+            'severity' => 'high',
             'ruleId' => 'magento.code.hard-written-sql-delete',
             'name' => 'Hard Written SQL DELETE',
             'shortDescription' => 'DELETE queries must be avoided',
@@ -55,7 +55,7 @@ class HardWrittenSQL extends AbstractProcessor
         ],
         'INSERT' => [
             'pattern' => '/INSERT\s+.*?\s+INTO/is',
-            'severity' => 'warning',
+            'severity' => 'medium',
             'ruleId' => 'magento.code.hard-written-sql-insert',
             'name' => 'Hard Written SQL INSERT',
             'shortDescription' => 'INSERT queries should be avoided',
@@ -67,7 +67,7 @@ class HardWrittenSQL extends AbstractProcessor
         ],
         'UPDATE' => [
             'pattern' => '/UPDATE\s+.*?\s+SET/is',
-            'severity' => 'warning',
+            'severity' => 'medium',
             'ruleId' => 'magento.code.hard-written-sql-update',
             'name' => 'Hard Written SQL UPDATE',
             'shortDescription' => 'UPDATE queries should be avoided',
@@ -79,7 +79,7 @@ class HardWrittenSQL extends AbstractProcessor
         ],
         'JOIN' => [
             'pattern' => '/\s+JOIN\s+.*?\s+ON/is',
-            'severity' => 'note',
+            'severity' => 'low',
             'ruleId' => 'magento.code.hard-written-sql-join',
             'name' => 'Hard Written SQL JOIN',
             'shortDescription' => 'JOIN queries should be avoided',
@@ -205,7 +205,7 @@ class HardWrittenSQL extends AbstractProcessor
     private function adjustSeverity(string $file, string $baseSeverity): string
     {
         if (Modules::isSetupDirectory($file)) {
-            return 'note';
+            return 'low';
         }
         return $baseSeverity;
     }

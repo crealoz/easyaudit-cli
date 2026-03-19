@@ -160,9 +160,9 @@ class UseOfObjectManagerTest extends TestCase
         $this->assertEquals('magento.code.useless-object-manager-import', $report[0]['ruleId']);
         $this->assertEquals('Useless ObjectManager Import', $report[0]['name']);
 
-        // Check that files have warning severity
+        // Check that files have medium severity
         $this->assertNotEmpty($report[0]['files']);
-        $this->assertEquals('warning', $report[0]['files'][0]['severity']);
+        $this->assertEquals('medium', $report[0]['files'][0]['severity']);
     }
 
     public function testBadUsageOnlyReturnsErrorRule(): void
@@ -182,9 +182,9 @@ class UseOfObjectManagerTest extends TestCase
         $this->assertCount(1, $report, 'Should have exactly 1 rule for bad usage');
         $this->assertEquals('replaceObjectManager', $report[0]['ruleId']);
 
-        // Check that files have error severity
+        // Check that files have high severity
         $this->assertNotEmpty($report[0]['files']);
-        $this->assertEquals('error', $report[0]['files'][0]['severity']);
+        $this->assertEquals('high', $report[0]['files'][0]['severity']);
     }
 
     public function testProcessWithEmptyFilesArray(): void
@@ -558,16 +558,16 @@ PHP;
         $report = $processor->getReport();
         $this->assertNotEmpty($report);
 
-        // Should have 'note' severity, not 'error'
+        // Should have 'low' severity, not 'high'
         $found = false;
         foreach ($report[0]['files'] as $entry) {
-            if ($entry['severity'] === 'note') {
+            if ($entry['severity'] === 'low') {
                 $found = true;
                 $this->assertStringContainsString('configuration', $entry['message']);
                 $this->assertStringContainsString('Factory', $entry['message']);
             }
         }
-        $this->assertTrue($found, 'Config class variable OM usage should have note severity');
+        $this->assertTrue($found, 'Config class variable OM usage should have low severity');
 
         unlink($file);
         rmdir($tempDir);
@@ -610,9 +610,9 @@ PHP;
         $report = $processor->getReport();
         $this->assertNotEmpty($report);
 
-        // Should have 'error' severity for non-config class
+        // Should have 'high' severity for non-config class
         foreach ($report[0]['files'] as $entry) {
-            $this->assertEquals('error', $entry['severity'], 'Non-config variable OM usage should be error severity');
+            $this->assertEquals('high', $entry['severity'], 'Non-config variable OM usage should be high severity');
         }
 
         unlink($file);

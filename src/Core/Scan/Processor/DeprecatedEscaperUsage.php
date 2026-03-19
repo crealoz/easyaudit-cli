@@ -61,7 +61,7 @@ class DeprecatedEscaperUsage extends AbstractProcessor
         }
 
         if (!empty($this->results)) {
-            CliWriter::resultLine('Deprecated escaper usage ($block/$this instead of $escaper)', count($this->results), 'warning');
+            CliWriter::resultLine('Deprecated escaper usage ($block/$this instead of $escaper)', count($this->results), 'medium');
         }
     }
 
@@ -77,7 +77,7 @@ class DeprecatedEscaperUsage extends AbstractProcessor
             $lineNumber = substr_count($content, "\n", 0, $offset) + 1;
             $variable = $matches[1][$i][0];
             $method = $matches[2][$i][0];
-            $severity = $variable === 'this' ? 'error' : 'warning';
+            $severity = $variable === 'this' ? 'high' : 'medium';
 
             $msg = "Use \$escaper->$method() instead of \$$variable->$method(). "
                 . 'Escape methods on $' . $variable . ' are deprecated since Magento 2.3.5.';

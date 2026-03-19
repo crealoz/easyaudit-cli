@@ -125,8 +125,8 @@ HELP;
 
         CliWriter::cta("💜 Like it? Fund it!", "https://github.com/sponsors/crealoz");
 
-        $errors   = (int)($findings['summary']['errors']   ?? 0);
-        $warnings = (int)($findings['summary']['warnings'] ?? 0);
+        $errors   = (int)($findings['summary']['high']   ?? 0);
+        $warnings = (int)($findings['summary']['medium'] ?? 0);
         return $errors ? 2 : ($warnings ? 1 : 0);
     }
 }

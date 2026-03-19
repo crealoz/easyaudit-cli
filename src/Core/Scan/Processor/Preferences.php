@@ -159,7 +159,7 @@ class Preferences extends AbstractProcessor
                 $file,
                 $lineNumber,
                 $msg,
-                'error',
+                'high',
                 0,
                 ['interface' => $interface]
             );

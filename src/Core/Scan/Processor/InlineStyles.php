@@ -18,7 +18,7 @@ class InlineStyles extends AbstractProcessor
     private const STYLE_TYPES = [
         'attribute' => [
             'pattern' => '/style\s*=\s*["\'][^"\']+["\']/i',
-            'severity' => 'note',
+            'severity' => 'low',
             'ruleId' => 'magento.template.inline-style-attribute',
             'name' => 'Inline Style Attribute',
             'shortDescription' => 'Inline style attributes should be avoided',
@@ -28,7 +28,7 @@ class InlineStyles extends AbstractProcessor
         ],
         'block' => [
             'pattern' => '/<style\b[^>]*>.*?<\/style>/is',
-            'severity' => 'warning',
+            'severity' => 'medium',
             'ruleId' => 'magento.template.inline-style-block',
             'name' => 'Inline Style Block',
             'shortDescription' => 'Inline style blocks should be avoided',

@@ -2,9 +2,11 @@
 
 namespace EasyAudit\Core\Scan\Processor;
 
-use EasyAudit\Core\Scan\ProcessorInterface;
+use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Formater;
 use EasyAudit\Core\Scan\Util\Functions;
+use EasyAudit\Core\Scan\Util\Interceptor;
+use EasyAudit\Core\Scan\Util\PluginRegistry;
 
 /**
  * Class AroundPlugins
@@ -21,6 +23,10 @@ class AroundPlugins extends AbstractProcessor
     private array $beforePlugins = [];
     private array $afterPlugins = [];
     private array $overrides = [];
+    private array $deepStacks = [];
+
+    /** @var array<string, string[]> pluginFQCN => list of around method names found in scanned files */
+    private array $aroundMethodsByPlugin = [];
 
     public function getIdentifier(): string
     {
@@ -79,6 +85,21 @@ class AroundPlugins extends AbstractProcessor
                 'files' => $this->overrides,
             ];
         }
+        if (!empty($this->deepStacks)) {
+            $cnt = count($this->deepStacks);
+            echo "  \033[33m!\033[0m Deep around plugin stacks: \033[1;33m" . $cnt . "\033[0m\n";
+            $report[] = [
+                'ruleId' => 'deepPluginStack',
+                'name' => 'Deep Plugin Stack',
+                'shortDescription' => 'Multiple around plugins target the same method, creating '
+                    . 'a deep plugin call stack.',
+                'longDescription' => 'When multiple around plugins intercept the same method, each '
+                    . 'plugin wraps the next in the chain. Deep stacks (2+ around plugins on a single '
+                    . 'method) amplify performance overhead and make debugging difficult. Consider '
+                    . 'consolidating plugin logic or converting some plugins to before/after plugins.',
+                'files' => $this->deepStacks,
+            ];
+        }
 
         return $report;
     }
@@ -94,9 +115,20 @@ class AroundPlugins extends AbstractProcessor
         if (empty($files['php'])) {
             return;
         }
+
+        // Build plugin registry from di.xml files if available
+        if (!empty($files['di'])) {
+            PluginRegistry::build($files['di']);
+        }
+
         foreach ($files['php'] as $file) {
             $code = file_get_contents($file);
             $this->isAroundPlugin($code, $file);
+        }
+
+        // Analyze plugin stack depth using generated interceptors
+        if (Interceptor::isAvailable() && PluginRegistry::isBuilt()) {
+            $this->analyzePluginStackDepth();
         }
     }
 
@@ -113,6 +145,10 @@ class AroundPlugins extends AbstractProcessor
             return;
         }
 
+        // Track around methods by plugin class for stack depth analysis
+        $pluginFqcn = Classes::extractClassName($code);
+        $aroundMethods = [];
+
         foreach ($matches as $match) {
             $functionName = $match[1][0];
             $lineNumber = substr_count(substr($code, 0, $match[0][1]), "\n") + 1;
@@ -122,6 +158,11 @@ class AroundPlugins extends AbstractProcessor
             $callableName = $this->findCallableName($params);
 
             $this->categorizePlugin($file, $functionName, $lineNumber, $functionContent, $callableName);
+            $aroundMethods[] = $functionName;
+        }
+
+        if (!empty($aroundMethods) && $pluginFqcn !== 'UnknownClass') {
+            $this->aroundMethodsByPlugin[$pluginFqcn] = $aroundMethods;
         }
     }
 
@@ -163,7 +204,7 @@ class AroundPlugins extends AbstractProcessor
                 $file,
                 $lineNumber,
                 $msg,
-                'error',
+                'high',
                 $functionContent['endLine']
             );
             $this->foundCount++;
@@ -185,7 +226,7 @@ class AroundPlugins extends AbstractProcessor
                 $file,
                 $lineNumber,
                 $msg,
-                'warning',
+                'medium',
                 $functionContent['endLine']
             );
             $this->foundCount++;
@@ -196,7 +237,7 @@ class AroundPlugins extends AbstractProcessor
                 $file,
                 $lineNumber,
                 $msg,
-                'warning',
+                'medium',
                 $functionContent['endLine']
             );
             $this->foundCount++;
@@ -287,6 +328,94 @@ class AroundPlugins extends AbstractProcessor
         }
 
         return false;
+    }
+
+    /**
+     * Analyze plugin stack depth using interceptor files and plugin registry.
+     * For each target class with an interceptor, count how many sibling plugins
+     * have around methods for the same original method.
+     */
+    private function analyzePluginStackDepth(): void
+    {
+        // Build a map: targetClass => [methodName => [{pluginClass, aroundMethod}]]
+        $stackMap = [];
+
+        foreach ($this->aroundMethodsByPlugin as $pluginFqcn => $aroundMethods) {
+            $targetClass = PluginRegistry::getTargetClass($pluginFqcn);
+            if ($targetClass === null) {
+                continue;
+            }
+
+            foreach ($aroundMethods as $aroundMethod) {
+                $originalMethod = self::deriveOriginalMethodName($aroundMethod);
+                $stackMap[$targetClass][$originalMethod][] = $pluginFqcn;
+            }
+        }
+
+        // Also check sibling plugins that weren't in the scanned PHP files
+        foreach ($stackMap as $targetClass => $methods) {
+            $interceptorPath = Interceptor::getInterceptorPath($targetClass);
+            $interceptedMethods = $interceptorPath !== null
+                ? Interceptor::getInterceptedMethods($interceptorPath)
+                : [];
+
+            $siblingPlugins = PluginRegistry::getPluginsForTarget($targetClass);
+
+            foreach ($methods as $originalMethod => $knownPlugins) {
+                // If interceptor exists, verify the method is actually intercepted
+                if ($interceptorPath !== null && !in_array($originalMethod, $interceptedMethods, true)) {
+                    continue;
+                }
+
+                // Check sibling plugins for around methods on the same original method
+                $aroundMethodName = 'around' . ucfirst($originalMethod);
+                foreach ($siblingPlugins as $sibling) {
+                    $siblingClass = $sibling['class'];
+                    if (in_array($siblingClass, $knownPlugins, true)) {
+                        continue;
+                    }
+
+                    // Check if sibling has the around method in scanned files
+                    if (isset($this->aroundMethodsByPlugin[$siblingClass])
+                        && in_array($aroundMethodName, $this->aroundMethodsByPlugin[$siblingClass], true)
+                    ) {
+                        $stackMap[$targetClass][$originalMethod][] = $siblingClass;
+                    }
+                }
+
+                // Report if stack depth >= 2
+                $uniquePlugins = array_unique($stackMap[$targetClass][$originalMethod]);
+                $depth = count($uniquePlugins);
+                if ($depth >= 2) {
+                    $pluginList = implode(', ', $uniquePlugins);
+                    $msg = sprintf(
+                        '%d around plugins on %s::%s() — plugins: %s',
+                        $depth,
+                        $targetClass,
+                        $originalMethod,
+                        $pluginList
+                    );
+                    // Report against the first di.xml file where the target is configured
+                    $firstPlugin = $uniquePlugins[0];
+                    $firstTarget = PluginRegistry::getTargetClass($firstPlugin);
+                    $plugins = PluginRegistry::getPluginsForTarget($firstTarget ?? $targetClass);
+                    $diFile = !empty($plugins) ? $plugins[0]['diFile'] : 'unknown';
+
+                    $this->deepStacks[] = Formater::formatError($diFile, 1, $msg, 'medium');
+                    $this->foundCount++;
+                }
+            }
+        }
+    }
+
+    /**
+     * Derive the original method name from an around plugin method name.
+     * e.g. aroundGetValue => getValue, aroundSave => save
+     */
+    public static function deriveOriginalMethodName(string $aroundName): string
+    {
+        $stripped = substr($aroundName, 6); // Remove 'around'
+        return lcfirst($stripped);
     }
 
     public function getName(): string

@@ -87,9 +87,9 @@ body {
     font-weight: 700;
 }
 .card-total { background: #343a40; }
-.card-error { background: #dc3545; }
-.card-warning { background: #fd7e14; }
-.card-note { background: #0d6efd; }
+.card-high { background: #dc3545; }
+.card-medium { background: #fd7e14; }
+.card-low { background: #0d6efd; }
 
 /* Clickable summary cards */
 .summary-card[data-filter] {
@@ -102,16 +102,16 @@ body {
 }
 
 /* Active filter state — dim non-active cards */
-.container[data-filter="error"] .summary-card:not(.card-error):not(.card-total),
-.container[data-filter="warning"] .summary-card:not(.card-warning):not(.card-total),
-.container[data-filter="note"] .summary-card:not(.card-note):not(.card-total) {
+.container[data-filter="high"] .summary-card:not(.card-high):not(.card-total),
+.container[data-filter="medium"] .summary-card:not(.card-medium):not(.card-total),
+.container[data-filter="low"] .summary-card:not(.card-low):not(.card-total) {
     opacity: 0.4;
 }
 
 /* Hide rule cards that don't match the active filter */
-.container[data-filter="error"] .rule-card:not([data-severity="error"]),
-.container[data-filter="warning"] .rule-card:not([data-severity="warning"]),
-.container[data-filter="note"] .rule-card:not([data-severity="note"]) {
+.container[data-filter="high"] .rule-card:not([data-severity="high"]),
+.container[data-filter="medium"] .rule-card:not([data-severity="medium"]),
+.container[data-filter="low"] .rule-card:not([data-severity="low"]) {
     display: none;
 }
 
@@ -171,9 +171,9 @@ details[open] > .rule-header::before {
     font-weight: 600;
     text-transform: uppercase;
 }
-.badge-error { background: #f8d7da; color: #842029; }
-.badge-warning { background: #fff3cd; color: #664d03; }
-.badge-note { background: #cfe2ff; color: #084298; }
+.badge-high { background: #f8d7da; color: #842029; }
+.badge-medium { background: #fff3cd; color: #664d03; }
+.badge-low { background: #cfe2ff; color: #084298; }
 
 /* Table */
 .findings-table {

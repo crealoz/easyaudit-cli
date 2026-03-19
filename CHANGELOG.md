@@ -5,6 +5,32 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] 2026-03-19
+
+### Added
+- **Deep plugin stack detection** (`deepPluginStack` rule in AroundPlugins): Detects when 2+ around plugins intercept the same method on a target class, creating a deep call stack that amplifies performance overhead and complicates debugging. Uses new `Interceptor` and `PluginRegistry` utilities to analyze generated interceptor files and di.xml plugin mappings
+- **Stateful model injection detection** (`statefulModelInjection` rule in SpecificClassInjection): Detects direct injection of classes extending `AbstractModel` or `AbstractExtensibleModel` — these hold mutable state and should use a Factory to create fresh instances
+- **`Severity` enum** (`src/Core/Scan/Severity.php`): Centralized severity model with three levels (HIGH, MEDIUM, LOW) and SARIF mapping (`toSarif()`)
+- **`Interceptor` utility** (`src/Core/Scan/Util/Interceptor.php`): Analyzes Magento's generated interceptor files to extract intercepted method names
+- **`PluginRegistry` utility** (`src/Core/Scan/Util/PluginRegistry.php`): Parses all di.xml files to build plugin-to-target class mappings, enabling cross-plugin analysis
+- **Generated code auto-detection**: Scanner now detects non-empty `generated/code/` directories in Magento installations and exposes the path via `Scanner::getGeneratedPath()` for advanced analysis
+- **CountOnCollection**: phtml detection now works for blocks that inject a Collection directly (not via CollectionFactory) and return it from a method
+
+### Changed
+- **Severity model overhaul**: Replaced SARIF-style severity names (`error`/`warning`/`note`) with internal model (`high`/`medium`/`low`) throughout all processors, reporters, and utilities. SARIF output maps back to spec levels automatically (`high`→error, `medium`→warning, `low`→note)
+- **HtmlReporter**: Summary cards and filtering now use HIGH/MEDIUM/LOW labels and corresponding CSS classes
+- **SpecificClassInjection**: Severity recalibrated — `collection` and `repository` rules changed from `error` to `high`, `resourceModel` and `genericClass` from `warning` to `medium`
+- **AroundPlugins**: Severity recalibrated — `aroundWithoutProceed` from `error` to `high`, `aroundWithProceed` from `warning` to `medium`
+- **Formater::formatError()**: Default severity changed from `warning` to `medium`
+- **CliWriter::resultLine()**: Severity parameter now accepts `high`/`medium`/`low`
+- **Scan command**: Exit code logic uses new severity keys (`high`/`medium` instead of `errors`/`warnings`)
+
+### Removed
+- **`collectionWithChildren` rule** (SpecificClassInjection): Removed — the `collection` rule now covers all cases without requiring child class detection
+- **`repositoryWithChildren` rule** (SpecificClassInjection): Removed — the `repository` rule now covers all cases without requiring child class detection
+
+---
+
 ## [1.0.6] 2026-03-13
 
 ### Fixed

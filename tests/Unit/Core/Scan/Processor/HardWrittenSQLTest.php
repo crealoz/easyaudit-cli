@@ -96,7 +96,7 @@ class HardWrittenSQLTest extends TestCase
         $this->assertGreaterThan(0, $processor->getFoundCount());
         foreach ($report as $rule) {
             foreach ($rule['files'] as $entry) {
-                $this->assertEquals('note', $entry['severity'], 'Setup file SQL should have note severity');
+                $this->assertEquals('low', $entry['severity'], 'Setup file SQL should have low severity');
             }
         }
     }

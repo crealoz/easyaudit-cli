@@ -1,6 +1,6 @@
 # Available Processors
 
-EasyAudit includes **20 static analysis processors** for Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
+EasyAudit includes **21 static analysis processors** detecting **39 anti-patterns** across Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
 
 ## Summary
 
@@ -21,6 +21,7 @@ EasyAudit includes **20 static analysis processors** for Magento 2 codebases. Ea
 | [Cacheable](#cacheable) | Templates | Warning | Blocks with `cacheable="false"` in layout XML |
 | [AdvancedBlockVsViewModel](#advancedblockvsviewmodel) | Templates | Note | `$this` usage and data processing in phtml |
 | [Helpers](#helpers) | Templates | Warning | Deprecated Helper patterns |
+| [InlineStyles](#inlinestyles) | Templates | Note | Inline `style` attributes and `<style>` blocks in phtml |
 | [DeprecatedEscaperUsage](#deprecatedescaperusage) | Templates | Warning/Error | Deprecated escape methods on $block/$this |
 | [CollectionInLoop](#collectioninloop) | Performance | Warning | N+1 queries: model/repository loading inside loops |
 | [CountOnCollection](#countoncollection) | Performance | Warning | count() on collections instead of getSize() |
@@ -100,9 +101,6 @@ Detects injection of specific classes instead of interfaces.
 
 - **Severity**: Warning
 - **Why it matters**: Injecting concrete classes instead of interfaces limits flexibility and testability.
-- **Special rules**:
-  - `collectionWithChildrenMustUseFactory` - Collections with child classes need factories
-  - `repositoryWithChildrenMustUseInterface` - Repositories with children need interfaces
 
 ### PaymentInterfaceUseAudit
 Detects deprecated payment method implementations.
@@ -133,6 +131,15 @@ Detects deprecated Helper patterns.
 - **Why it matters**:
   - Extending `AbstractHelper` is deprecated
   - Using helpers directly in templates (`$this->helper()`) should be replaced with ViewModels
+
+### InlineStyles
+Detects inline `style=""` attributes and `<style>` blocks in phtml templates.
+
+- **Severity**: Note
+- **Why it matters**: Inline styles violate Content Security Policy (CSP), are harder to maintain, and prevent browser caching of styles.
+- **Rules**:
+  - `magento.template.inline-style-attribute` - Inline `style=""` attributes on HTML elements
+  - `magento.template.inline-style-block` - Inline `<style>` blocks in templates
 
 ### DeprecatedEscaperUsage
 Detects deprecated escape method calls on `$block` or `$this` instead of `$escaper` in phtml templates.

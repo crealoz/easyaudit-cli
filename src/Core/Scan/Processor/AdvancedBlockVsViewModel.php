@@ -154,7 +154,7 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
 
             $msg = "Template uses \$this instead of \$block. Found methods: $methodsList. "
                 . "This may cause compatibility issues.";
-            $this->useOfThisErrors[] = Formater::formatError($file, $lineNumber, $msg, 'error');
+            $this->useOfThisErrors[] = Formater::formatError($file, $lineNumber, $msg, 'high');
         }
     }
 

@@ -268,7 +268,7 @@ class UseOfObjectManager extends AbstractProcessor
             foreach ($matches as $match) {
                 $lineNumber = Content::getLineNumber($this->fileContent, $match[0]);
                 $method = $match[1];
-                $severity = $isConfigContext ? 'note' : 'error';
+                $severity = $isConfigContext ? 'low' : 'high';
                 $message = $isConfigContext
                     ? 'Code uses ObjectManager to instantiate classes from configuration. '
                         . 'Consider using Factory in your configuration instead of plain class names.'
@@ -294,7 +294,7 @@ class UseOfObjectManager extends AbstractProcessor
         int $lineNumber,
         string $className,
         string $method,
-        string $severity = 'error',
+        string $severity = 'high',
         string $message = ''
     ): void {
         $propertyName = Classes::derivePropertyName($className);
@@ -324,7 +324,7 @@ class UseOfObjectManager extends AbstractProcessor
     private function addUselessImport(string $file, int $lineNumber): void
     {
         $message = 'ObjectManager imported but not used. Remove the unused import.';
-        $this->uselessImports[] = Formater::formatError($file, $lineNumber, $message, 'warning');
+        $this->uselessImports[] = Formater::formatError($file, $lineNumber, $message, 'medium');
         $this->foundCount++;
     }
 

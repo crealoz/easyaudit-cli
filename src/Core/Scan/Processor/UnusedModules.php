@@ -89,7 +89,7 @@ class UnusedModules extends AbstractProcessor
                     'module' => $moduleName,
                     'path' => $file,
                     'message' => "Module '$moduleName' is disabled in app/etc/config.php but still present in codebase.",
-                    'level' => 'note'
+                    'level' => 'low'
                 ];
             }
         }

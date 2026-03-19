@@ -408,11 +408,10 @@ PHP;
         // Valid rule IDs from RULE_CONFIGS
         $validRuleIds = [
             'collectionMustUseFactory',
-            'collectionWithChildrenMustUseFactory',
             'repositoryMustUseInterface',
-            'repositoryWithChildrenMustUseInterface',
             'modelUseApiInterface',
             'noResourceModelInjection',
+            'statefulModelInjection',
             'specificClassInjection',
         ];
 
@@ -766,7 +765,7 @@ PHP;
 
             // Rule ID should follow the pattern from RULE_CONFIGS
             $this->assertMatchesRegularExpression(
-                '/^(collectionMustUseFactory|collectionWithChildrenMustUseFactory|repositoryMustUseInterface|repositoryWithChildrenMustUseInterface|modelUseApiInterface|noResourceModelInjection|specificClassInjection)$/',
+                '/^(collectionMustUseFactory|repositoryMustUseInterface|modelUseApiInterface|noResourceModelInjection|statefulModelInjection|specificClassInjection)$/',
                 $entry['ruleId'],
                 "Rule ID should be from RULE_CONFIGS"
             );
@@ -1126,9 +1125,7 @@ PHP;
 
         $this->assertNotEmpty($report, 'Should have at least one report entry');
         $ruleIds = array_column($report, 'ruleId');
-        $hasCollectionRule = in_array('collectionMustUseFactory', $ruleIds)
-            || in_array('collectionWithChildrenMustUseFactory', $ruleIds);
-        $this->assertTrue($hasCollectionRule, 'Should have a collection rule');
+        $this->assertContains('collectionMustUseFactory', $ruleIds, 'Should have the collection rule');
 
         unlink($parentFile);
         unlink($childFile);
@@ -1221,7 +1218,7 @@ PHP;
         rmdir($tempDir);
     }
 
-    public function testProcessDetectsRepositoryWithChildrenUsesWarning(): void
+    public function testProcessDetectsRepositoryEvenWithChildClasses(): void
     {
         $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
         mkdir($tempDir, 0777, true);
@@ -1248,10 +1245,6 @@ PHP;
         $childFile = $tempDir . '/SpecialProductRepository.php';
         file_put_contents($childFile, $childContent);
 
-        // The service uses a fully-qualified class in the use statement
-        // but consolidateParameters adds a leading backslash, and getChildren
-        // stores without leading backslash. The processor handles this via
-        // try/catch on NoChildrenException.
         $serviceContent = <<<'PHP'
 <?php
 namespace Test\Module\Model;
@@ -1275,13 +1268,9 @@ PHP;
         $report = $processor->getReport();
         ob_end_clean();
 
-        // Should detect repository violation (either with or without children depending
-        // on class resolution - at minimum, the repositoryMustUseInterface rule should trigger)
         $this->assertGreaterThan(0, $processor->getFoundCount());
         $ruleIds = array_column($report, 'ruleId');
-        $hasRepoRule = in_array('repositoryMustUseInterface', $ruleIds)
-            || in_array('repositoryWithChildrenMustUseInterface', $ruleIds);
-        $this->assertTrue($hasRepoRule, 'Should have a repository rule');
+        $this->assertContains('repositoryMustUseInterface', $ruleIds, 'Should have the repository rule');
 
         unlink($parentFile);
         unlink($childFile);
@@ -2035,6 +2024,195 @@ PHP;
         $this->assertEquals(9, $lineNumber, 'Should report line of constructor parameter, not assignment');
 
         unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsStatefulModelInjection(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        if (!defined('EA_SCAN_PATH')) {
+            define('EA_SCAN_PATH', $tempDir);
+        }
+
+        // File A: a model that extends AbstractModel
+        $modelContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Model;
+
+use Magento\Framework\Model\AbstractModel;
+
+class CustomProduct extends AbstractModel
+{
+    protected function _construct()
+    {
+        $this->_init(\Vendor\Module\Model\ResourceModel\CustomProduct::class);
+    }
+}
+PHP;
+        // Place file at the path resolveClassToFile expects (Strategy 1: EA_SCAN_PATH + FQCN path)
+        $modelDir = $tempDir . '/Vendor/Module/Model';
+        mkdir($modelDir, 0777, true);
+        $modelFile = $modelDir . '/CustomProduct.php';
+        file_put_contents($modelFile, $modelContent);
+
+        // File B: a service that injects the model directly
+        $serviceContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Service;
+
+use Vendor\Module\Model\CustomProduct;
+
+class ProductService
+{
+    public function __construct(
+        private CustomProduct $product
+    ) {
+    }
+}
+PHP;
+        $serviceDir = $tempDir . '/Vendor/Module/Service';
+        mkdir($serviceDir, 0777, true);
+        $serviceFile = $serviceDir . '/ProductService.php';
+        file_put_contents($serviceFile, $serviceContent);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$modelFile, $serviceFile]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount(), 'Should detect stateful model injection');
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('statefulModelInjection', $ruleIds, 'Should use statefulModelInjection rule');
+
+        // Verify the message suggests using a Factory
+        foreach ($report as $entry) {
+            if ($entry['ruleId'] === 'statefulModelInjection') {
+                $this->assertStringContainsString('Factory', $entry['files'][0]['message']);
+                $this->assertStringContainsString('AbstractModel', $entry['files'][0]['message']);
+            }
+        }
+
+        unlink($serviceFile);
+        rmdir($serviceDir);
+        unlink($modelFile);
+        rmdir($modelDir);
+        rmdir($tempDir . '/Vendor/Module');
+        rmdir($tempDir . '/Vendor');
+    }
+
+    public function testProcessDetectsStatefulModelExtendingAbstractExtensibleModel(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        if (!defined('EA_SCAN_PATH')) {
+            define('EA_SCAN_PATH', $tempDir);
+        }
+
+        // Model extending AbstractExtensibleModel
+        $modelContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Model;
+
+use Magento\Framework\Model\AbstractExtensibleModel;
+
+class CustomOrder extends AbstractExtensibleModel
+{
+}
+PHP;
+        $modelDir = $tempDir . '/Vendor/Module/Model';
+        mkdir($modelDir, 0777, true);
+        $modelFile = $modelDir . '/CustomOrder.php';
+        file_put_contents($modelFile, $modelContent);
+
+        // Service that injects the model
+        $serviceContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Service;
+
+use Vendor\Module\Model\CustomOrder;
+
+class OrderService
+{
+    public function __construct(
+        private CustomOrder $order
+    ) {
+    }
+}
+PHP;
+        $serviceDir = $tempDir . '/Vendor/Module/Service';
+        mkdir($serviceDir, 0777, true);
+        $serviceFile = $serviceDir . '/OrderService.php';
+        file_put_contents($serviceFile, $serviceContent);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$modelFile, $serviceFile]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('statefulModelInjection', $ruleIds,
+            'Should detect AbstractExtensibleModel as stateful');
+
+        unlink($serviceFile);
+        rmdir($serviceDir);
+        unlink($modelFile);
+        rmdir($modelDir);
+        rmdir($tempDir . '/Vendor/Module');
+        rmdir($tempDir . '/Vendor');
+    }
+
+    public function testStatefulModelNotDetectedWhenFileUnresolvable(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        if (!defined('EA_SCAN_PATH')) {
+            define('EA_SCAN_PATH', $tempDir);
+        }
+
+        // Service injects a class that doesn't exist on disk — should fall through to genericClass
+        $serviceContent = <<<'PHP'
+<?php
+namespace Vendor\Module\Service;
+
+use Vendor\Nonexistent\Model\GhostModel;
+
+class GhostService
+{
+    public function __construct(
+        private GhostModel $ghost
+    ) {
+    }
+}
+PHP;
+        $serviceFile = $tempDir . '/GhostService.php';
+        file_put_contents($serviceFile, $serviceContent);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$serviceFile]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+        $ruleIds = array_column($report, 'ruleId');
+        // Should NOT be statefulModelInjection (file not found), should be genericClass
+        $this->assertNotContains('statefulModelInjection', $ruleIds);
+        $this->assertContains('specificClassInjection', $ruleIds);
+
+        unlink($serviceFile);
         rmdir($tempDir);
     }
 }

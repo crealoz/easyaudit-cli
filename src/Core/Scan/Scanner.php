@@ -8,6 +8,8 @@ use EasyAudit\Service\Paths;
 
 class Scanner
 {
+    private static ?string $generatedPath = null;
+
     private string $scanRoot = '';
 
     private array $excludePatterns = [];
@@ -76,6 +78,14 @@ class Scanner
         if (self::isMagentoRoot($path)) {
             CliWriter::line("  Magento installation detected.");
             CliWriter::line("  Auto-excluded directories: " . implode(', ', $this->excludedDirs));
+            $generatedDir = $path . DIRECTORY_SEPARATOR . 'generated' . DIRECTORY_SEPARATOR . 'code';
+            if (is_dir($generatedDir) && count(scandir($generatedDir)) > 2) {
+                self::$generatedPath = $generatedDir;
+            } else {
+                self::$generatedPath = null;
+            }
+        } else {
+            self::$generatedPath = null;
         }
 
         $findings = [];
@@ -140,6 +150,22 @@ class Scanner
             'findings' => $findings,
             'toolSuggestions' => $toolSuggestions,
         ];
+    }
+
+    /**
+     * Returns the path to generated/code/ if available and non-empty, null otherwise.
+     */
+    public static function getGeneratedPath(): ?string
+    {
+        return self::$generatedPath;
+    }
+
+    /**
+     * Override the generated path (for testing).
+     */
+    public static function setGeneratedPath(?string $path): void
+    {
+        self::$generatedPath = $path;
     }
 
     /**

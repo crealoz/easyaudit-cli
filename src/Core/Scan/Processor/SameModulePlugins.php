@@ -91,7 +91,7 @@ class SameModulePlugins extends AbstractProcessor
         $msg = $pluggingClass . ' plugs ' . $pluggedClass . ' within the same module.';
         // Search for the type declaration with name attribute to avoid matching earlier references
         $lineNum = Content::getLineNumber($fileContent, 'name="' . $pluggedClass . '"');
-        $this->results[] = Formater::formatError($file, $lineNum, $msg, 'error');
+        $this->results[] = Formater::formatError($file, $lineNum, $msg, 'high');
     }
 
     /**

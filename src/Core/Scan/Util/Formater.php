@@ -10,7 +10,7 @@ class Formater
         string $file,
         int $startLine,
         string $message = '',
-        string $severity = 'warning',
+        string $severity = 'medium',
         int $endLine = 0,
         array $metadata = []
     ): array {

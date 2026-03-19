@@ -142,7 +142,7 @@ class ProxyForHeavyClasses extends AbstractProcessor
                         $file,
                         $lineNumber,
                         $msg,
-                        'error',
+                        'high',
                         0,
                         [
                             'diFile' => $diFile,

@@ -83,7 +83,7 @@ class BlockViewModelRatio extends AbstractProcessor
                     'message' => "Module '$moduleName' has $blockCount Block classes out of "
                         . "$totalCount total classes ($percent%). Consider using ViewModels "
                         . "for presentation logic.",
-                    'level' => 'warning'
+                    'level' => 'medium'
                 ];
             }
         }

@@ -43,7 +43,7 @@ class HtmlReporterTest extends TestCase
         $findings = $this->createFindings();
         $result = $this->reporter->generate($findings);
 
-        $this->assertStringContainsString('badge-error', $result);
+        $this->assertStringContainsString('badge-high', $result);
     }
 
     public function testGenerateWithEmptyFindings(): void
@@ -62,8 +62,8 @@ class HtmlReporterTest extends TestCase
                 'name' => 'Rule One',
                 'shortDescription' => 'First rule',
                 'files' => [
-                    ['file' => '/path/a.php', 'startLine' => 1, 'message' => 'error1', 'severity' => 'error'],
-                    ['file' => '/path/b.php', 'startLine' => 2, 'message' => 'warn1', 'severity' => 'warning'],
+                    ['file' => '/path/a.php', 'startLine' => 1, 'message' => 'error1', 'severity' => 'high'],
+                    ['file' => '/path/b.php', 'startLine' => 2, 'message' => 'warn1', 'severity' => 'medium'],
                 ],
             ],
             [
@@ -71,7 +71,7 @@ class HtmlReporterTest extends TestCase
                 'name' => 'Rule Two',
                 'shortDescription' => 'Second rule',
                 'files' => [
-                    ['file' => '/path/c.php', 'startLine' => 3, 'message' => 'note1', 'severity' => 'note'],
+                    ['file' => '/path/c.php', 'startLine' => 3, 'message' => 'note1', 'severity' => 'low'],
                 ],
             ],
         ];
@@ -79,9 +79,9 @@ class HtmlReporterTest extends TestCase
         $result = $this->reporter->generate($findings);
 
         // Should contain summary cards with totals
-        $this->assertStringContainsString('Errors', $result);
-        $this->assertStringContainsString('Warnings', $result);
-        $this->assertStringContainsString('Notes', $result);
+        $this->assertStringContainsString('High', $result);
+        $this->assertStringContainsString('Medium', $result);
+        $this->assertStringContainsString('Low', $result);
     }
 
     public function testGenerateEscapesSpecialCharacters(): void
@@ -96,7 +96,7 @@ class HtmlReporterTest extends TestCase
                         'file' => '/path/to/file.php',
                         'startLine' => 1,
                         'message' => 'Message with <tags> & "quotes"',
-                        'severity' => 'warning',
+                        'severity' => 'medium',
                     ],
                 ],
             ],
@@ -138,7 +138,7 @@ class HtmlReporterTest extends TestCase
                         'file' => '/path/to/file.php',
                         'startLine' => 10,
                         'message' => 'Found ObjectManager usage',
-                        'severity' => 'error',
+                        'severity' => 'high',
                     ],
                 ],
             ],

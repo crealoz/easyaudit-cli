@@ -117,7 +117,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 0, 'warnings' => 0],
+                'summary' => ['high' => 0, 'medium' => 0],
             ],
             'toolSuggestions' => [],
         ]);
@@ -142,7 +142,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 3, 'warnings' => 1],
+                'summary' => ['high' => 3, 'medium' => 1],
             ],
             'toolSuggestions' => [],
         ]);
@@ -166,7 +166,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 0, 'warnings' => 5],
+                'summary' => ['high' => 0, 'medium' => 5],
             ],
             'toolSuggestions' => [],
         ]);
@@ -190,7 +190,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 0, 'warnings' => 0],
+                'summary' => ['high' => 0, 'medium' => 0],
             ],
             'toolSuggestions' => [],
         ]);
@@ -219,7 +219,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 0, 'warnings' => 0],
+                'summary' => ['high' => 0, 'medium' => 0],
             ],
             'toolSuggestions' => [],
         ]);
@@ -244,7 +244,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 0, 'warnings' => 0],
+                'summary' => ['high' => 0, 'medium' => 0],
             ],
             'toolSuggestions' => [],
         ]);
@@ -269,7 +269,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 0, 'warnings' => 0],
+                'summary' => ['high' => 0, 'medium' => 0],
             ],
             'toolSuggestions' => [],
         ]);
@@ -293,7 +293,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 0, 'warnings' => 0],
+                'summary' => ['high' => 0, 'medium' => 0],
             ],
             'toolSuggestions' => [
                 'magento.code.useless-object-manager-import' => 5,
@@ -321,7 +321,7 @@ class ScanTest extends TestCase
         $scanner = $this->createMock(Scanner::class);
         $scanner->method('run')->willReturn([
             'findings' => [
-                'summary' => ['errors' => 0, 'warnings' => 0],
+                'summary' => ['high' => 0, 'medium' => 0],
             ],
             'toolSuggestions' => [],
         ]);

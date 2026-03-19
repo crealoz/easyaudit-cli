@@ -244,14 +244,14 @@ class CliWriter
      *
      * @param string $label    The label text
      * @param int    $count    The count to display
-     * @param string $severity Severity level: 'error', 'warning', 'note'
+     * @param string $severity Severity level: 'high', 'medium', 'low'
      */
-    public static function resultLine(string $label, int $count, string $severity = 'error'): void
+    public static function resultLine(string $label, int $count, string $severity = 'high'): void
     {
         [$icon, $color, $boldColor] = match ($severity) {
-            'error' => ['✗', self::RED, "\033[1;31m"],
-            'warning' => ['!', self::YELLOW, "\033[1;33m"],
-            'note' => ['i', self::BLUE, "\033[1;34m"],
+            'high' => ['✗', self::RED, "\033[1;31m"],
+            'medium' => ['!', self::YELLOW, "\033[1;33m"],
+            'low' => ['i', self::BLUE, "\033[1;34m"],
             default => ['•', self::GREEN, "\033[1;32m"],
         };
 

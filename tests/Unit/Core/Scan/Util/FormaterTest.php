@@ -9,7 +9,7 @@ class FormaterTest extends TestCase
 {
     public function testFormatErrorReturnsCorrectKeys(): void
     {
-        $result = Formater::formatError('/path/to/file.php', 10, 'test message', 'warning');
+        $result = Formater::formatError('/path/to/file.php', 10, 'test message', 'medium');
 
         $this->assertArrayHasKey('file', $result);
         $this->assertArrayHasKey('startLine', $result);
@@ -20,11 +20,11 @@ class FormaterTest extends TestCase
 
     public function testFormatErrorSetsCorrectValues(): void
     {
-        $result = Formater::formatError('/path/to/file.php', 10, 'test message', 'error');
+        $result = Formater::formatError('/path/to/file.php', 10, 'test message', 'high');
 
         $this->assertEquals(10, $result['startLine']);
         $this->assertEquals('test message', $result['message']);
-        $this->assertEquals('error', $result['severity']);
+        $this->assertEquals('high', $result['severity']);
     }
 
     public function testFormatErrorDefaultEndLineEqualsStartLine(): void
@@ -35,20 +35,20 @@ class FormaterTest extends TestCase
 
     public function testFormatErrorCustomEndLine(): void
     {
-        $result = Formater::formatError('/path/to/file.php', 10, 'msg', 'warning', 20);
+        $result = Formater::formatError('/path/to/file.php', 10, 'msg', 'medium', 20);
         $this->assertEquals(20, $result['endLine']);
     }
 
-    public function testFormatErrorDefaultSeverityIsWarning(): void
+    public function testFormatErrorDefaultSeverityIsMedium(): void
     {
         $result = Formater::formatError('/path/to/file.php', 1);
-        $this->assertEquals('warning', $result['severity']);
+        $this->assertEquals('medium', $result['severity']);
     }
 
     public function testFormatErrorWithMetadata(): void
     {
         $metadata = ['className' => 'MyClass', 'method' => 'execute'];
-        $result = Formater::formatError('/path/to/file.php', 5, 'msg', 'error', 0, $metadata);
+        $result = Formater::formatError('/path/to/file.php', 5, 'msg', 'high', 0, $metadata);
 
         $this->assertArrayHasKey('metadata', $result);
         $this->assertEquals('MyClass', $result['metadata']['className']);
@@ -63,7 +63,7 @@ class FormaterTest extends TestCase
 
     public function testFormatErrorWithEmptyMetadataDoesNotIncludeKey(): void
     {
-        $result = Formater::formatError('/path/to/file.php', 5, 'msg', 'warning', 0, []);
+        $result = Formater::formatError('/path/to/file.php', 5, 'msg', 'medium', 0, []);
         $this->assertArrayNotHasKey('metadata', $result);
     }
 }

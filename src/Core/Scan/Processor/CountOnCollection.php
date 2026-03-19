@@ -75,7 +75,7 @@ class CountOnCollection extends AbstractProcessor
         }
 
         if (!empty($this->results)) {
-            CliWriter::resultLine('count() on collection (use getSize())', count($this->results), 'warning');
+            CliWriter::resultLine('count() on collection (use getSize())', count($this->results), 'medium');
         }
     }
 
@@ -145,7 +145,7 @@ class CountOnCollection extends AbstractProcessor
                 $line = substr_count(substr($fileContent, 0, $match[1]), "\n") + 1;
                 $msg = "count({$property}) loads all collection items into memory. "
                     . "Use {$property}->getSize() instead for a COUNT(*) SQL query.";
-                $this->results[] = Formater::formatError($file, $line, $msg, 'warning', 0, $metadata);
+                $this->results[] = Formater::formatError($file, $line, $msg, 'medium', 0, $metadata);
                 $this->foundCount++;
             }
         }
@@ -157,7 +157,7 @@ class CountOnCollection extends AbstractProcessor
                 $line = substr_count(substr($fileContent, 0, $match[1]), "\n") + 1;
                 $msg = "{$property}->count() loads all collection items into memory. "
                     . "Use {$property}->getSize() instead for a COUNT(*) SQL query.";
-                $this->results[] = Formater::formatError($file, $line, $msg, 'warning', 0, $metadata);
+                $this->results[] = Formater::formatError($file, $line, $msg, 'medium', 0, $metadata);
                 $this->foundCount++;
             }
         }
@@ -192,8 +192,20 @@ class CountOnCollection extends AbstractProcessor
             }
         }
 
-        if (empty($factoryProperties)) {
-            return;
+        // Find direct collection properties
+        $directProperties = [];
+        foreach ($consolidated as $paramName => $paramClass) {
+            if (!Types::isCollectionType($paramClass)) {
+                continue;
+            }
+            try {
+                $property = Classes::getInstantiation($constructorParams, $paramName, $fileContent);
+            } catch (InstantiationNotFoundException) {
+                continue;
+            }
+            if ($property !== null) {
+                $directProperties[] = $property;
+            }
         }
 
         $fqcn = Classes::extractClassName($fileContent);
@@ -213,6 +225,12 @@ class CountOnCollection extends AbstractProcessor
                 // Find methods that contain this assignment and return the variable
                 $this->findReturningMethods($fileContent, $fqcn, $cleanVar);
             }
+        }
+
+        // Find methods that return a direct collection property
+        foreach ($directProperties as $directProp) {
+            $cleanProp = preg_quote($directProp, '/');
+            $this->findDirectReturnMethods($fileContent, $fqcn, $cleanProp);
         }
     }
 
@@ -243,6 +261,33 @@ class CountOnCollection extends AbstractProcessor
                 preg_match('/' . $cleanVar . '\s*=\s*\$this->\w+->create\s*\(/', $methodBody)
                 && preg_match('/return\s+' . $cleanVar . '\s*;/', $methodBody)
             ) {
+                $this->collectionReturningMethods[$fqcn . '::' . $methodName] = true;
+            }
+        }
+    }
+
+    /**
+     * Find methods that return a direct collection property and register them.
+     */
+    private function findDirectReturnMethods(string $fileContent, string $fqcn, string $cleanProp): void
+    {
+        $methodPattern = '/function\s+(\w+)\s*\([^)]*\)[^{]*\{/';
+        if (!preg_match_all($methodPattern, $fileContent, $methodMatches, PREG_OFFSET_CAPTURE)) {
+            return;
+        }
+
+        foreach ($methodMatches[0] as $index => $match) {
+            $methodName = $methodMatches[1][$index][0];
+            if ($methodName === '__construct') {
+                continue;
+            }
+
+            $methodBody = Functions::extractBraceBlock($fileContent, $match[1]);
+            if ($methodBody === null) {
+                continue;
+            }
+
+            if (preg_match('/return\s+' . $cleanProp . '\s*;/', $methodBody)) {
                 $this->collectionReturningMethods[$fqcn . '::' . $methodName] = true;
             }
         }
@@ -288,7 +333,7 @@ class CountOnCollection extends AbstractProcessor
                     $line = substr_count(substr($content, 0, $match[1]), "\n") + 1;
                     $msg = "\$block->{$methodName}()->count() loads all collection items into memory. "
                         . "Use \$block->{$methodName}()->getSize() instead for a COUNT(*) SQL query.";
-                    $this->results[] = Formater::formatError($phtmlFile, $line, $msg, 'warning');
+                    $this->results[] = Formater::formatError($phtmlFile, $line, $msg, 'medium');
                     $this->foundCount++;
                 }
             }
@@ -300,7 +345,7 @@ class CountOnCollection extends AbstractProcessor
                     $line = substr_count(substr($content, 0, $match[1]), "\n") + 1;
                     $msg = "count(\$block->{$methodName}()) loads all collection items into memory. "
                         . "Use \$block->{$methodName}()->getSize() instead for a COUNT(*) SQL query.";
-                    $this->results[] = Formater::formatError($phtmlFile, $line, $msg, 'warning');
+                    $this->results[] = Formater::formatError($phtmlFile, $line, $msg, 'medium');
                     $this->foundCount++;
                 }
             }

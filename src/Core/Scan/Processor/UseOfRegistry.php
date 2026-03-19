@@ -183,7 +183,7 @@ class UseOfRegistry extends AbstractProcessor
             $paramName
         );
 
-        $this->registryUsages[] = Formater::formatError($file, $lineNumber, $message, 'error');
+        $this->registryUsages[] = Formater::formatError($file, $lineNumber, $message, 'high');
         $this->foundCount++;
     }
 

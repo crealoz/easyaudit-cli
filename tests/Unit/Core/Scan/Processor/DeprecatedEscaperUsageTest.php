@@ -50,7 +50,7 @@ class DeprecatedEscaperUsageTest extends TestCase
 
         // Both findings should be warnings (from $block->)
         foreach ($report[0]['files'] as $entry) {
-            $this->assertEquals('warning', $entry['severity']);
+            $this->assertEquals('medium', $entry['severity']);
             $this->assertStringContainsString('$block', $entry['message']);
         }
     }
@@ -74,7 +74,7 @@ class DeprecatedEscaperUsageTest extends TestCase
 
         // All findings should be errors (from $this->)
         foreach ($report[0]['files'] as $entry) {
-            $this->assertEquals('error', $entry['severity']);
+            $this->assertEquals('high', $entry['severity']);
             $this->assertStringContainsString('$this', $entry['message']);
         }
     }

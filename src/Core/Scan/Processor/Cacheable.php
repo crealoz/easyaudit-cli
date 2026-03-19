@@ -118,7 +118,7 @@ class Cacheable extends AbstractProcessor
 
         $msg = "Block '$blockName' uses cacheable=\"false\", which can impact "
             . "performance. Consider using customer sections or ESI instead.";
-        $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'note');
+        $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'low');
         return $fileContent;
     }
 

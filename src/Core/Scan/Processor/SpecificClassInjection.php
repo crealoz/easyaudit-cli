@@ -41,18 +41,7 @@ class SpecificClassInjection extends AbstractProcessor
                 . 'at class construction time, improving performance and preventing issues '
                 . 'with collection state.',
             'label' => 'Collections without factory',
-            'severity' => 'error',
-        ],
-        'collectionWithChildren' => [
-            'ruleId' => 'collectionWithChildrenMustUseFactory',
-            'name' => 'Collection With Children Must Use Factory',
-            'shortDescription' => 'Collections with children must not be injected directly',
-            'longDescription' => 'A collection must not be injected in constructor as a '
-                . 'specific class. This collection has child classes in the codebase, which '
-                . 'means auto-fix cannot be applied safely. Manual refactoring is required '
-                . 'to ensure all child classes are also updated appropriately.',
-            'label' => 'Collections with children (manual fix)',
-            'severity' => 'warning',
+            'severity' => 'high',
         ],
         'repository' => [
             'ruleId' => 'repositoryMustUseInterface',
@@ -63,18 +52,7 @@ class SpecificClassInjection extends AbstractProcessor
                 . 'injected and used. This allows preferences to work correctly and respects '
                 . 'Magento 2 coding standards.',
             'label' => 'Repositories without interface',
-            'severity' => 'error',
-        ],
-        'repositoryWithChildren' => [
-            'ruleId' => 'repositoryWithChildrenMustUseInterface',
-            'name' => 'Repository With Children Must Use Interface',
-            'shortDescription' => 'Repositories with children must use interface injection',
-            'longDescription' => 'A repository must not be injected in constructor as a '
-                . 'specific class. This repository has child classes in the codebase, which '
-                . 'means auto-fix cannot be applied safely. Manual refactoring is required '
-                . 'to ensure all child classes are also updated appropriately.',
-            'label' => 'Repositories with children (manual fix)',
-            'severity' => 'warning',
+            'severity' => 'high',
         ],
         'modelWithInterface' => [
             'ruleId' => 'modelUseApiInterface',
@@ -85,7 +63,7 @@ class SpecificClassInjection extends AbstractProcessor
                 . 'preferences from being ignored and respects the coding standards. It '
                 . 'ensures proper abstraction and allows for easier testing and customization.',
             'label' => 'Models should use API interface',
-            'severity' => 'error',
+            'severity' => 'high',
         ],
         'resourceModel' => [
             'ruleId' => 'noResourceModelInjection',
@@ -97,7 +75,18 @@ class SpecificClassInjection extends AbstractProcessor
                 . 'code maintainability. Resource models represent the database layer and '
                 . 'should be abstracted behind repositories.',
             'label' => 'Resource models injected',
-            'severity' => 'warning',
+            'severity' => 'medium',
+        ],
+        'statefulModel' => [
+            'ruleId' => 'statefulModelInjection',
+            'name' => 'Stateful Model Injected Directly',
+            'shortDescription' => 'Model extending AbstractModel is stateful and should use a Factory.',
+            'longDescription' => 'This class extends AbstractModel and holds mutable state '
+                . '(loaded database data). Injecting it directly means the same instance is '
+                . 'shared, which can cause stale data and side effects. Use a Factory to '
+                . 'create fresh instances when needed.',
+            'label' => 'Stateful models without factory',
+            'severity' => 'medium',
         ],
         'genericClass' => [
             'ruleId' => 'specificClassInjection',
@@ -109,7 +98,7 @@ class SpecificClassInjection extends AbstractProcessor
                 . 'Using proper abstraction improves testability, flexibility, and follows '
                 . 'dependency inversion principle.',
             'label' => 'Generic specific class injections',
-            'severity' => 'warning',
+            'severity' => 'medium',
         ],
     ];
 
@@ -202,6 +191,7 @@ class SpecificClassInjection extends AbstractProcessor
             return;
         }
 
+        // Build class hierarchy for resolveClassToFile() used by statefulModel detection
         Classes::buildClassHierarchy($files['php']);
 
         foreach ($files['php'] as $file) {
@@ -294,7 +284,7 @@ class SpecificClassInjection extends AbstractProcessor
                 $file,
                 $lineNumber,
                 $message,
-                'warning',
+                'medium',
                 ['specificClasses' => [$paramClass => $paramName]]
             );
         }
@@ -314,22 +304,17 @@ class SpecificClassInjection extends AbstractProcessor
     ): bool {
         $handled = false;
         $shouldCheckModel = false;
-        try {
-            $children = Classes::getChildren($paramClass);
-        } catch (\Exception $e) {
-            $children = [];
-        }
 
         if (Types::isCollectionType($paramClass)) {
             if ($fileContent !== '' && !Classes::extendsClass($fileContent, 'Magento\Framework\Model\AbstractModel')) {
-                $this->addCollectionError($file, $lineNumber, $paramName, $paramClass, $children);
+                $this->addCollectionError($file, $lineNumber, $paramName, $paramClass);
             }
             $handled = true;
             $shouldCheckModel = true;
         }
 
         if (Types::isRepository($paramClass)) {
-            $this->addRepositoryError($file, $lineNumber, $paramName, $paramClass, $children);
+            $this->addRepositoryError($file, $lineNumber, $paramName, $paramClass);
             $handled = true;
             $shouldCheckModel = true;
         }
@@ -347,7 +332,7 @@ class SpecificClassInjection extends AbstractProcessor
                 $file,
                 $lineNumber,
                 $message,
-                'error',
+                'high',
                 ['models' => [$paramClass => ['interface' => $interfaceName]]]
             );
             $handled = true;
@@ -362,10 +347,32 @@ class SpecificClassInjection extends AbstractProcessor
                     $paramClass,
                     $paramName
                 );
-                $this->addViolation('resourceModel', $file, $lineNumber, $message, 'warning');
+                $this->addViolation('resourceModel', $file, $lineNumber, $message, 'medium');
             }
             // Always handled — legitimate resource model injections shouldn't trigger generic rule
             $handled = true;
+        }
+
+        if (!$handled && defined('EA_SCAN_PATH')) {
+            $classFile = Classes::resolveClassToFile(ltrim($paramClass, '\\'));
+            if ($classFile !== null) {
+                $classContent = @file_get_contents($classFile);
+                if ($classContent !== false && (
+                    Classes::extendsClass($classContent, 'Magento\Framework\Model\AbstractModel')
+                    || Classes::extendsClass($classContent, 'Magento\Framework\Model\AbstractExtensibleModel')
+                )) {
+                    $message = sprintf(
+                        'Stateful model "%s" injected in %s. This class extends AbstractModel '
+                        . 'and holds mutable state. Use "%sFactory" to create fresh instances.',
+                        $paramClass,
+                        $paramName,
+                        $paramClass
+                    );
+                    $this->addViolation('statefulModel', $file, $lineNumber, $message, 'medium',
+                        ['specificClasses' => [$paramClass => $paramName]]);
+                    $handled = true;
+                }
+            }
         }
 
         return $handled;
@@ -405,46 +412,25 @@ class SpecificClassInjection extends AbstractProcessor
         $this->foundCount++;
     }
 
-    private function addCollectionError(string $file, int $lineNumber, string $paramName, string $paramClass, array $children = []): void
+    private function addCollectionError(string $file, int $lineNumber, string $paramName, string $paramClass): void
     {
-
-        if (!empty($children)) {
-            $childNames = implode(', ', array_map(fn($c) => basename(str_replace('\\', '/', $c)), $children));
-            $message = sprintf(
-                'Collection "%s" injected in %s. Collections must use Factory pattern. '
-                    . 'However, this class has %d child class(es): %s. Manual refactoring required.',
-                $paramClass,
-                $paramName,
-                count($children),
-                $childNames
-            );
-            $this->addViolation(
-                'collectionWithChildren',
-                $file,
-                $lineNumber,
-                $message,
-                'warning',
-                ['collections' => [$paramClass => $paramName], 'children' => $children]
-            );
-        } else {
-            $message = sprintf(
-                'Collection "%s" injected in %s. Collections must use Factory pattern. Inject "%sFactory" instead.',
-                $paramClass,
-                $paramName,
-                $paramClass
-            );
-            $this->addViolation(
-                'collection',
-                $file,
-                $lineNumber,
-                $message,
-                'error',
-                ['collections' => [$paramClass => $paramName]]
-            );
-        }
+        $message = sprintf(
+            'Collection "%s" injected in %s. Collections must use Factory pattern. Inject "%sFactory" instead.',
+            $paramClass,
+            $paramName,
+            $paramClass
+        );
+        $this->addViolation(
+            'collection',
+            $file,
+            $lineNumber,
+            $message,
+            'high',
+            ['collections' => [$paramClass => $paramName]]
+        );
     }
 
-    private function addRepositoryError(string $file, int $lineNumber, string $paramName, string $paramClass, array $children): void
+    private function addRepositoryError(string $file, int $lineNumber, string $paramName, string $paramClass): void
     {
         if (preg_match('/^(.+)\\\\Model\\\\(.+)Repository$/', $paramClass, $matches)) {
             $interfaceName = $matches[1] . '\\Api\\' . $matches[2] . 'RepositoryInterface';
@@ -452,41 +438,20 @@ class SpecificClassInjection extends AbstractProcessor
             $interfaceName = $paramClass . 'Interface';
         }
 
-        if (!empty($children)) {
-            $childNames = implode(', ', array_map(fn($c) => basename(str_replace('\\', '/', $c)), $children));
-            $message = sprintf(
-                'Repository "%s" injected as concrete class in %s. Use interface "%s" instead. '
-                    . 'However, this class has %d child class(es): %s. Manual refactoring required.',
-                $paramClass,
-                $paramName,
-                $interfaceName,
-                count($children),
-                $childNames
-            );
-            $this->addViolation(
-                'repositoryWithChildren',
-                $file,
-                $lineNumber,
-                $message,
-                'warning',
-                ['repositories' => [$paramClass => ['interface' => $interfaceName]], 'children' => $children]
-            );
-        } else {
-            $message = sprintf(
-                'Repository "%s" injected as concrete class in %s. Use interface "%s" instead.',
-                $paramClass,
-                $paramName,
-                $interfaceName
-            );
-            $this->addViolation(
-                'repository',
-                $file,
-                $lineNumber,
-                $message,
-                'error',
-                ['repositories' => [$paramClass => ['interface' => $interfaceName]]]
-            );
-        }
+        $message = sprintf(
+            'Repository "%s" injected as concrete class in %s. Use interface "%s" instead.',
+            $paramClass,
+            $paramName,
+            $interfaceName
+        );
+        $this->addViolation(
+            'repository',
+            $file,
+            $lineNumber,
+            $message,
+            'high',
+            ['repositories' => [$paramClass => ['interface' => $interfaceName]]]
+        );
     }
 
     /**

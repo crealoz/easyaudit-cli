@@ -82,7 +82,7 @@ class NoProxyInCommands extends AbstractProcessor
                         $filePath,
                         Content::getLineNumber($fileContent, $paramName),
                         $msg,
-                        'warning',
+                        'medium',
                         0,
                         [
                             'diFile' => $this->diFile,

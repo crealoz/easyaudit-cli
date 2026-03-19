@@ -9,21 +9,21 @@ class HtmlReporter implements ReporterInterface
         $scanPath = $findings['metadata']['scan_path'] ?? 'Unknown';
         $scanDate = date('Y-m-d H:i:s');
 
-        $errors = 0;
-        $warnings = 0;
-        $notes = 0;
+        $highCount = 0;
+        $mediumCount = 0;
+        $lowCount = 0;
         $rules = $this->getRules($findings);
 
         $rulesHtml = '';
         foreach ($rules as $rule) {
-            $errors += $rule['errorCount'];
-            $warnings += $rule['warningCount'];
-            $notes += $rule['noteCount'];
-            $severity = 'note';
-            if ($rule['errorCount'] > 0) {
-                $severity = 'error';
-            } elseif ($rule['warningCount'] > 0) {
-                $severity = 'warning';
+            $highCount += $rule['highCount'];
+            $mediumCount += $rule['mediumCount'];
+            $lowCount += $rule['lowCount'];
+            $severity = 'low';
+            if ($rule['highCount'] > 0) {
+                $severity = 'high';
+            } elseif ($rule['mediumCount'] > 0) {
+                $severity = 'medium';
             }
 
             $badge = $this->severityBadge($severity);
@@ -38,7 +38,7 @@ class HtmlReporter implements ReporterInterface
                 $filePath = htmlspecialchars($rawPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
                 $line = (int)($file['startLine'] ?? $file['line'] ?? 1);
                 $message = htmlspecialchars($file['message'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-                $fileSev = $file['severity'] ?? 'warning';
+                $fileSev = $file['severity'] ?? 'medium';
                 $sevBadge = $this->severityBadge($fileSev);
 
                 $rowsHtml .= <<<ROW
@@ -81,7 +81,7 @@ ROW;
 RULE;
         }
 
-        $total = $errors + $warnings + $notes;
+        $total = $highCount + $mediumCount + $lowCount;
 
         $scanPathHtml = htmlspecialchars($scanPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $scanDateHtml = htmlspecialchars($scanDate, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -123,17 +123,17 @@ RULE;
             <div class="label">Total Issues</div>
             <div class="value">{$total}</div>
         </div>
-        <div class="summary-card card-error" data-filter="error">
-            <div class="label">Errors</div>
-            <div class="value">{$errors}</div>
+        <div class="summary-card card-high" data-filter="high">
+            <div class="label">High</div>
+            <div class="value">{$highCount}</div>
         </div>
-        <div class="summary-card card-warning" data-filter="warning">
-            <div class="label">Warnings</div>
-            <div class="value">{$warnings}</div>
+        <div class="summary-card card-medium" data-filter="medium">
+            <div class="label">Medium</div>
+            <div class="value">{$mediumCount}</div>
         </div>
-        <div class="summary-card card-note" data-filter="note">
-            <div class="label">Notes</div>
-            <div class="value">{$notes}</div>
+        <div class="summary-card card-low" data-filter="low">
+            <div class="label">Low</div>
+            <div class="value">{$lowCount}</div>
         </div>
     </div>
 
@@ -175,16 +175,16 @@ HTML;
             $shortDesc = $finding['shortDescription'] ?? '';
             $files = $finding['files'];
 
-            $counts = array_count_values(array_map(fn($f) => $f['severity'] ?? 'warning', $files));
+            $counts = array_count_values(array_map(fn($f) => $f['severity'] ?? 'medium', $files));
 
             $rules[] = [
                 'ruleId' => $ruleId,
                 'name' => $ruleName,
                 'shortDescription' => $shortDesc,
                 'files' => $files,
-                'errorCount' => $counts['error'] ?? 0,
-                'warningCount' => $counts['warning'] ?? 0,
-                'noteCount' => $counts['note'] ?? 0,
+                'highCount' => $counts['high'] ?? 0,
+                'mediumCount' => $counts['medium'] ?? 0,
+                'lowCount' => $counts['low'] ?? 0,
             ];
         }
         return $rules;
@@ -193,9 +193,9 @@ HTML;
     private function severityBadge(string $severity): string
     {
         return match ($severity) {
-            'error' => '<span class="badge badge-error">Error</span>',
-            'warning' => '<span class="badge badge-warning">Warning</span>',
-            default => '<span class="badge badge-note">Note</span>',
+            'high' => '<span class="badge badge-high">High</span>',
+            'medium' => '<span class="badge badge-medium">Medium</span>',
+            default => '<span class="badge badge-low">Low</span>',
         };
     }
 }

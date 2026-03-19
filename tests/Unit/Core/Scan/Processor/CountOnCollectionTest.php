@@ -310,6 +310,21 @@ echo count($items);
         rmdir($tmpDir);
     }
 
+    public function testDetectsCountInPhtmlOnDirectCollection(): void
+    {
+        $processor = new CountOnCollection();
+        $files = [
+            'php' => [$this->fixturesPath . '/Bad/PhtmlCountOnDirectCollection/Block/LatestFaq.php'],
+            'phtml' => [$this->fixturesPath . '/Bad/PhtmlCountOnDirectCollection/templates/latest_faq.phtml'],
+        ];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount());
+    }
+
     public function testProcessWithNonCollectionConstructorParam(): void
     {
         $processor = new CountOnCollection();

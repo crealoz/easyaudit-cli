@@ -49,7 +49,7 @@ class InlineStylesTest extends TestCase
         $this->assertEquals('magento.template.inline-style-attribute', $report[0]['ruleId']);
 
         foreach ($report[0]['files'] as $entry) {
-            $this->assertEquals('note', $entry['severity']);
+            $this->assertEquals('low', $entry['severity']);
         }
     }
 
@@ -70,7 +70,7 @@ class InlineStylesTest extends TestCase
         $report = $processor->getReport();
         $this->assertCount(1, $report);
         $this->assertEquals('magento.template.inline-style-block', $report[0]['ruleId']);
-        $this->assertEquals('warning', $report[0]['files'][0]['severity']);
+        $this->assertEquals('medium', $report[0]['files'][0]['severity']);
     }
 
     public function testDetectsMixed(): void

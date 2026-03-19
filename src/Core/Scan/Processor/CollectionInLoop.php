@@ -89,7 +89,7 @@ class CollectionInLoop extends AbstractProcessor
         }
 
         if (!empty($this->results)) {
-            CliWriter::resultLine('N+1 patterns (load in loop)', count($this->results), 'warning');
+            CliWriter::resultLine('N+1 patterns (load in loop)', count($this->results), 'medium');
         }
     }
 
@@ -134,7 +134,7 @@ class CollectionInLoop extends AbstractProcessor
             $msg = "$description. This causes N+1 queries. Load all needed entities "
                 . "before the loop using getList() or a filtered collection.";
 
-            $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'warning');
+            $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'medium');
             $this->foundCount++;
         }
     }

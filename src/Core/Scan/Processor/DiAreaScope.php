@@ -74,7 +74,7 @@ class DiAreaScope extends AbstractProcessor
         }
 
         if (!empty($this->results)) {
-            CliWriter::resultLine('DI area scope misplacements', count($this->results), 'note');
+            CliWriter::resultLine('DI area scope misplacements', count($this->results), 'low');
         }
     }
 
@@ -100,7 +100,7 @@ class DiAreaScope extends AbstractProcessor
             $msg = "Plugin on area-specific class '$className' is declared in global di.xml. "
                 . "Consider moving to etc/{$area}/di.xml.";
 
-            $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'note');
+            $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'low');
             $this->foundCount++;
         }
     }
@@ -130,7 +130,7 @@ class DiAreaScope extends AbstractProcessor
             $msg = "Preference for area-specific class '$forClass' is declared in global di.xml. "
                 . "Consider moving to etc/{$area}/di.xml.";
 
-            $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'note');
+            $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'low');
             $this->foundCount++;
         }
     }

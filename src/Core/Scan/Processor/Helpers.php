@@ -207,7 +207,7 @@ class Helpers extends AbstractProcessor
                 $phpFile,
                 $lineNumber,
                 $msg,
-                'error'
+                'high'
             );
         } else {
             // Helper extends AbstractHelper but not used in templates - still bad but less severe
@@ -217,7 +217,7 @@ class Helpers extends AbstractProcessor
                 $phpFile,
                 $lineNumber,
                 $msg,
-                'warning'
+                'medium'
             );
         }
     }

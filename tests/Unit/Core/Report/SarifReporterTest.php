@@ -154,7 +154,7 @@ class SarifReporterTest extends TestCase
             [
                 'ruleId' => 'test',
                 'files' => [
-                    ['file' => '/path/file.php', 'line' => 1, 'severity' => 'error'],
+                    ['file' => '/path/file.php', 'line' => 1, 'severity' => 'high'],
                 ],
             ],
         ];

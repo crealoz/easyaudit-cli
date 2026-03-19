@@ -35,7 +35,7 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
 
         if (!empty($this->results)) {
             $cnt = count($this->results);
-            CliWriter::resultLine('Deprecated payment method implementations', $cnt, 'warning');
+            CliWriter::resultLine('Deprecated payment method implementations', $cnt, 'medium');
             $report[] = [
                 'ruleId' => 'extensionOfAbstractMethod',
                 'name' => 'Extension of Deprecated Payment AbstractMethod',
@@ -88,7 +88,7 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
                 $msg = 'This payment method extends the deprecated '
                     . '\\Magento\\Payment\\Model\\Method\\AbstractMethod. Consider implementing '
                     . 'PaymentMethodInterface or using a modern payment base class instead.';
-                $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'error');
+                $this->results[] = Formater::formatError($file, $lineNumber, $msg, 'high');
             }
         }
     }

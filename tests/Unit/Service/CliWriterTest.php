@@ -195,7 +195,7 @@ class CliWriterTest extends TestCase
     public function testResultLineError(): void
     {
         ob_start();
-        CliWriter::resultLine('Critical issues', 3, 'error');
+        CliWriter::resultLine('Critical issues', 3, 'high');
         $output = ob_get_clean();
 
         $this->assertStringContainsString('Critical issues', $output);
@@ -206,7 +206,7 @@ class CliWriterTest extends TestCase
     public function testResultLineWarning(): void
     {
         ob_start();
-        CliWriter::resultLine('Warnings found', 2, 'warning');
+        CliWriter::resultLine('Warnings found', 2, 'medium');
         $output = ob_get_clean();
 
         $this->assertStringContainsString('Warnings found', $output);
@@ -216,7 +216,7 @@ class CliWriterTest extends TestCase
     public function testResultLineNote(): void
     {
         ob_start();
-        CliWriter::resultLine('Info items', 1, 'note');
+        CliWriter::resultLine('Info items', 1, 'low');
         $output = ob_get_clean();
 
         $this->assertStringContainsString('Info items', $output);

@@ -10,7 +10,7 @@ Static analysis tool for Magento 2 codebases. Detects anti-patterns, security ri
 
 ## Features
 
-- **20 processors** for DI, code quality, templates, performance, and architecture
+- **21 processors** detecting **39 anti-patterns** across DI, code quality, templates, performance, and architecture
 - **Zero dependencies** - standalone PHAR (~455KB)
 - **CI/CD ready** - SARIF output for GitHub Code Scanning
 - **Docker image** available
@@ -95,7 +95,7 @@ See [Automated PR docs](docs/request-pr.md) for the full workflow file and setup
 
 - [Security & Privacy](docs/security.md) - What data stays local, when servers are contacted
 - [CLI Usage](docs/cli-usage.md) - Commands, options, examples
-- [Available Processors](docs/processors.md) - All 19 analysis rules
+- [Available Processors](docs/processors.md) - All 21 processors (39 rules)
 - [CI/CD Integration](docs/ci-cd.md) - GitHub, GitLab, Bitbucket, Azure, CircleCI, Jenkins, Travis
 - [Automated PR (paid)](docs/request-pr.md) - Auto-fix via API
 - Developer Guide: [Writing Processors](docs/developer-guide/processors.md) | [Utilities Reference](docs/developer-guide/utilities.md)

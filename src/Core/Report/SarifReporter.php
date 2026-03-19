@@ -29,7 +29,12 @@ class SarifReporter implements ReporterInterface
                 $uri = $rel !== '' ? $rel : basename($abs);
                 $results[] = [
                     'ruleId' => $finding['ruleId'] ?? 'EASYAUDIT',
-                    'level' => $location['severity'] ?? 'warning',
+                    'level' => match ($location['severity'] ?? 'medium') {
+                        'high' => 'error',
+                        'medium' => 'warning',
+                        'low' => 'note',
+                        default => 'warning',
+                    },
                     'message' => ['text' => $location['message'] ?? $finding['message'] ?? ''],
                     'locations' => [
                         [
