@@ -76,11 +76,14 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
                 'ruleId' => 'thisToBlock',
                 'name' => 'Use of $this instead of $block',
                 'shortDescription' => 'Template uses $this instead of $block variable.',
-                'longDescription' => 'Using $this in phtml templates is not recommended as it '
-                    . 'may not be compatible with alternative templating systems. Using $block '
-                    . 'ensures broader compatibility and supports a more adaptable templating '
-                    . 'structure. This is especially important when considering future upgrades '
-                    . 'or alternative rendering engines.',
+                'longDescription' => 'Detects usage of $this instead of $block in phtml templates.' . "\n"
+                    . 'Impact: $this is unreliable because the template rendering context is not '
+                    . 'guaranteed to be the Block itself. Code relying on $this breaks silently when '
+                    . 'the template is rendered by a different engine or context.' . "\n"
+                    . 'Why change: Magento\'s template system provides $block as the stable reference '
+                    . 'to the current Block instance. Using $this bypasses this contract and creates '
+                    . 'fragile code.' . "\n"
+                    . 'How to fix: Replace $this with $block throughout the template.',
                 'files' => $this->useOfThisErrors,
             ];
         }
@@ -92,11 +95,16 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
                 'ruleId' => 'dataCrunchInPhtml',
                 'name' => 'Potential Data Crunch in Template',
                 'shortDescription' => 'Template retrieves data through blocks vs ViewModels.',
-                'longDescription' => 'Using blocks to retrieve data or configuration is generally '
-                    . 'discouraged. ViewModels provide a clearer separation of logic and '
-                    . 'presentation, making code more testable and maintainable. Consider moving '
-                    . 'data retrieval logic from blocks to ViewModels for a more structured '
-                    . 'approach.',
+                'longDescription' => 'Detects templates that make excessive data retrieval calls '
+                    . 'through the Block.' . "\n"
+                    . 'Impact: Heavy data retrieval through Block method calls couples presentation '
+                    . 'logic to the Block lifecycle, making the template harder to test and the Block '
+                    . 'harder to reuse.' . "\n"
+                    . 'Why change: Blocks accumulate responsibilities when templates rely on them for '
+                    . 'data preparation. This makes both the template and the Block harder to maintain '
+                    . 'independently.' . "\n"
+                    . 'How to fix: Move data preparation logic into a ViewModel. Inject it via layout '
+                    . 'XML and access it with $block->getViewModel().',
                 'files' => $this->dataCrunchWarnings,
             ];
         }
@@ -225,16 +233,14 @@ class AdvancedBlockVsViewModel extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor analyzes phtml template files to identify anti-patterns and '
-            . 'encourage best practices. It detects two main issues: (1) Use of $this instead '
-            . 'of $block - Using $this in templates is not recommended as it may not be '
-            . 'compatible with alternative templating systems beyond Magento\'s default. Using '
-            . '$block ensures broader compatibility. (2) Excessive data retrieval through '
-            . 'blocks - When templates make many calls to retrieve data through the block '
-            . '(e.g., $block->getData(), $block->getConfig()), it suggests that business logic '
-            . 'is tightly coupled with the presentation layer. ViewModels provide a clearer '
-            . 'separation of concerns, making code more testable, maintainable, and easier to '
-            . 'understand. They encapsulate data preparation logic and provide a clean '
-            . 'interface to templates.';
+        return 'Detects $this usage and excessive data retrieval through Block classes in phtml templates.' . "\n"
+            . 'Impact: Blocks that accumulate data logic become tightly coupled to the rendering pipeline, '
+            . 'making them hard to unit test and encouraging further responsibility creep over time.' . "\n"
+            . 'Why change: Using $this is unreliable because the template rendering context is not '
+            . 'guaranteed to be the Block itself. Heavy data retrieval in Blocks couples presentation '
+            . 'to the Block lifecycle, which degrades reusability and testability as the module grows.' . "\n"
+            . 'How to fix: Replace $this with $block in templates. Move data preparation logic from '
+            . 'Block classes into ViewModels, inject them via layout XML, and access them with '
+            . '$block->getData(\'viewModel\') or $block->getViewModel().';
     }
 }

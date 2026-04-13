@@ -118,12 +118,15 @@ class SameModulePlugins extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Plugins are designed to modify the behavior of classes in other modules, '
-            . 'promoting modularity and separation of concerns. Using plugins within the same '
-            . 'module can create tight coupling between classes, making the codebase harder to '
-            . 'maintain and understand. It is recommended to use preferences or direct class '
-            . 'modifications for altering behavior within the same module, as these approaches '
-            . 'are more straightforward and easier to manage.';
+        return 'Flags plugins that intercept a class belonging to the same module.' . "\n"
+            . 'Impact: A plugin adds an interceptor layer with its own instantiation and dispatch '
+            . 'overhead. When used within the same module, that overhead is paid with no architectural '
+            . 'benefit since there is no cross-module extensibility boundary to respect.' . "\n"
+            . 'Why change: The result is added complexity, runtime cost, and indirection for something '
+            . 'that a direct class modification or a preference would handle more clearly and '
+            . 'efficiently.' . "\n"
+            . 'How to fix: Replace the plugin with a preference if substitution is needed, or modify '
+            . 'the target class directly since both are in the same module and under the same ownership.';
     }
 
     public function getName(): string

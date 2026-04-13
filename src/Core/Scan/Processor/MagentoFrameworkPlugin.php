@@ -65,10 +65,16 @@ class MagentoFrameworkPlugin extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Plugins that target Magento core classes (those in the Magento\Framework namespace) are discouraged '
-            . 'because they can lead to unexpected behavior and maintenance challenges. It is recommended to use '
-            . 'other extension mechanisms, such as preferences or observers, when possible. On widely called classes, '
-            . 'plugins can introduce performance overhead and complicate debugging.';
+        return 'Flags plugins targeting classes in the Magento\Framework namespace.' . "\n"
+            . 'Impact: Framework classes are instantiated on every request across all areas. An '
+            . 'interceptor on any of them runs in the critical path unconditionally, increasing chain '
+            . 'depth for the entire platform. Each additional framework plugin compounds this overhead.' . "\n"
+            . 'Why change: Internal method signatures at this level can change between minor Magento '
+            . 'releases. Conflicts with other plugins on the same framework class are unpredictable and '
+            . 'extremely difficult to debug.' . "\n"
+            . 'How to fix: Prefer event observers, which run only when dispatched. If interception is '
+            . 'truly necessary, use a preference with careful version constraints. Document the reason '
+            . 'for any framework-level plugin that remains.';
     }
 
     public function getName(): string

@@ -552,7 +552,7 @@ PHP;
     {
         $desc = $this->processor->getLongDescription();
         $this->assertStringContainsString('around', strtolower($desc));
-        $this->assertStringContainsString('performance', strtolower($desc));
+        $this->assertStringContainsString('overhead', strtolower($desc));
     }
 
     public function testProcessWithClosureTypeHint(): void

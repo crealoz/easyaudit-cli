@@ -35,10 +35,10 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-select',
             'name' => 'Hard Written SQL SELECT',
             'shortDescription' => 'SELECT queries must be avoided',
-            'longDescription' => 'SELECT queries must be avoided. Use the Magento Framework '
-                . 'methods instead or a custom repository with getList() and/or getById() '
-                . 'methods. Raw SQL queries bypass Magento\'s data abstraction layer, events, '
-                . 'and can lead to security vulnerabilities.',
+            'longDescription' => 'Detects raw SELECT ... FROM queries in PHP code.
+Impact: Raw SELECT queries bypass parameter binding and the data abstraction layer, creating SQL injection risk and making schema dependencies implicit.
+Why change: Schema changes will silently break these queries. They are also invisible to Magento\'s query profiling and read/write splitting.
+How to fix: Use a repository with getList()/getById(), or a collection with addFieldToFilter().',
             'recommendation' => 'Use a repository with getList() or getById() methods, or a collection with addFieldToFilter().',
         ],
         'DELETE' => [
@@ -47,10 +47,10 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-delete',
             'name' => 'Hard Written SQL DELETE',
             'shortDescription' => 'DELETE queries must be avoided',
-            'longDescription' => 'DELETE queries must be avoided. Use the Magento Framework '
-                . 'methods instead or a custom repository with delete() and/or deleteById() '
-                . 'methods. Raw SQL deletion bypasses Magento\'s event system and can lead to '
-                . 'referential integrity issues.',
+            'longDescription' => 'Detects raw DELETE ... FROM queries in PHP code.
+Impact: Raw DELETE queries bypass Magento\'s event system and referential integrity checks, risking orphaned data and silent data loss.
+Why change: The framework cannot trigger after-delete observers, reindexing, or cache invalidation for rows deleted outside its control.
+How to fix: Use a repository with delete()/deleteById() methods.',
             'recommendation' => 'Use a repository with delete() or deleteById() methods.',
         ],
         'INSERT' => [
@@ -59,10 +59,10 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-insert',
             'name' => 'Hard Written SQL INSERT',
             'shortDescription' => 'INSERT queries should be avoided',
-            'longDescription' => 'INSERT queries should be avoided. Use the Magento Framework '
-                . 'methods instead or a custom repository with a save() method. While it can be '
-                . 'faster for large amounts of data, it bypasses Magento\'s validation and '
-                . 'event system.',
+            'longDescription' => 'Detects raw INSERT ... INTO queries in PHP code.
+Impact: Raw INSERT queries bypass Magento\'s validation, event dispatch, and indexing triggers. Data inserted this way is invisible to the framework.
+Why change: While faster for bulk operations, the framework cannot guarantee data integrity or trigger dependent processes for these rows.
+How to fix: Use a repository with save(), or the resource model\'s save() method for single entities.',
             'recommendation' => 'Use a repository with save() method or the resource model\'s save() method.',
         ],
         'UPDATE' => [
@@ -71,10 +71,10 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-update',
             'name' => 'Hard Written SQL UPDATE',
             'shortDescription' => 'UPDATE queries should be avoided',
-            'longDescription' => 'UPDATE queries should be avoided. Use the Magento Framework '
-                . 'methods instead or a custom repository with a save() method. While it can be '
-                . 'faster for large amounts of data, it can lead to data loss and bypasses '
-                . 'Magento\'s event system.',
+            'longDescription' => 'Detects raw UPDATE ... SET queries in PHP code.
+Impact: Raw UPDATE queries bypass the event system and can silently overwrite data without triggering reindexing or cache invalidation.
+Why change: Partial updates on error are not rolled back by the framework, and dependent data (indexes, caches) becomes stale.
+How to fix: Use a repository with save(), or the resource model\'s save() method.',
             'recommendation' => 'Use a repository with save() method or the resource model\'s save() method.',
         ],
         'JOIN' => [
@@ -83,10 +83,10 @@ class HardWrittenSQL extends AbstractProcessor
             'ruleId' => 'magento.code.hard-written-sql-join',
             'name' => 'Hard Written SQL JOIN',
             'shortDescription' => 'JOIN queries should be avoided',
-            'longDescription' => 'JOIN queries should be avoided. Use the Magento Framework '
-                . 'collection methods instead, such as addFieldToFilter() or join() methods on '
-                . 'collections. This ensures better performance optimization and database '
-                . 'abstraction.',
+            'longDescription' => 'Detects raw JOIN ... ON queries in PHP code.
+Impact: Raw JOIN queries hardcode table relationships and are fragile across schema changes. They bypass the collection layer\'s query optimization and database abstraction.
+Why change: Table names and column names can change between Magento versions. The collection layer handles table prefixes and EAV structure automatically.
+How to fix: Use collection join() methods or addFieldToFilter() with proper table relations.',
             'recommendation' => 'Use collection join() methods or addFieldToFilter() with proper table relations.',
         ],
     ];
@@ -118,11 +118,17 @@ class HardWrittenSQL extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor detects raw SQL queries written directly in PHP code. In '
-            . 'Magento 2, raw SQL queries are considered bad practice as they bypass the '
-            . 'framework\'s database abstraction layer, event system, plugins, and can lead '
-            . 'to security vulnerabilities like SQL injection. Developers should use '
-            . 'repositories, resource models, and collections instead.';
+        return 'Detects raw SQL query strings (SELECT, INSERT, UPDATE, DELETE, JOIN) written directly '
+            . 'in PHP code.' . "\n"
+            . 'Impact: Raw SQL bypasses parameter binding, making it a direct SQL injection vector when '
+            . 'request input is involved. It is also fragile across schema changes, incompatible with '
+            . 'read/write connection splitting, and invisible to Magento\'s query profiling tools.' . "\n"
+            . 'Why change: Schema dependencies become implicit rather than expressed through the '
+            . 'collection or repository layer, making the code harder to maintain and audit for '
+            . 'security.' . "\n"
+            . 'How to fix: Use repositories with SearchCriteria for reads, repository save()/delete() '
+            . 'for writes, or the connection API ($connection->select(), $connection->quoteInto()) when '
+            . 'lower-level access is truly needed. Never concatenate user input into query strings.';
     }
 
     /**

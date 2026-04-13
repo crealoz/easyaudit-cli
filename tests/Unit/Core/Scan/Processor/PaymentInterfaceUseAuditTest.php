@@ -54,7 +54,7 @@ class PaymentInterfaceUseAuditTest extends TestCase
     {
         $description = $this->processor->getLongDescription();
         $this->assertStringContainsString('deprecated', $description);
-        $this->assertStringContainsString('PaymentMethodInterface', $description);
+        $this->assertStringContainsString('MethodInterface', $description);
     }
 
     public function testProcessDetectsDeprecatedPaymentMethod(): void

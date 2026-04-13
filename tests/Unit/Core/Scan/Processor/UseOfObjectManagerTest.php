@@ -39,8 +39,8 @@ class UseOfObjectManagerTest extends TestCase
     public function testGetLongDescriptionExplainsProblem(): void
     {
         $description = $this->processor->getLongDescription();
-        $this->assertStringContainsString('dependency injection', $description);
-        $this->assertStringContainsString('anti-pattern', $description);
+        $this->assertStringContainsString('constructor', strtolower($description));
+        $this->assertStringContainsString('DI graph', $description);
     }
 
     public function testProcessDetectsViolation(): void

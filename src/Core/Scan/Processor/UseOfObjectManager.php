@@ -64,10 +64,17 @@ class UseOfObjectManager extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'The ObjectManager should not be used directly in Magento 2 code. '
-            . 'Use dependency injection in constructors instead. Direct ObjectManager usage '
-            . 'bypasses the DI container, makes testing difficult, and is considered an anti-pattern. '
-            . 'The only exception is Factory classes which are designed to use ObjectManager internally.';
+        return 'Detects direct ObjectManager::getInstance() and $objectManager->get()/create() calls '
+            . 'outside factory classes.' . "\n"
+            . 'Impact: Direct ObjectManager usage hides dependencies from the DI graph. The framework '
+            . 'cannot manage their lifecycle, scope, or substitution correctly. Classes using it cannot '
+            . 'be unit tested in isolation because their dependencies cannot be injected from outside.' . "\n"
+            . 'Why change: It makes it impossible to trace the full dependency graph statically, which '
+            . 'is essential for debugging, profiling, and maintaining large codebases. It also bypasses '
+            . 'proxy and preference configurations.' . "\n"
+            . 'How to fix: Inject dependencies through the constructor. Declare them in di.xml if '
+            . 'custom configuration is needed. Factory classes are the only context where direct '
+            . 'ObjectManager access is accepted.';
     }
 
     /**
@@ -353,11 +360,16 @@ class UseOfObjectManager extends AbstractProcessor
                 'ruleId' => 'replaceObjectManager',
                 'name' => 'Use of ObjectManager',
                 'shortDescription' => 'ObjectManager should not be used directly',
-                'longDescription' => 'The ObjectManager should not be used directly in Magento 2 '
-                    . 'code. Use dependency injection in constructors instead. Direct ObjectManager '
-                    . 'usage bypasses the DI container, makes testing difficult, and is considered '
-                    . 'an anti-pattern. The only exception is Factory classes which are designed '
-                    . 'to use ObjectManager internally.',
+                'longDescription' => 'Detects direct ObjectManager::getInstance() or '
+                    . '$objectManager->get()/create() calls.' . "\n"
+                    . 'Impact: Dependencies are hidden from the DI graph. The framework cannot '
+                    . 'manage their lifecycle, scope, or substitution. The class cannot be unit '
+                    . 'tested in isolation.' . "\n"
+                    . 'Why change: Direct ObjectManager usage bypasses proxy and preference '
+                    . 'configurations and makes it impossible to trace the dependency graph '
+                    . 'statically.' . "\n"
+                    . 'How to fix: Inject dependencies through the constructor. Factory classes are '
+                    . 'the only accepted exception.',
                 'files' => $this->objectManagerUsages,
             ];
         }
@@ -367,8 +379,13 @@ class UseOfObjectManager extends AbstractProcessor
                 'ruleId' => 'magento.code.useless-object-manager-import',
                 'name' => 'Useless ObjectManager Import',
                 'shortDescription' => 'ObjectManager imported but not used',
-                'longDescription' => 'The ObjectManager was imported but does not seem to be used in the code. '
-                    . 'Please remove the unused import to keep the code clean.',
+                'longDescription' => 'Detects an ObjectManager import (use statement) that is '
+                    . 'never used in the code.' . "\n"
+                    . 'Impact: Dead imports add noise and may confuse developers into thinking '
+                    . 'ObjectManager is needed or actively used in the class.' . "\n"
+                    . 'Why change: Unused imports are a code smell and can mask the fact that a '
+                    . 'previous ObjectManager usage was removed but the import was left behind.' . "\n"
+                    . 'How to fix: Remove the unused import statement.',
                 'files' => $this->uselessImports,
             ];
         }

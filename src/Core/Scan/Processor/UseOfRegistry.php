@@ -59,10 +59,17 @@ class UseOfRegistry extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'The Registry pattern is deprecated in Magento 2 and should not be used. It acts as a global '
-            . 'object holder that bypasses dependency injection, creates hidden dependencies, and makes code harder '
-            . 'to test. Use constructor injection for explicit dependencies or data persistors for session-like '
-            . 'storage instead.';
+        return 'Flags usage of the deprecated \Magento\Framework\Registry class.' . "\n"
+            . 'Impact: Registry is a global mutable store with no scoping, lifecycle management, or '
+            . 'type safety. Data written by one class can be read or overwritten by any other at any '
+            . 'point, creating hidden coupling that is extremely difficult to trace.' . "\n"
+            . 'Why change: This makes execution order sensitive, breaks test isolation because state '
+            . 'leaks between test cases, and produces bugs that are hard to reproduce reliably. It was '
+            . 'designed as a temporary compatibility bridge from Magento 1 and has no place in '
+            . 'production code.' . "\n"
+            . 'How to fix: Use constructor injection to pass data explicitly between classes. For '
+            . 'request-scoped persistence, use data persistors. For session-like data, use dedicated '
+            . 'session objects or DTOs with clear ownership.';
     }
 
     /**
@@ -202,9 +209,14 @@ class UseOfRegistry extends AbstractProcessor
             'ruleId' => 'magento.code.use-of-registry',
             'name' => 'Use of Registry',
             'shortDescription' => 'Magento\Framework\Registry is deprecated',
-            'longDescription' => 'The Registry pattern is deprecated in Magento 2. It bypasses dependency injection, '
-                . 'creates hidden dependencies, makes code harder to test, and can lead to unexpected state mutations. '
-                . 'Use constructor injection for explicit dependencies or data persistors for session-like storage instead.',
+            'longDescription' => 'Detects usage of the deprecated '
+                . '\Magento\Framework\Registry class.' . "\n"
+                . 'Impact: Registry is a global mutable store with no scoping or type safety. It '
+                . 'creates hidden coupling between unrelated classes and breaks test isolation.' . "\n"
+                . 'Why change: Data written by one class can be read or overwritten by any other at '
+                . 'any point, making execution order sensitive and bugs hard to reproduce.' . "\n"
+                . 'How to fix: Use constructor injection for explicit data passing, data persistors '
+                . 'for request-scoped data, or dedicated DTOs.',
             'files' => $this->registryUsages,
         ]];
     }

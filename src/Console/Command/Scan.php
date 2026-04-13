@@ -63,7 +63,7 @@ HELP;
         }
 
         [$opts, $rest] = Args::parse($argv);
-        $format      = strtolower(Args::optStr($opts, 'format', 'json')) ?? 'json';
+        $format      = strtolower(Args::optStr($opts, 'format', 'html')) ?? 'html';
 
         $allowedFormats = ['json', 'sarif', 'html'];
         if (!in_array($format, $allowedFormats, true)) {
@@ -78,7 +78,7 @@ HELP;
         $path        = $rest ?: '.';
         define('EA_SCAN_PATH', $path);
 
-        $result   = $this->scanner->run($exclude, $excludedExt);
+        $result   = $this->scanner->run($exclude, $excludedExt, $format);
 
         $findings = $result['findings'];
         $toolSuggestions = $result['toolSuggestions'];
@@ -98,10 +98,7 @@ HELP;
             'json' => (new JsonReporter())->generate($findings),
         };
 
-        $ext = match ($format) {
-            'sarif' => 'sarif', 'html' => 'html', default => 'json'
-        };
-        $defaultPath = "report/easyaudit-report.{$ext}";
+        $defaultPath = "report/easyaudit-report.{$format}";
 
         if ($output) {
             file_put_contents($output, $payload);

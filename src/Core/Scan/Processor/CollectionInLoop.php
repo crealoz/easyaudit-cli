@@ -56,12 +56,16 @@ class CollectionInLoop extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Loading models or fetching single entities inside loops causes N+1 query '
-            . 'problems, one of the most common performance killers in Magento 2. Each '
-            . 'iteration executes a separate database query, leading to potentially hundreds '
-            . 'or thousands of queries. Instead, use collection getList() with search criteria '
-            . 'to batch-load all needed entities before the loop, or use a collection with '
-            . 'addFieldToFilter() to load all items at once.';
+        return 'Detects model or collection loading inside loops (N+1 query problem).' . "\n"
+            . 'Impact: Each iteration triggers a separate SQL query. On a list of 100 items, that means '
+            . '100 database round-trips. Under concurrent traffic this leads to connection pool '
+            . 'exhaustion, high database CPU, and degraded response times across the entire storefront.' . "\n"
+            . 'Why change: N+1 queries are one of the most frequent causes of performance degradation in '
+            . 'Magento 2 and they scale linearly with dataset size, making them progressively worse as '
+            . 'the catalog grows.' . "\n"
+            . 'How to fix: Batch-load all needed data before the loop using getList() with SearchCriteria '
+            . 'or a collection with addFieldToFilter(). Index results by entity ID for O(1) lookup '
+            . 'inside the loop.';
     }
 
     public function process(array $files): void

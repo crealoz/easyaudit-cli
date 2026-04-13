@@ -1,6 +1,6 @@
 {
   "main": "bin/easyaudit",
   "output": "easyaudit.phar",
-  "directories": ["src"],
+  "directories": ["src", "data"],
   "timestamp": "now"
 }

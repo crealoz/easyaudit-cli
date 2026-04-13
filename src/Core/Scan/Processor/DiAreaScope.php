@@ -40,12 +40,16 @@ class DiAreaScope extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Plugins and preferences declared in the global etc/di.xml are loaded for every '
-            . 'area (frontend, adminhtml, cron, REST API, etc.). When they target area-specific '
-            . 'classes (e.g., frontend blocks or admin controllers), they add unnecessary overhead '
-            . 'in areas where they are never used. Move them to the appropriate area di.xml '
-            . '(etc/frontend/di.xml or etc/adminhtml/di.xml) to reduce the DI compilation '
-            . 'footprint and improve performance.';
+        return 'Flags plugins and preferences in global etc/di.xml that target area-specific classes.' . "\n"
+            . 'Impact: Global DI configuration is compiled and loaded for every request type. '
+            . 'Area-specific interceptors declared globally inflate the DI graph and add objects to the '
+            . 'instantiation surface of requests that have no use for them (e.g., frontend plugins '
+            . 'loaded during cron or REST API calls).' . "\n"
+            . 'Why change: Beyond wasted resources, area-scoped concerns buried in global configuration '
+            . 'are harder to locate, reason about, and maintain. They also increase DI compilation time.' . "\n"
+            . 'How to fix: Move the declaration to the corresponding area-specific file: '
+            . 'etc/frontend/di.xml, etc/adminhtml/di.xml, or etc/webapi_rest/di.xml. The class behavior '
+            . 'remains identical; only the loading scope changes.';
     }
 
     public function process(array $files): void

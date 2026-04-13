@@ -40,11 +40,14 @@ class BlockViewModelRatio extends AbstractProcessor
                 'ruleId' => 'blockViewModelRatio',
                 'name' => 'Block vs ViewModel Ratio',
                 'shortDescription' => 'Module has a high ratio of Block classes vs ViewModels.',
-                'longDescription' => 'A high ratio of Block classes (> 50%) may indicate poor '
-                    . 'code organization. In modern Magento 2, ViewModels should be preferred '
-                    . 'for presentation logic as they provide better separation of concerns, '
-                    . 'testability, and maintainability. Consider refactoring Block logic into '
-                    . 'ViewModels.',
+                'longDescription' => 'Detects modules where Block classes exceed 50% of total PHP '
+                    . 'classes.' . "\n"
+                    . 'Impact: Data preparation logic has accumulated in a layer coupled to '
+                    . 'rendering, making the module hard to unit test and reuse outside templates.' . "\n"
+                    . 'Why change: Blocks are tied to layout XML and the rendering lifecycle. The '
+                    . 'higher the ratio, the harder the module becomes to test, refactor, and extend.' . "\n"
+                    . 'How to fix: Extract data preparation into ViewModel classes. Inject them via '
+                    . 'layout XML. Keep Blocks thin.',
                 'files' => $this->moduleRatios,
             ];
         }
@@ -133,15 +136,15 @@ class BlockViewModelRatio extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor analyzes the ratio of Block classes to total classes (Blocks, '
-            . 'ViewModels, Helpers, etc.) per module. A high ratio of Block classes (more than '
-            . '50% of all classes) may indicate poor code organization and over-reliance on '
-            . 'Blocks for presentation logic. In modern Magento 2 development, ViewModels are '
-            . 'preferred for presentation logic because they: (1) Provide better separation of '
-            . 'concerns between business logic and presentation, (2) Are more testable with '
-            . 'unit tests, (3) Don\'t have dependencies on Block lifecycle, (4) Can be reused '
-            . 'across multiple templates and blocks. Consider refactoring heavy Block logic '
-            . 'into ViewModels to improve code quality and maintainability. This check helps '
-            . 'identify modules that may benefit from architectural improvements.';
+        return 'Flags modules where Block classes exceed 50% of total PHP classes.' . "\n"
+            . 'Impact: A high Block ratio signals that data preparation logic has accumulated in a layer '
+            . 'not designed for it. Blocks are coupled to layout XML and the rendering lifecycle, making '
+            . 'them expensive to instantiate in tests and hard to reuse outside their original template.' . "\n"
+            . 'Why change: The higher the ratio, the harder the module becomes to test, refactor, and '
+            . 'onboard new developers onto. Business logic buried in Blocks cannot be shared across API '
+            . 'endpoints or CLI commands.' . "\n"
+            . 'How to fix: Create ViewModel classes for presentation logic and inject them via layout XML. '
+            . 'Reserve Blocks for rendering concerns only. Aim for a ratio where ViewModels handle data '
+            . 'preparation and Blocks remain thin wrappers.';
     }
 }

@@ -38,7 +38,7 @@ class MagentoFrameworkPluginTest extends TestCase
     {
         $description = $this->processor->getLongDescription();
         $this->assertStringContainsString('Framework', $description);
-        $this->assertStringContainsString('discouraged', strtolower($description));
+        $this->assertStringContainsString('critical path', strtolower($description));
     }
 
     public function testProcessDetectsMagentoFrameworkPlugin(): void

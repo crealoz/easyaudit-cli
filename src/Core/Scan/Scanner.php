@@ -59,12 +59,17 @@ class Scanner
     public function run(
         string $exclude = '',
         array $excludedExtensions = [],
-        $onlyFixable = false,
+        string $format = 'html'
     ): array {
         if (empty(EA_SCAN_PATH)) {
             $path = getcwd();
         } else {
             $path = Paths::getAbsolutePath(EA_SCAN_PATH);
+        }
+
+        $fixerReady = false;
+        if ($format === 'json') {
+            $fixerReady = true;
         }
 
         if (!empty($excludedExtensions)) {
@@ -103,7 +108,7 @@ class Scanner
         $files = $this->scanPaths($path, $files);
 
         $fixableTypes = [];
-        if ($onlyFixable) {
+        if ($fixerReady) {
             $api = new Api();
             $fixableTypes = $api->getAllowedType();
         }
@@ -114,10 +119,6 @@ class Scanner
             $processors = $this->getProcessors();
             /** @var ProcessorInterface $processor */
             foreach ($processors as $processor) {
-                if ($onlyFixable && !in_array($processor, $fixableTypes)) {
-                    CliWriter::skipped("Skipping " . $processor->getName() . " (not fixable)");
-                    continue;
-                }
 
                 if (!isset($files[$processor->getFileType()])) {
                     $fileType = $processor->getFileType();
@@ -133,17 +134,39 @@ class Scanner
                 if ($processor->getFoundCount() > 0) {
                     foreach ($processor->getReport() as $report) {
                         $ruleId = $report['ruleId'] ?? '';
+                        /** if the file needs to be ready for fixer, we need to remove useless information to improve
+                         * file process performances
+                         */
+                        if ($fixerReady) {
+                            unset($report['name']);
+                            unset($report['shortDescription']);
+                            unset($report['longDescription']);
+                            // let's remove "message" entry from file as well
+                            foreach (array_keys($report['files']) as $key) {
+                                unset($report['files'][$key]['message']);
+                            }
+                        }
 
-                        // Check if this issue can be fixed by an external tool
+                        // Check if this issue can be fixed by an external tool (phpcs or something like that)
                         if (ExternalToolMapping::isExternallyFixable($ruleId)) {
                             $fileCount = count($report['files'] ?? []);
                             $toolSuggestions[$ruleId] = ($toolSuggestions[$ruleId] ?? 0) + $fileCount;
                         } else {
-                            $findings[] = $report;
+                            if (!$fixerReady || isset($fixableTypes[$ruleId])) {
+                                $findings[] = $report;
+                            }
                         }
                     }
                 }
             }
+        }
+
+        // Security vulnerability check (version-based, not file-based)
+        CliWriter::processorHeader('Magento Version Security');
+        $securityCheck = new MagentoVersionSecurityCheck();
+        $securityFindings = $securityCheck->check($path);
+        foreach ($securityFindings as $finding) {
+            $findings[] = $finding;
         }
 
         return [

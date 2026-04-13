@@ -38,6 +38,9 @@ jobs:
         run: |
           sed -i "s/VERSION = 'dev'/VERSION = '${{ steps.version.outputs.VERSION }}'/" src/Version.php
 
+      - name: Generate security bulletin data
+        run: php tools/update-security-bulletins.php
+
       - name: Build PHAR (first pass)
         run: box compile
 

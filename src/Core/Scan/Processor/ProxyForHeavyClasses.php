@@ -56,11 +56,15 @@ class ProxyForHeavyClasses extends AbstractProcessor
                 'ruleId' => 'noProxyUsedForHeavyClasses',
                 'name' => 'No Proxy for Heavy Classes',
                 'shortDescription' => 'Heavy classes injected without proxy configuration.',
-                'longDescription' => 'Some classes such as Session, Collection, and ResourceModel '
-                    . 'are heavy and should be injected through a proxy. This avoids performance '
-                    . 'issues when the class is instantiated. Using proxies improves performance '
-                    . 'especially when the class is not necessarily used, as the proxy delays '
-                    . 'instantiation until the first method call.',
+                'longDescription' => 'Detects heavy classes (Session, Collection, ResourceModel) '
+                    . 'injected without proxy configuration.' . "\n"
+                    . 'Impact: These classes trigger database connections, configuration reads, or '
+                    . 'session initialization at construction time. Without a proxy, this cost is '
+                    . 'paid even when the dependency is never used.' . "\n"
+                    . 'Why change: On widely instantiated parent classes, the cascading effect on '
+                    . 'memory and initialization time is substantial and entirely avoidable.' . "\n"
+                    . 'How to fix: Add proxy configuration in di.xml: <argument name="paramName" '
+                    . 'xsi:type="object">Heavy\Class\Proxy</argument>.',
                 'files' => $this->results,
             ];
         }
@@ -222,18 +226,17 @@ class ProxyForHeavyClasses extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor checks if heavy classes are injected without proxy configuration '
-            . 'in di.xml. Heavy classes include Session classes (customer sessions, backend '
-            . 'sessions, etc.), Collection classes (database query collections), and ResourceModel '
-            . 'classes (database access layers). These classes are expensive to instantiate '
-            . 'because they may: (1) Initialize database connections, (2) Load configuration, '
-            . '(3) Start sessions, (4) Query the database. When a heavy class is injected '
-            . 'directly, it is instantiated every time the parent class is created, even if '
-            . 'the heavy class is never used. Proxies solve this by creating a lightweight '
-            . 'wrapper that delays instantiation until the first method call. This can '
-            . 'significantly improve performance, especially for classes that are created '
-            . 'frequently but don\'t always use all their dependencies. To fix: add proxy '
-            . 'configuration in di.xml like: <type name="Your\\Class"><arguments><argument '
-            . 'name="paramName" xsi:type="object">Heavy\\Class\\Proxy</argument></arguments></type>';
+        return 'Checks whether Session, Collection, and ResourceModel classes are injected without '
+            . 'proxy configuration.' . "\n"
+            . 'Impact: These classes frequently trigger database connections, configuration reads, or '
+            . 'session initialization at construction time. When injected directly, that cost is paid on '
+            . 'every request that instantiates the parent class, even if the dependency is never '
+            . 'accessed.' . "\n"
+            . 'Why change: On classes that are themselves widely instantiated, the cascading effect on '
+            . 'memory and initialization time can be substantial. The overhead is entirely avoidable '
+            . 'with proxies.' . "\n"
+            . 'How to fix: Add proxy configuration in di.xml: <argument name="paramName" '
+            . 'xsi:type="object">Heavy\Class\Proxy</argument>. The proxy delays instantiation until the '
+            . 'first method call, with zero behavioral difference to the consuming class.';
     }
 }

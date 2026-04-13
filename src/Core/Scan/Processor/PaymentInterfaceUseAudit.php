@@ -40,14 +40,15 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
                 'ruleId' => 'extensionOfAbstractMethod',
                 'name' => 'Extension of Deprecated Payment AbstractMethod',
                 'shortDescription' => 'Payment method extends deprecated AbstractMethod class.',
-                'longDescription' => 'The class extends \\Magento\\Payment\\Model\\Method\\'
-                    . 'AbstractMethod which is deprecated in Magento 2. This approach to '
-                    . 'creating payment methods is no longer recommended. Modern payment '
-                    . 'methods should implement Magento\\Payment\\Api\\Data\\'
-                    . 'PaymentMethodInterface or extend one of the newer payment method base '
-                    . 'classes. Using the deprecated AbstractMethod can lead to compatibility '
-                    . 'issues with newer Magento versions and may not support newer payment '
-                    . 'features.',
+                'longDescription' => 'Detects payment methods extending the deprecated '
+                    . '\Magento\Payment\Model\Method\AbstractMethod.' . "\n"
+                    . 'Impact: AbstractMethod is officially deprecated by Adobe and scheduled for '
+                    . 'removal. A broken payment flow at upgrade time has immediate and severe '
+                    . 'business impact.' . "\n"
+                    . 'Why change: This class cannot leverage modern payment features (GraphQL, '
+                    . 'vault, command pool) and may break silently on future Magento versions.' . "\n"
+                    . 'How to fix: Implement \Magento\Payment\Model\MethodInterface and use the '
+                    . 'command pool / gateway adapter pattern.',
                 'files' => $this->results,
             ];
         }
@@ -100,22 +101,17 @@ class PaymentInterfaceUseAudit extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor identifies payment methods that extend the deprecated '
-            . 'AbstractMethod class. In early versions of Magento 2, payment methods were '
-            . 'created by extending \\Magento\\Payment\\Model\\Method\\AbstractMethod. This '
-            . 'approach is now deprecated and not recommended. Modern Magento 2 payment methods '
-            . 'should: (1) Implement Magento\\Payment\\Api\\Data\\PaymentMethodInterface for '
-            . 'better API compatibility, (2) Use adapter patterns for third-party payment '
-            . 'gateways, (3) Leverage newer payment method base classes that provide better '
-            . 'separation of concerns. The deprecated AbstractMethod class may not support '
-            . 'newer payment features such as: GraphQL support, modern payment flows, improved '
-            . 'authorization and capture patterns, better vault (saved payment) support. '
-            . 'Continuing to use AbstractMethod can lead to: compatibility issues with future '
-            . 'Magento versions, inability to use newer payment features, difficulty integrating '
-            . 'with modern payment service providers, maintenance challenges as the ecosystem '
-            . 'moves away from this pattern. To modernize: review the Magento DevDocs for '
-            . 'current payment method implementation patterns, consider using payment gateway '
-            . 'adapters, implement PaymentMethodInterface, or extend from newer base classes '
-            . 'provided by Magento or reputable third-party libraries.';
+        return 'Identifies payment method classes extending the deprecated '
+            . '\Magento\Payment\Model\Method\AbstractMethod.' . "\n"
+            . 'Impact: AbstractMethod is officially deprecated by Adobe and scheduled for removal. '
+            . 'Payment integrations are among the most sensitive parts of a store; a broken payment '
+            . 'flow at upgrade time has immediate and severe business impact.' . "\n"
+            . 'Why change: Any payment module extending AbstractMethod carries a direct upgrade '
+            . 'compatibility risk. It may break silently on a future Magento version without runtime '
+            . 'deprecation notice, and it cannot leverage modern payment features (GraphQL, vault, '
+            . 'command pool).' . "\n"
+            . 'How to fix: Implement \Magento\Payment\Model\MethodInterface and use the command pool / '
+            . 'gateway adapter pattern introduced in Magento 2.1. Refer to the Magento DevDocs payment '
+            . 'gateway integration guide for the current recommended architecture.';
     }
 }

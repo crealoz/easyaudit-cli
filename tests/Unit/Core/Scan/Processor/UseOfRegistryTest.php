@@ -40,7 +40,7 @@ class UseOfRegistryTest extends TestCase
     {
         $description = $this->processor->getLongDescription();
         $this->assertStringContainsString('deprecated', $description);
-        $this->assertStringContainsString('dependency injection', $description);
+        $this->assertStringContainsString('constructor injection', $description);
     }
 
     public function testProcessDetectsBadRegistryUsage(): void

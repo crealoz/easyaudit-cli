@@ -35,11 +35,10 @@ class SpecificClassInjection extends AbstractProcessor
             'ruleId' => 'collectionMustUseFactory',
             'name' => 'Collection Must Use Factory',
             'shortDescription' => 'Collections must not be injected directly',
-            'longDescription' => 'A collection must not be injected in constructor as a '
-                . 'specific class. When a collection is needed, a factory of it must be '
-                . 'injected and used. This prevents the collection from being instantiated '
-                . 'at class construction time, improving performance and preventing issues '
-                . 'with collection state.',
+            'longDescription' => 'Detects direct collection class injection in constructors.
+Impact: The collection is instantiated at construction time, loading its state eagerly. This wastes resources when the collection is not always needed and prevents fresh queries on subsequent calls.
+Why change: The factory pattern exists specifically to control collection instantiation and ensure each usage gets a clean query builder.
+How to fix: Inject the CollectionFactory instead and call create() when the collection is actually needed.',
             'label' => 'Collections without factory',
             'severity' => 'high',
         ],
@@ -47,10 +46,10 @@ class SpecificClassInjection extends AbstractProcessor
             'ruleId' => 'repositoryMustUseInterface',
             'name' => 'Repository Must Use Interface',
             'shortDescription' => 'Repositories must use interface injection',
-            'longDescription' => 'A repository must not be injected in constructor as a '
-                . 'specific class. When a repository is needed, an interface of it must be '
-                . 'injected and used. This allows preferences to work correctly and respects '
-                . 'Magento 2 coding standards.',
+            'longDescription' => 'Detects concrete repository class injection instead of its interface.
+Impact: DI preferences on the repository interface are ignored. Other modules cannot substitute the implementation, and unit tests cannot mock it via interface.
+Why change: Repositories are designed to be consumed through their interface. Concrete injection breaks this contract and prevents the DI system from working as intended.
+How to fix: Type the constructor parameter to the repository interface (e.g., ProductRepositoryInterface).',
             'label' => 'Repositories without interface',
             'severity' => 'high',
         ],
@@ -58,10 +57,10 @@ class SpecificClassInjection extends AbstractProcessor
             'ruleId' => 'modelUseApiInterface',
             'name' => 'Model Should Use API Interface',
             'shortDescription' => 'Models with API interfaces should inject the interface',
-            'longDescription' => 'When a model implements an API interface, the interface '
-                . 'should be injected instead of the concrete class. This prevents '
-                . 'preferences from being ignored and respects the coding standards. It '
-                . 'ensures proper abstraction and allows for easier testing and customization.',
+            'longDescription' => 'Detects concrete model injection when an API data interface is available.
+Impact: Preferences on the API interface are ignored, and test doubles cannot be substituted. The consumer is coupled to the persistence layer instead of the data contract.
+Why change: API interfaces define the public data contract. Injecting the concrete model bypasses this abstraction and tightens coupling unnecessarily.
+How to fix: Inject the API data interface instead of the concrete model class.',
             'label' => 'Models should use API interface',
             'severity' => 'high',
         ],
@@ -69,11 +68,10 @@ class SpecificClassInjection extends AbstractProcessor
             'ruleId' => 'noResourceModelInjection',
             'name' => 'Resource Model Should Not Be Injected',
             'shortDescription' => 'Resource models should use repository pattern',
-            'longDescription' => 'A resource model must not be injected in constructor. '
-                . 'When data access is needed, a repository should be used instead. This '
-                . 'assures better separation of concerns, better code quality, and improves '
-                . 'code maintainability. Resource models represent the database layer and '
-                . 'should be abstracted behind repositories.',
+            'longDescription' => 'Detects direct resource model injection in constructors.
+Impact: Resource models represent the raw database layer. Injecting them directly couples business logic to the persistence implementation, bypassing the repository\'s validation and event dispatch.
+Why change: The repository pattern provides a clean separation between business logic and persistence. Direct resource model access breaks this boundary.
+How to fix: Use the repository pattern instead of direct resource model injection.',
             'label' => 'Resource models injected',
             'severity' => 'medium',
         ],
@@ -81,10 +79,10 @@ class SpecificClassInjection extends AbstractProcessor
             'ruleId' => 'statefulModelInjection',
             'name' => 'Stateful Model Injected Directly',
             'shortDescription' => 'Model extending AbstractModel is stateful and should use a Factory.',
-            'longDescription' => 'This class extends AbstractModel and holds mutable state '
-                . '(loaded database data). Injecting it directly means the same instance is '
-                . 'shared, which can cause stale data and side effects. Use a Factory to '
-                . 'create fresh instances when needed.',
+            'longDescription' => 'Detects direct injection of classes extending AbstractModel.
+Impact: AbstractModel instances hold mutable state (loaded database rows). When injected directly, the same instance is shared across all callers, causing stale data and side effects.
+Why change: Shared mutable state across a request leads to subtle bugs that are hard to trace and impossible to reproduce reliably in tests.
+How to fix: Inject a Factory and call create() to get fresh instances when needed.',
             'label' => 'Stateful models without factory',
             'severity' => 'medium',
         ],
@@ -92,11 +90,10 @@ class SpecificClassInjection extends AbstractProcessor
             'ruleId' => 'specificClassInjection',
             'name' => 'Specific Class Injection',
             'shortDescription' => 'Consider using factory, builder, or interface',
-            'longDescription' => 'A class should not be injected in constructor as a specific '
-                . 'class. In most cases, a factory, a builder, or an interface should be '
-                . 'used. This automatic scan cannot be 100% accurate, please verify manually. '
-                . 'Using proper abstraction improves testability, flexibility, and follows '
-                . 'dependency inversion principle.',
+            'longDescription' => 'Detects concrete class injection where an interface or factory would be more appropriate.
+Impact: Tight coupling to a specific implementation reduces substitutability and makes unit testing harder. This pattern accumulates across a codebase and increases the cost of refactoring.
+Why change: Proper abstraction through interfaces and factories is a core Magento 2 design principle that enables DI preferences, testing, and extensibility.
+How to fix: Use a factory, builder, or interface instead. This automatic scan may have false positives — verify manually.',
             'label' => 'Generic specific class injections',
             'severity' => 'medium',
         ],
@@ -175,11 +172,17 @@ class SpecificClassInjection extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'In Magento 2, certain classes should never be directly injected in constructors. '
-            . 'Collections must use factories, repositories must use interfaces, models with API '
-            . 'interfaces should inject the interface, and resource models should be replaced '
-            . 'with the repository pattern. This ensures proper abstraction, allows preferences '
-            . 'to work correctly, and follows Magento 2 coding standards.';
+        return 'Flags concrete class injections where interfaces or factories should be used.' . "\n"
+            . 'Impact: Concrete injection tightly couples the dependent class to a specific '
+            . 'implementation, reducing substitutability and making unit testing significantly harder. '
+            . 'When concrete classes accumulate across a codebase, the cost of any refactoring '
+            . 'increases.' . "\n"
+            . 'Why change: Collections injected directly bypass the factory pattern designed to control '
+            . 'instantiation. Repositories typed to concrete classes prevent preference-based '
+            . 'substitution. Direct model injection ignores API interfaces meant for decoupling.' . "\n"
+            . 'How to fix: Inject CollectionFactory instead of Collection. Type repositories to their '
+            . 'interface (e.g., ProductRepositoryInterface). Inject API data interfaces instead of '
+            . 'concrete models. Replace direct ResourceModel injection with the repository pattern.';
     }
 
     /**

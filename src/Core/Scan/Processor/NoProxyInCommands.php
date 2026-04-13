@@ -129,10 +129,17 @@ class NoProxyInCommands extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Commands should use proxies for their injections. Doing so improves performances especially for crons.
-        When a command is executed, not all dependencies are always needed. Using proxies allows to delay the
-        instantiation of these dependencies until they are actually used, which can significantly reduce memory
-         usage and execution time.';
+        return 'Detects CLI Command classes that inject dependencies without using the proxy pattern.' . "\n"
+            . 'Impact: Every registered command is instantiated during Magento CLI bootstrap, even when '
+            . 'an unrelated command is being executed. All constructor dependencies are built eagerly for '
+            . 'every CLI invocation, including every cron run. This produces significant and entirely '
+            . 'unnecessary memory overhead.' . "\n"
+            . 'Why change: On installations with many commands and heavy dependencies (Session, '
+            . 'Collection, ResourceModel), the cumulative instantiation cost adds up on every single '
+            . 'cron tick, wasting resources for code paths that are never reached.' . "\n"
+            . 'How to fix: Configure proxies in di.xml for heavy dependencies: <argument '
+            . 'name="paramName" xsi:type="object">Heavy\Class\Proxy</argument>. Proxies defer '
+            . 'instantiation until first method access, eliminating the eager construction cost.';
     }
 
     public function getName(): string

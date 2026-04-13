@@ -281,7 +281,7 @@ class ScanTest extends TestCase
         ob_end_clean();
 
         $this->assertSame(0, $result);
-        $this->assertFileExists('report/easyaudit-report.json');
+        $this->assertFileExists('report/easyaudit-report.html');
     }
 
     /**
@@ -330,7 +330,7 @@ class ScanTest extends TestCase
         $outputFile = $this->tmpDir . '/test-report.json';
 
         ob_start();
-        $result = $cmd->run(['--project-name=my-project', '--output=' . $outputFile, $this->tmpDir]);
+        $result = $cmd->run(['--project-name=my-project', '--format=json', '--output=' . $outputFile, $this->tmpDir]);
         ob_end_clean();
 
         $this->assertSame(0, $result);

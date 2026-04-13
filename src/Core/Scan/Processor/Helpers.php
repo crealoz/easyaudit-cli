@@ -53,11 +53,16 @@ class Helpers extends AbstractProcessor
                 'ruleId' => 'extensionOfAbstractHelper',
                 'name' => 'Extension of AbstractHelper',
                 'shortDescription' => 'Helper class extends deprecated AbstractHelper.',
-                'longDescription' => 'Helper classes should not extend Magento\\Framework\\App\\'
-                    . 'Helper\\AbstractHelper. This pattern is deprecated in Magento 2. Helpers '
-                    . 'should be simple utility classes without framework dependencies, or better '
-                    . 'yet, logic should be moved to ViewModels for presentation or to Service '
-                    . 'classes for business logic.',
+                'longDescription' => 'Detects helper classes that extend '
+                    . '\Magento\Framework\App\Helper\AbstractHelper.' . "\n"
+                    . 'Impact: Extending AbstractHelper ties the class to the Magento framework, '
+                    . 'inheriting unnecessary constructor dependencies and making the class impossible '
+                    . 'to mock in unit tests.' . "\n"
+                    . 'Why change: This pattern is deprecated in Magento 2. AbstractHelper was a '
+                    . 'Magento 1 convenience that has no place in modern modular code.' . "\n"
+                    . 'How to fix: Remove the AbstractHelper extension. For presentation logic, '
+                    . 'create a ViewModel. For business logic, create a plain service class with '
+                    . 'constructor DI.',
                 'files' => $this->extensionOfAbstractHelper,
             ];
         }
@@ -67,10 +72,15 @@ class Helpers extends AbstractProcessor
                 'ruleId' => 'helpersInsteadOfViewModels',
                 'name' => 'Helpers Instead of ViewModels',
                 'shortDescription' => 'Template uses helper instead of ViewModel.',
-                'longDescription' => 'Templates should not use helpers for presentation logic. '
-                    . 'ViewModels provide a clearer separation of concerns, are more testable, '
-                    . 'and follow modern Magento 2 best practices. Move presentation logic from '
-                    . 'helpers to ViewModels.',
+                'longDescription' => 'Detects $this->helper() calls in phtml templates.' . "\n"
+                    . 'Impact: Helpers are instantiated at layout load time regardless of whether the '
+                    . 'template is rendered. This wastes resources and couples the template to the '
+                    . 'Magento template engine.' . "\n"
+                    . 'Why change: ViewModels are lighter, lazily resolved, and properly testable. '
+                    . 'The helper() call in templates is a legacy pattern with no advantage over '
+                    . 'ViewModels.' . "\n"
+                    . 'How to fix: Replace with a ViewModel injected via layout XML. Access it with '
+                    . '$block->getViewModel() in the template.',
                 'files' => $this->helpersInsteadOfViewModels,
             ];
         }
@@ -229,19 +239,17 @@ class Helpers extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor identifies deprecated Helper patterns in Magento 2: (1) Helper '
-            . 'classes extending AbstractHelper - In Magento 1, helpers extended AbstractHelper '
-            . 'to access framework functionality. In Magento 2, this pattern is deprecated. '
-            . 'Helpers should be lightweight utility classes with no framework dependencies, '
-            . 'or logic should be moved to appropriate layers (ViewModels for presentation, '
-            . 'Services for business logic). (2) Helpers used in phtml templates - Templates '
-            . 'using $this->helper() should migrate to ViewModels. ViewModels provide: better '
-            . 'testability, clearer separation of concerns, no template engine coupling, '
-            . 'reusability across multiple templates, type safety. To modernize: For '
-            . 'presentation logic in templates: create ViewModels and inject them via layout '
-            . 'XML. For business logic: create Service classes in Model/Service directory. '
-            . 'For simple utilities: create standalone utility classes with static methods or '
-            . 'injected dependencies. Some core Magento helpers are exempted as they are still '
-            . 'part of the public API.';
+        return 'Identifies classes extending AbstractHelper and $this->helper() calls in phtml '
+            . 'templates.' . "\n"
+            . 'Impact: Helpers are instantiated at layout load time as part of the object graph, '
+            . 'regardless of whether the template is rendered or the helper\'s methods are ever called. '
+            . 'Their instantiation cost, and that of their own constructor dependencies, is paid on '
+            . 'every request that triggers the layout.' . "\n"
+            . 'Why change: Helpers extending AbstractHelper are nearly impossible to mock in unit tests, '
+            . 'effectively excluding any consuming class from automated testing. The $this->helper() '
+            . 'call in templates additionally couples templates to the Magento template engine.' . "\n"
+            . 'How to fix: For presentation data in templates, create a ViewModel and inject it via '
+            . 'layout XML. For shared business logic, create a service class with constructor DI. Some '
+            . 'core Magento helpers (e.g., Data helpers) are exempted from this check.';
     }
 }

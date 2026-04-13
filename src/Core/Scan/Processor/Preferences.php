@@ -39,10 +39,15 @@ class Preferences extends AbstractProcessor
                 'ruleId' => 'duplicatePreferences',
                 'name' => 'Duplicate Preferences',
                 'shortDescription' => 'Multiple preferences found for the same interface/class.',
-                'longDescription' => 'Multiple preferences found for the same interface/class. '
-                    . 'This can lead to unexpected behavior as only the last one will be '
-                    . 'applied, depending on module load sequence. Please remove duplicate '
-                    . 'preferences or check that sequence is done correctly in module declaration.',
+                'longDescription' => 'Detects multiple di.xml preferences targeting the same '
+                    . 'interface or class.' . "\n"
+                    . 'Impact: Only one preference can be active at runtime, and which one wins '
+                    . 'depends on module load order. This creates non-deterministic behavior that '
+                    . 'is hard to debug.' . "\n"
+                    . 'Why change: Adding, removing, or reordering any module can silently change '
+                    . 'the active implementation without any visible configuration change.' . "\n"
+                    . 'How to fix: Remove duplicate preferences, or ensure correct module ordering '
+                    . 'via the <sequence> tag in module.xml.',
                 'files' => $this->results,
             ];
         }
@@ -173,12 +178,17 @@ class Preferences extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Multiple preferences for the same interface or class can lead to unexpected '
-            . 'behavior in Magento 2. When multiple modules define preferences for the same '
-            . 'interface, only the last one (based on module load sequence) will be applied. '
-            . 'This can cause hard-to-debug issues, especially when modules are loaded in a '
-            . 'different order in different environments. It is recommended to use a single '
-            . 'preference per interface, or to carefully manage module dependencies using the '
-            . 'sequence tag in module.xml to ensure predictable behavior.';
+        return 'Flags multiple di.xml preferences declared for the same interface or class across '
+            . 'modules.' . "\n"
+            . 'Impact: Only one preference can be active at runtime. Which one wins depends on module '
+            . 'load order, which is not guaranteed to be stable across environments. The result is '
+            . 'non-deterministic behavior that is hard to reproduce and debug.' . "\n"
+            . 'Why change: These conflicts are difficult to detect in development and easy to miss in '
+            . 'code review. Adding, removing, or reordering any module in the dependency graph can '
+            . 'silently change the active implementation.' . "\n"
+            . 'How to fix: Use plugins for cross-module behavior modification. Reserve preferences for '
+            . 'single, well-coordinated overrides where exclusivity is intentional. If multiple '
+            . 'preferences are necessary, manage module load order explicitly via the <sequence> tag in '
+            . 'module.xml.';
     }
 }

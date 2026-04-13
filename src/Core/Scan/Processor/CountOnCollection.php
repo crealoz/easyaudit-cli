@@ -45,11 +45,15 @@ class CountOnCollection extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Using count() on a Magento collection forces it to load all items from the '
-            . 'database into memory just to count them. This is extremely inefficient for large '
-            . 'collections. Use getSize() instead, which executes a COUNT(*) SQL query and '
-            . 'returns the result without loading any items. This applies to both PHP\'s '
-            . 'count($collection) function and the collection\'s own ->count() method.';
+        return 'Flags count() calls on collection objects.' . "\n"
+            . 'Impact: Calling count() on a collection triggers a full SELECT * query, loading all '
+            . 'matching records into PHP memory just to produce a single integer. On large tables this '
+            . 'wastes both memory and query execution time on every page load where the pattern appears.' . "\n"
+            . 'Why change: getSize() issues a COUNT(*) query at the database level and returns only the '
+            . 'integer, without transferring or hydrating any row data. The performance difference is '
+            . 'orders of magnitude on large datasets.' . "\n"
+            . 'How to fix: Replace count($collection) and $collection->count() with '
+            . '$collection->getSize(). No other code changes are needed.';
     }
 
     public function process(array $files): void

@@ -44,13 +44,16 @@ class Cacheable extends AbstractProcessor
                 'ruleId' => 'useCacheable',
                 'name' => 'Use of cacheable="false"',
                 'shortDescription' => 'Block with cacheable="false" found in layout XML.',
-                'longDescription' => 'Using cacheable="false" is not recommended for blocks and '
-                    . 'should be avoided. This attribute prevents the block from being cached, '
-                    . 'which can significantly impact performance. Only use cacheable="false" '
-                    . 'if the block must display dynamic, user-specific data (e.g., customer '
-                    . 'information, cart contents, sales data). For most cases, consider '
-                    . 'alternative approaches like using customer sections (private content) or '
-                    . 'ESI (Edge Side Includes).',
+                'longDescription' => 'Detects cacheable="false" attribute on a block in layout XML.' . "\n"
+                    . 'Impact: This single attribute disables Full Page Cache for the entire page, '
+                    . 'not just this block. Every visitor triggers a full application stack hit on '
+                    . 'every request.' . "\n"
+                    . 'Why change: The effect is global and often goes unnoticed. At any meaningful '
+                    . 'traffic level, this is one of the most damaging performance anti-patterns in '
+                    . 'Magento 2.' . "\n"
+                    . 'How to fix: Remove cacheable="false". Use the JS customer-data mechanism '
+                    . '(private content sections) for user-specific content, or ESI blocks for '
+                    . 'dynamic fragments.',
                 'files' => $this->results,
             ];
         }
@@ -129,15 +132,16 @@ class Cacheable extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Blocks marked with cacheable="false" in layout XML files prevent Magento from '
-            . 'caching those blocks, which can significantly degrade page load times and server '
-            . 'performance. Full Page Cache (FPC) is one of Magento\'s most important '
-            . 'performance features. When a block is not cacheable, the entire page often '
-            . 'becomes uncacheable as well. For dynamic, user-specific content, use Magento\'s '
-            . 'customer section (private content) mechanism or Edge Side Includes (ESI) '
-            . 'instead. These approaches allow the page to remain cacheable while still '
-            . 'providing personalized content through AJAX requests. Only use cacheable="false" '
-            . 'when absolutely necessary, such as for checkout, cart, or customer '
-            . 'account-specific blocks.';
+        return 'Detects cacheable="false" in layout XML files.' . "\n"
+            . 'Impact: A single cacheable="false" anywhere in the layout hierarchy disables Full Page '
+            . 'Cache for the entire page, for every visitor. Every request then hits the full application '
+            . 'stack and database. At any meaningful traffic level, this is one of the most damaging '
+            . 'performance anti-patterns in Magento 2.' . "\n"
+            . 'Why change: The effect is global, not localized to the block that declares it. It often '
+            . 'goes unnoticed in development because the impact only manifests under production traffic '
+            . 'levels.' . "\n"
+            . 'How to fix: Remove cacheable="false" and use the JS customer-data mechanism (private '
+            . 'content sections) for user-specific content, or ESI blocks for dynamic fragments. Only '
+            . 'keep cacheable="false" for checkout/cart pages where it is truly unavoidable.';
     }
 }

@@ -37,12 +37,17 @@ class DeprecatedEscaperUsage extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Since Magento 2.3.5, escape methods (escapeHtml, escapeUrl, escapeJs, '
-            . 'escapeHtmlAttr, escapeCss, escapeQuote) should be called on the $escaper '
-            . 'variable instead of $block or $this in phtml templates. Using $block->escapeHtml() '
-            . 'is deprecated, and using $this->escapeHtml() is even worse as it combines the '
-            . 'deprecated escaper pattern with the $this anti-pattern. Migrate all escape calls '
-            . 'to use $escaper->escapeHtml() and similar methods.';
+        return 'Detects deprecated escape method calls on $block or $this instead of $escaper in phtml '
+            . 'templates.' . "\n"
+            . 'Impact: Escape methods on $block or $this create a hard dependency on the Block instance '
+            . 'being available and correctly typed. This makes escaping logic impossible to test '
+            . 'independently and fragile when the rendering context changes.' . "\n"
+            . 'Why change: Since Magento 2.3.5, $escaper is the supported service. Relying on the '
+            . 'deprecated approach accumulates technical debt that will require migration before any '
+            . 'major version upgrade that removes these methods from the Block class.' . "\n"
+            . 'How to fix: Replace $block->escapeHtml(), $this->escapeHtml() (and escapeUrl, escapeJs, '
+            . 'etc.) with $escaper->escapeHtml(). The $escaper variable is automatically available in '
+            . 'all phtml templates since 2.3.5.';
     }
 
     public function process(array $files): void

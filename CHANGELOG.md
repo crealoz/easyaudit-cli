@@ -5,6 +5,24 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] 2026-04-13
+
+### Added
+- **Magento Version Security Check**: Detects known security vulnerabilities based on the Magento version found in `composer.lock`. Uses offline security bulletin data (`data/security/`) covering Magento 2.4.3 through 2.4.8. Includes `tools/update-security-bulletins.php` to refresh bulletin data
+- **Detailed processor descriptions**: All 21 processors now include structured `longDescription` with Impact, Why change, and How to fix sections
+- **HTML report: formatted descriptions**: Long descriptions render with bold labels (Impact, Why change, How to fix) instead of plain short descriptions
+
+### Changed
+- **Default output format**: Changed from `json` to `html`
+- **JSON output optimized for fixer**: When format is `json`, report entries are stripped of `name`, `shortDescription`, `longDescription`, and per-file `message` to reduce payload size and improve fixer processing. Security check is skipped in JSON mode. Only fixable rules are included.
+- **PHAR build**: `data/` directory now included in distribution (`box.json`)
+- **Processor documentation** (`docs/processors.md`): Rewritten with per-rule detail, rule counts, and structured explanations
+
+### Removed
+- **`$onlyFixable` parameter** in `Scanner::run()`: Replaced by format-driven `$fixerReady` logic
+
+---
+
 ## [1.0.7] 2026-03-19
 
 ### Added

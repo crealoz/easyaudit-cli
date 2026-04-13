@@ -52,7 +52,7 @@ ROW;
             }
 
             $ruleName = htmlspecialchars($rule['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-            $ruleDesc = htmlspecialchars($rule['shortDescription'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $ruleLongDesc = $this->formatDescription($rule['longDescription']);
 
             $rulesHtml .= <<<RULE
             <details class="rule-card" data-severity="{$severity}" closed>
@@ -62,7 +62,7 @@ ROW;
                     <span class="rule-count">{$count} issue(s)</span>
                 </summary>
                 <div class="rule-body">
-                    <p class="rule-description">{$ruleDesc}</p>
+                    <div class="rule-description">{$ruleLongDesc}</div>
                     <table class="findings-table">
                         <thead>
                             <tr>
@@ -173,6 +173,7 @@ HTML;
             $ruleId = $finding['ruleId'] ?? 'unknown';
             $ruleName = $finding['name'] ?? $ruleId;
             $shortDesc = $finding['shortDescription'] ?? '';
+            $longDesc = $finding['longDescription'] ?? '';
             $files = $finding['files'];
 
             $counts = array_count_values(array_map(fn($f) => $f['severity'] ?? 'medium', $files));
@@ -181,6 +182,7 @@ HTML;
                 'ruleId' => $ruleId,
                 'name' => $ruleName,
                 'shortDescription' => $shortDesc,
+                'longDescription' => $longDesc,
                 'files' => $files,
                 'highCount' => $counts['high'] ?? 0,
                 'mediumCount' => $counts['medium'] ?? 0,
@@ -197,5 +199,28 @@ HTML;
             'medium' => '<span class="badge badge-medium">Medium</span>',
             default => '<span class="badge badge-low">Low</span>',
         };
+    }
+
+    private function formatDescription(string $text): string
+    {
+        $labels = ['Impact:', 'Why change:', 'How to fix:'];
+        $paragraphs = explode("\n", $text);
+        $html = '';
+        foreach ($paragraphs as $paragraph) {
+            $paragraph = trim($paragraph);
+            if ($paragraph === '') {
+                continue;
+            }
+            $escaped = htmlspecialchars($paragraph, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            foreach ($labels as $label) {
+                $escapedLabel = htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                if (str_starts_with($escaped, $escapedLabel)) {
+                    $escaped = '<strong>' . $escapedLabel . '</strong>' . substr($escaped, strlen($escapedLabel));
+                    break;
+                }
+            }
+            $html .= '<p>' . $escaped . '</p>';
+        }
+        return $html;
     }
 }

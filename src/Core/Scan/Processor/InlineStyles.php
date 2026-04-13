@@ -22,9 +22,10 @@ class InlineStyles extends AbstractProcessor
             'ruleId' => 'magento.template.inline-style-attribute',
             'name' => 'Inline Style Attribute',
             'shortDescription' => 'Inline style attributes should be avoided',
-            'longDescription' => 'Inline style attributes (style="...") in templates break Content '
-                . 'Security Policy (CSP), are harder to maintain, and prevent proper caching of '
-                . 'stylesheets. Move styles to CSS files or use CSS classes instead.',
+            'longDescription' => 'Detects inline style= attributes in templates.
+Impact: Inline style attributes cannot be overridden by child themes, bypass CSS merging/minification, and violate Content Security Policy rules that restrict inline styles.
+Why change: They break the standard Magento theming contract and force downstream developers to use specificity hacks to override them.
+How to fix: Move styles to CSS/LESS files and use CSS classes instead of style= attributes.',
         ],
         'block' => [
             'pattern' => '/<style\b[^>]*>.*?<\/style>/is',
@@ -32,9 +33,10 @@ class InlineStyles extends AbstractProcessor
             'ruleId' => 'magento.template.inline-style-block',
             'name' => 'Inline Style Block',
             'shortDescription' => 'Inline style blocks should be avoided',
-            'longDescription' => 'Inline <style> blocks in templates break Content Security Policy '
-                . '(CSP), are harder to maintain, and prevent proper caching. Move styles to '
-                . 'dedicated CSS/LESS files and load them via layout XML.',
+            'longDescription' => 'Detects inline <style> blocks in templates.
+Impact: Inline style blocks bypass the LESS compilation pipeline, cannot be themed or cached separately, and violate Content Security Policy.
+Why change: Styles embedded in templates are invisible to the asset pipeline, cannot be minified or merged, and add weight to every HTML response.
+How to fix: Move styles to dedicated CSS/LESS files and load them via layout XML.',
         ],
     ];
 
@@ -62,10 +64,16 @@ class InlineStyles extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor detects inline CSS in phtml and html templates. Inline styles '
-            . '(style="" attributes and <style> blocks) break Content Security Policy (CSP), '
-            . 'are harder to maintain, and prevent proper stylesheet caching. Email and PDF '
-            . 'templates are excluded as they legitimately require inline CSS.';
+        return 'Detects style= attributes and <style> blocks in phtml and HTML component templates.' . "\n"
+            . 'Impact: Inline styles bypass the LESS/CSS compilation and merging pipeline, cannot be '
+            . 'overridden by a child theme, and add weight to every HTML response. On stores enforcing '
+            . 'Content Security Policy, inline styles will silently break visual output.' . "\n"
+            . 'Why change: They violate the standard Magento theming contract, forcing downstream '
+            . 'developers to resort to specificity hacks or JavaScript workarounds. They also prevent '
+            . 'proper stylesheet caching by the browser.' . "\n"
+            . 'How to fix: Move inline styles to dedicated CSS/LESS files loaded via layout XML. Use CSS '
+            . 'classes instead of style= attributes. Email and PDF templates are excluded from this check '
+            . 'since they legitimately require inline styles.';
     }
 
     public function process(array $files): void

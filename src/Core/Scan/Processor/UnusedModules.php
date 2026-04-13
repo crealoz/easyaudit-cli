@@ -40,9 +40,15 @@ class UnusedModules extends AbstractProcessor
                 'ruleId' => 'unusedModules',
                 'name' => 'Unused Modules',
                 'shortDescription' => 'Modules present in codebase but disabled in configuration.',
-                'longDescription' => 'The following modules are present in the codebase but are disabled in '
-                    . 'app/etc/config.php. Consider removing them to reduce disk space usage and avoid confusion. '
-                    . 'Disabled modules do not load but still consume storage and may contain security vulnerabilities.',
+                'longDescription' => 'Detects modules present in the codebase but disabled in '
+                    . 'app/etc/config.php.' . "\n"
+                    . 'Impact: Disabled modules still consume disk space, are indexed by the '
+                    . 'autoloader, and can be re-enabled accidentally through setup:upgrade.' . "\n"
+                    . 'Why change: Their presence creates confusion about what code is actually '
+                    . 'active and they tend to fall out of sync with the rest of the codebase over '
+                    . 'time.' . "\n"
+                    . 'How to fix: Remove disabled modules entirely. Re-install via Composer if '
+                    . 'needed later.',
                 'files' => $this->disabledModules,
             ];
         }
@@ -172,13 +178,15 @@ class UnusedModules extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'This processor identifies modules that are present in the codebase but have been disabled in ' .
-               'app/etc/config.php (with status 0). Disabled modules do not load when Magento runs, but they still: ' .
-               '(1) Consume disk space, (2) May contain outdated or vulnerable code, (3) Can cause confusion for ' .
-               'developers wondering why certain code is not executing, (4) Increase maintenance overhead. If a module ' .
-               'is intentionally disabled, consider removing it entirely from the codebase. If it may be needed later, ' .
-               'remove it and add it back via Composer when required. This keeps the codebase clean and reduces the ' .
-               'attack surface. Note: This check requires access to app/etc/config.php and will be skipped if the ' .
-               'file cannot be found or read.';
+        return 'Identifies modules present in the codebase but disabled in app/etc/config.php.' . "\n"
+            . 'Impact: Disabled modules remain on disk, are indexed by the autoloader, and can be '
+            . 're-enabled accidentally through setup:upgrade or configuration reset. Their schemas may '
+            . 'still exist in the database.' . "\n"
+            . 'Why change: For developers unfamiliar with the project, their presence creates confusion '
+            . 'about what is actually active. Over time they fall out of sync with the rest of the '
+            . 'codebase, making re-enabling them risky.' . "\n"
+            . 'How to fix: Remove disabled modules from the codebase entirely. If needed later, '
+            . 're-install them via Composer. This reduces repository size and eliminates ambiguity about '
+            . 'active code.';
     }
 }

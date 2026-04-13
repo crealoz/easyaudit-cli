@@ -49,10 +49,14 @@ class AroundPlugins extends AbstractProcessor
                 'name' => 'Before Plugin',
                 'shortDescription' => 'This is a before plugin. The callable is invoked after '
                     . 'other code in the function.',
-                'longDescription' => 'Around plugins are costly in terms of performance. If the '
-                    . 'callable is invoked after any other code in the function, it is a before '
-                    . 'plugin. Doing so will prevent unnecessary propagation of the call through '
-                    . 'the plugin chain.',
+                'longDescription' => 'Detects around plugins where all logic executes before '
+                    . '$proceed, making them functionally before plugins.' . "\n"
+                    . 'Impact: The around wrapper adds unnecessary call chain depth and overhead '
+                    . 'for logic that only needs pre-processing.' . "\n"
+                    . 'Why change: Before plugins are lighter, do not wrap the call chain, and make '
+                    . 'the developer\'s intent explicit.' . "\n"
+                    . 'How to fix: Convert to a before plugin. Move the logic to a '
+                    . 'beforeMethodName() method and remove the $proceed call.',
                 'files' => $this->beforePlugins,
             ];
         }
@@ -64,10 +68,14 @@ class AroundPlugins extends AbstractProcessor
                 'name' => 'After Plugin',
                 'shortDescription' => 'This is an after plugin. The callable is invoked before '
                     . 'other code in the function.',
-                'longDescription' => 'Around plugins are costly in terms of performance. If the '
-                    . 'callable is invoked before any other code in the function, it is an after '
-                    . 'plugin. Doing so will prevent unnecessary propagation of the call through '
-                    . 'the plugin chain.',
+                'longDescription' => 'Detects around plugins where all logic follows $proceed, '
+                    . 'making them functionally after plugins.' . "\n"
+                    . 'Impact: The around wrapper adds unnecessary call chain depth and overhead '
+                    . 'for logic that only needs post-processing.' . "\n"
+                    . 'Why change: After plugins are lighter, receive the result directly, and make '
+                    . 'the developer\'s intent explicit.' . "\n"
+                    . 'How to fix: Convert to an after plugin. Move the logic to an '
+                    . 'afterMethodName() method that receives the result as a parameter.',
                 'files' => $this->afterPlugins
             ];
         }
@@ -79,9 +87,15 @@ class AroundPlugins extends AbstractProcessor
                 'name' => 'Override, not a plugin',
                 'shortDescription' => 'This is not a plugin, but an override. The callable is '
                     . 'never invoked.',
-                'longDescription' => 'Around plugins are costly in terms of performance. If the '
-                    . 'callable is never invoked, it is not a plugin, but an override. Consider '
-                    . 'using a preference instead.',
+                'longDescription' => 'Detects around plugins that never call $proceed, completely '
+                    . 'replacing the original method.' . "\n"
+                    . 'Impact: This is an override disguised as a plugin, adding interceptor '
+                    . 'overhead for no benefit and making the override harder to discover during '
+                    . 'debugging.' . "\n"
+                    . 'Why change: Preferences are the correct mechanism for full method replacement. '
+                    . 'They are explicit, have no interceptor overhead, and are visible in di.xml '
+                    . 'configuration.' . "\n"
+                    . 'How to fix: Replace with a preference in di.xml.',
                 'files' => $this->overrides,
             ];
         }
@@ -93,10 +107,15 @@ class AroundPlugins extends AbstractProcessor
                 'name' => 'Deep Plugin Stack',
                 'shortDescription' => 'Multiple around plugins target the same method, creating '
                     . 'a deep plugin call stack.',
-                'longDescription' => 'When multiple around plugins intercept the same method, each '
-                    . 'plugin wraps the next in the chain. Deep stacks (2+ around plugins on a single '
-                    . 'method) amplify performance overhead and make debugging difficult. Consider '
-                    . 'consolidating plugin logic or converting some plugins to before/after plugins.',
+                'longDescription' => 'Detects methods intercepted by multiple around plugins, '
+                    . 'creating a deep nested call chain.' . "\n"
+                    . 'Impact: Each around plugin wraps the next in the chain, multiplying overhead '
+                    . 'and making execution flow extremely difficult to trace during debugging.' . "\n"
+                    . 'Why change: Deep stacks amplify the performance cost of around plugins '
+                    . 'exponentially and create fragile chains where one misbehaving plugin affects '
+                    . 'all others.' . "\n"
+                    . 'How to fix: Consolidate plugin logic into fewer plugins, or convert some to '
+                    . 'before/after plugins which do not nest.',
                 'files' => $this->deepStacks,
             ];
         }
@@ -425,12 +444,16 @@ class AroundPlugins extends AbstractProcessor
 
     public function getLongDescription(): string
     {
-        return 'Detects around plugins and classifies them as before or after plugins based '
-            . 'on the position of the callable invocation. Around plugins are costly in terms '
-            . 'of performance. If the callable is invoked before any other code in the function, '
-            . 'it is an after plugin. If the callable is invoked after any other code in the '
-            . 'function, it is a before plugin. Doing so will prevent unnecessary propagation '
-            . 'of the call through the plugin chain. If the callable is never invoked, it is '
-            . 'not a plugin, but an override. Consider using a preference instead.';
+        return 'Classifies around plugins as convertible to before or after based on $proceed position, '
+            . 'and flags deep plugin stacks.' . "\n"
+            . 'Impact: Around plugins wrap the full call chain and add overhead on every invocation. '
+            . 'Stacked around plugins compound this: benchmarks show wall-time increases over 13,000% '
+            . 'and memory overhead exceeding 62,000% compared to equivalent before/after implementations.' . "\n"
+            . 'Why change: Most around plugins only need pre- or post-processing logic. Wrapping the '
+            . 'entire method call when only one side is used wastes resources and makes the interceptor '
+            . 'chain harder to debug.' . "\n"
+            . 'How to fix: If all logic precedes $proceed, convert to a before plugin. If all logic '
+            . 'follows $proceed, convert to an after plugin. If $proceed is never called, replace with '
+            . 'a preference. For deep stacks, consolidate plugin logic or split across before/after.';
     }
 }
