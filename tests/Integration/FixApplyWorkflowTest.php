@@ -42,12 +42,13 @@ class FixApplyWorkflowTest extends TestCase
     /**
      * Test 1: Scan command generates valid JSON report.
      */
-    public function testScanGeneratesValidJsonReport(): void
+    public function testScanGeneratesValidReport(): void
     {
-        $reportPath = $this->tempDir . '/report.json';
+        $reportPath = $this->tempDir . '/report.sarif';
 
         // Run scan on UseOfObjectManager fixtures (known to have issues)
-        $output = $this->runCli("scan {$this->fixturesPath}/UseOfObjectManager --format=json --output={$reportPath}");
+        // Use SARIF format since JSON is now fixer-only and filters rules
+        $output = $this->runCli("scan {$this->fixturesPath}/UseOfObjectManager --format=sarif --output={$reportPath}");
 
         $this->assertFileExists($reportPath, 'Report file should be created');
 
@@ -55,15 +56,13 @@ class FixApplyWorkflowTest extends TestCase
         $report = json_decode($json, true);
 
         $this->assertNotNull($report, 'Report should be valid JSON');
-        $this->assertArrayHasKey('metadata', $report, 'Report should have metadata');
+        $this->assertArrayHasKey('runs', $report);
 
         // Should find replaceObjectManager issues
+        $results = $report['runs'][0]['results'] ?? [];
         $foundObjectManager = false;
-        foreach ($report as $key => $finding) {
-            if ($key === 'metadata') {
-                continue;
-            }
-            if (($finding['ruleId'] ?? '') === 'replaceObjectManager') {
+        foreach ($results as $result) {
+            if (($result['ruleId'] ?? '') === 'replaceObjectManager') {
                 $foundObjectManager = true;
                 break;
             }
@@ -77,10 +76,10 @@ class FixApplyWorkflowTest extends TestCase
      */
     public function testScanFindsMultipleRuleTypes(): void
     {
-        $reportPath = $this->tempDir . '/multi-report.json';
+        $reportPath = $this->tempDir . '/multi-report.sarif';
 
-        // Run scan on multiple fixture directories
-        $output = $this->runCli("scan {$this->fixturesPath} --format=json --output={$reportPath}");
+        // Run scan on multiple fixture directories (SARIF keeps all findings)
+        $output = $this->runCli("scan {$this->fixturesPath} --format=sarif --output={$reportPath}");
 
         $this->assertFileExists($reportPath);
 
@@ -88,10 +87,11 @@ class FixApplyWorkflowTest extends TestCase
         $this->assertNotNull($report);
 
         // Collect all rule IDs found
+        $results = $report['runs'][0]['results'] ?? [];
         $ruleIds = [];
-        foreach ($report as $key => $finding) {
-            if ($key !== 'metadata' && isset($finding['ruleId'])) {
-                $ruleIds[] = $finding['ruleId'];
+        foreach ($results as $result) {
+            if (isset($result['ruleId'])) {
+                $ruleIds[] = $result['ruleId'];
             }
         }
 
@@ -106,32 +106,27 @@ class FixApplyWorkflowTest extends TestCase
      */
     public function testReportStructureMatchesExpectedFormat(): void
     {
-        $reportPath = $this->tempDir . '/structure-report.json';
+        $reportPath = $this->tempDir . '/structure-report.sarif';
 
-        $this->runCli("scan {$this->fixturesPath}/HardWrittenSQL --format=json --output={$reportPath}");
+        $this->runCli("scan {$this->fixturesPath}/HardWrittenSQL --format=sarif --output={$reportPath}");
 
         $report = json_decode(file_get_contents($reportPath), true);
+        $this->assertNotNull($report, 'Report should be valid JSON');
 
-        // Check metadata structure
-        $this->assertArrayHasKey('metadata', $report);
-        $this->assertArrayHasKey('scan_path', $report['metadata']);
+        // Check SARIF structure
+        $this->assertArrayHasKey('version', $report);
+        $this->assertEquals('2.1.0', $report['version']);
+        $this->assertArrayHasKey('runs', $report);
 
-        // Check finding structure
-        foreach ($report as $key => $finding) {
-            if ($key === 'metadata') {
-                continue;
-            }
+        $run = $report['runs'][0];
+        $this->assertArrayHasKey('tool', $run);
+        $this->assertArrayHasKey('results', $run);
 
-            $this->assertArrayHasKey('ruleId', $finding, "Finding should have ruleId");
-            $this->assertArrayHasKey('name', $finding, "Finding should have name");
-            $this->assertArrayHasKey('files', $finding, "Finding should have files");
-            $this->assertIsArray($finding['files'], "Files should be an array");
-
-            // Check file structure
-            foreach ($finding['files'] as $file) {
-                $this->assertArrayHasKey('file', $file, "File entry should have 'file' key");
-                $this->assertArrayHasKey('severity', $file, "File entry should have 'severity' key");
-            }
+        // Check result structure
+        foreach ($run['results'] as $result) {
+            $this->assertArrayHasKey('ruleId', $result, "Result should have ruleId");
+            $this->assertArrayHasKey('level', $result, "Result should have level");
+            $this->assertArrayHasKey('locations', $result, "Result should have locations");
         }
     }
 
