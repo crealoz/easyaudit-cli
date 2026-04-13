@@ -1,0 +1,9 @@
+{
+    "packages": [
+        {
+            "name": "symfony/console",
+            "version": "6.4.0",
+            "type": "library"
+        }
+    ]
+}

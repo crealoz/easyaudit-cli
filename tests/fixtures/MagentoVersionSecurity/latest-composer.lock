@@ -1,0 +1,14 @@
+{
+    "packages": [
+        {
+            "name": "magento/product-community-edition",
+            "version": "2.4.8-p4",
+            "type": "metapackage"
+        },
+        {
+            "name": "magento/magento2-base",
+            "version": "2.4.8-p4",
+            "type": "magento2-component"
+        }
+    ]
+}

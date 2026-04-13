@@ -1,0 +1,223 @@
+{
+    "generated_at": "2026-04-03T12:01:21Z",
+    "release_line": "2.4.8",
+    "latest_patch": "2.4.8-p4",
+    "patches": {
+        "2.4.8-p4": {
+            "apsb": "APSB26-05",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb26-05.html",
+            "vulnerabilities": [
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Privilege escalation",
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege Escalation"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Server-Side Request Forgery (SSRF) (CWE-918)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "URL Redirection to Untrusted Site ('Open Redirect') (CWE-601)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
+        "2.4.8-p3": {
+            "apsb": "APSB25-94",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb25-94.html",
+            "highlights": [
+                "Fix for CVE-2025-54236 to resolve a REST API vulnerability. Adobe released a hotfix for this issue in September 2025. See the Action required: Critical Security Update Available for Adobe Commerce (APSB25-88) Knowledge Base article for details.",
+                "Developers must review REST API constructor parameter validation to learn how to update extensions to be compliant with these security changes.",
+                "Fix for ACP2E-3874: The REST API response for order details now contains correct values for base_row_total and row_total attributes in case when several same items were ordered.",
+                "Fix for AC-15446: Fixed an error in Magento\\Framework\\Mail\\EmailMessage where getBodyText() attempted to call a non-existent getTextBody() method on Symfony\\Component\\Mime\\Message, ensuring compatibility with Magento 2.4.8-p2 and magento/framework 103.0.8-p2.",
+                "Migrate from TinyMCE to Hugerte.org Due to the end of support for TinyMCE 5 and 6 and licensing incompatibilities with TinyMCE 7, The current implementation of Adobe Commerce WYSIWYG editor is migrated from TinyMCE to the open-source HugeRTE editor. This migration ensures Adobe Commerce remains compliant with open-source licensing, avoids known TinyMCE 6 vulnerabilities, and delivers a modern, supported editing experience for merchants and developers.",
+                "Added support for Apache ActiveMQ Artemis STOMP protocol Added support for the ActiveMQ Artemis open-source message broker through the Simple Text Oriented Messaging Protocol (STOMP). It delivers a reliable and scalable messaging system, offering flexibility for STOMP-based integrations. See Apache ActiveMQ Artemis in the Commerce Configuration Guide."
+            ],
+            "vulnerabilities": [
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Privilege escalation",
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                }
+            ]
+        },
+        "2.4.8-p2": {
+            "apsb": "APSB25-71",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb25-71.html",
+            "vulnerabilities": [
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Cross-Site Request Forgery (CSRF) (CWE-352)",
+                    "impacts": [
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Arbitrary file system read"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Time-of-check Time-of-use (TOCTOU) Race Condition (CWE-367)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                }
+            ]
+        },
+        "2.4.8-p1": {
+            "apsb": "APSB25-50",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb25-50.html",
+            "highlights": [
+                "API performance enhancement\u2014Resolves performance degradation in bulk asynchronous web API endpoints that were introduced after the previous security patch.",
+                "CMS Blocks access fix\u2014Resolves an issue where Admin users with restricted permissions (such as merchandising-only access) were unable to view the CMS Blocks listing page. Previously, these users encountered an error due to missing configuration parameters after installing previous security patches.",
+                "Cookie limit compatibility\u2014Resolves a backward-incompatible change involving the MAX_NUM_COOKIES constant in the framework. This update restores expected behavior and ensures compatibility for extensions or customizations that interact with cookie limits.",
+                "Async operations\u2014Restricted async operations for overriding previous customers orders.",
+                "Fix for CVE-2025-47110\u2014Resolves an email templates vulnerability.",
+                "Fix for VULN-31547\u2014Resolves a category canonical link vulnerability."
+            ],
+            "vulnerabilities": [
+                {
+                    "category": "Cross-site Scripting (Reflected XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Access Control (CWE-284)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important",
+                        "Moderate"
+                    ]
+                }
+            ]
+        }
+    },
+    "support": {
+        "regular_end": "2028-04-11",
+        "extended_end": null
+    }
+}

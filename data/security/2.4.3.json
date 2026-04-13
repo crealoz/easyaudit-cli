@@ -1,0 +1,22 @@
+{
+    "generated_at": "2026-04-03T12:01:26Z",
+    "release_line": "2.4.3",
+    "latest_patch": "2.4.3-p1",
+    "patches": {
+        "2.4.3-p1": {
+            "apsb": "APSB21-86",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb21-86.html",
+            "vulnerabilities": [
+                {
+                    "category": "Cross-Site Request Forgery (CSRF) (CWE-352)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -7,4 +7,3 @@
 /.phpunit.cache/
 composer.lock
 *.phar
-/data/

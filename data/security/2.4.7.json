@@ -1,0 +1,650 @@
+{
+    "generated_at": "2026-04-03T12:01:23Z",
+    "release_line": "2.4.7",
+    "latest_patch": "2.4.7-p9",
+    "patches": {
+        "2.4.7-p9": {
+            "apsb": "APSB26-05",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb26-05.html",
+            "vulnerabilities": [
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Privilege escalation",
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege Escalation"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Server-Side Request Forgery (SSRF) (CWE-918)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "URL Redirection to Untrusted Site ('Open Redirect') (CWE-601)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
+        "2.4.7-p8": {
+            "apsb": "APSB25-94",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb25-94.html",
+            "highlights": [
+                "Fix for CVE-2025-54236 to resolve a REST API vulnerability. Adobe released a hotfix for this issue in September 2025. See the Action required: Critical Security Update Available for Adobe Commerce (APSB25-88) Knowledge Base article for details.",
+                "Developers must review REST API constructor parameter validation to learn how to update extensions to be compliant with these security changes.",
+                "Migrate from TinyMCE to Hugerte.org Due to the end of support for TinyMCE 5 and 6 and licensing incompatibilities with TinyMCE 7, The current implementation of Adobe Commerce WYSIWYG editor is migrated from TinyMCE to the open-source HugeRTE editor. This migration ensures Adobe Commerce remains compliant with open-source licensing, avoids known TinyMCE 6 vulnerabilities, and delivers a modern, supported editing experience for merchants and developers.",
+                "Added support for Apache ActiveMQ Artemis STOMP protocol Added support for the ActiveMQ Artemis open-source message broker through the Simple Text Oriented Messaging Protocol (STOMP). It delivers a reliable and scalable messaging system, offering flexibility for STOMP-based integrations. See Apache ActiveMQ Artemis in the Commerce Configuration Guide."
+            ],
+            "vulnerabilities": [
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Privilege escalation",
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                }
+            ]
+        },
+        "2.4.7-p7": {
+            "apsb": "APSB25-71",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb25-71.html",
+            "vulnerabilities": [
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Cross-Site Request Forgery (CSRF) (CWE-352)",
+                    "impacts": [
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Arbitrary file system read"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Time-of-check Time-of-use (TOCTOU) Race Condition (CWE-367)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                }
+            ]
+        },
+        "2.4.7-p6": {
+            "apsb": "APSB25-50",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb25-50.html",
+            "highlights": [
+                "MariaDB support\u2014Added support for MariaDB 10.11.",
+                "API performance enhancement\u2014Resolves performance degradation in bulk asynchronous web API endpoints that were introduced after the previous security patch.",
+                "CMS Blocks access fix\u2014Resolves an issue where Admin users with restricted permissions (such as merchandising-only access) were unable to view the CMS Blocks listing page. Previously, these users encountered an error due to missing configuration parameters after installing previous security patches.",
+                "Cookie limit compatibility\u2014Resolves a backward-incompatible change involving the MAX_NUM_COOKIES constant in the framework. This update restores expected behavior and ensures compatibility for extensions or customizations that interact with cookie limits.",
+                "Async operations\u2014Restricted async operations for overriding previous customers orders."
+            ],
+            "vulnerabilities": [
+                {
+                    "category": "Cross-site Scripting (Reflected XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Access Control (CWE-284)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important",
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
+        "2.4.7-p5": {
+            "apsb": "APSB25-26",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb25-26.html",
+            "vulnerabilities": [
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Cross-Site Request Forgery (CSRF) (CWE-352)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Access Control (CWE-284)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Insufficiently Protected Credentials (CWE-522)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
+        "2.4.7-p4": {
+            "apsb": "APSB25-08",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb25-08.html",
+            "highlights": [
+                "Managing encryption keys and re-encrypting data\u2014Redesigned managing encryption keys to improve usability and eliminate previous limitations and bugs. New CLI commands are now available for changing keys and re-encrypting certain system configuration, payment, and custom field data. Changing keys in the Admin UI is no longer supported in this release. You must use the CLI commands.",
+                "Fix for CVE-2025-24434\u2014Resolves an authorization vulnerability. This fix is also available as an isolated patch. See the Knowledge Base article for details.",
+                "TinyMCE version downgrade\u2014The TinyMCE dependency has been downgraded from version 7 to 6.8.5 to address licensing compatibility issues. This change ensures continued compliance while Adobe evaluates an alternative open source WYSIWYG editor."
+            ],
+            "vulnerabilities": [
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Information Exposure (CWE-200)",
+                    "impacts": [
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Access Control (CWE-284)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important",
+                        "Moderate"
+                    ]
+                },
+                {
+                    "category": "Violation of Secure Design Principles (CWE-657)",
+                    "impacts": [
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Business Logic Errors (CWE-840)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Time-of-check Time-of-use (TOCTOU) Race Condition (CWE-367)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
+        "2.4.7-p3": {
+            "apsb": "APSB24-73",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb24-73.html",
+            "highlights": [
+                "TinyMCE upgrade\u2014The WYSIWYG editor in the Admin now uses the latest version of the TinyMCE dependency (7.3\u200b). TinyMCE 7.3 offers an enhanced user experience, better collaboration, and increased efficiency. TinyMCE 5 has been removed in the 2.4.8 release line.\u200b",
+                "Since there was a security vulnerability (CVE-2024-38357) reported in TinyMCE 5.10, the dependency was also upgraded for all currently supported release lines and included in all October 2024 security patches: 2.4.7-p3",
+                "2.4.6-p8",
+                "2.4.5-p10",
+                "2.4.4-p11",
+                "Require.js upgrade\u2014Adobe Commerce now uses the latest version of Require.js (2.3.7). Since there was a security vulnerability (CVE-2024-38999) reported in Require.js 2.3.6, the dependency was also upgraded for all currently supported release lines and included in all October 2024 security patches: 2.4.7-p3",
+                "2.4.6-p8",
+                "2.4.5-p10",
+                "2.4.4-p11"
+            ],
+            "vulnerabilities": [
+                {
+                    "category": "Improper Authentication (CWE-287)",
+                    "impacts": [
+                        "Privilege escalation",
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Arbitrary file system read"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Access Control (CWE-284)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Important",
+                        "Moderate"
+                    ]
+                },
+                {
+                    "category": "Server-Side Request Forgery (SSRF) (CWE-918)",
+                    "impacts": [
+                        "Arbitrary file system read"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Time-of-check Time-of-use (TOCTOU) Race Condition (CWE-367)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass",
+                        "Privilege escalation"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Information Exposure (CWE-200)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
+        "2.4.7-p2": {
+            "apsb": "APSB24-61",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb24-61.html",
+            "highlights": [
+                "Rate limiting for one-time passwords\u2014The following new system configuration options are now available to enable rate limiting on two-factor authentication (2FA) one-time password (OTP) validation: Retry attempt limit for Two-Factor Authentication",
+                "Two-Factor Authentication lockout time (seconds)",
+                "Encryption key rotation\u2014A new CLI command is now available for changing your encryption key. See the Troubleshooting Encryption Key Rotation: CVE-2024-34102 Knowledge Base article for details.",
+                "Fix for CVE-2020-27511\u2014Resolves a Prototype.js security vulnerability.",
+                "Fix for CVE-2024-39397\u2014Resolves a remote code execution security vulnerability. This vulnerability affects merchants using the Apache web server for on-premises or self-hosted deployments. This fix is also available as an isolated patch. See the Security update available for Adobe Commerce - APSB24-61 Knowledge Base article for details."
+            ],
+            "vulnerabilities": [
+                {
+                    "category": "Unrestricted Upload of File with Dangerous Type (CWE-434)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Restriction of Excessive Authentication Attempts (CWE-307)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Arbitrary file system read"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection') (CWE-78)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Information Exposure (CWE-200)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Access Control (CWE-284)",
+                    "impacts": [
+                        "Privilege escalation",
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                },
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                },
+                {
+                    "category": "Cross-Site Request Forgery (CSRF) (CWE-352)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
+        "2.4.7-p1": {
+            "apsb": "APSB24-40",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb24-40.html",
+            "highlights": [
+                "Update one-time password (OTP) settings for Google Authenticator\u2013This update is required to resolve an error that was introduced by a backward-incompatible change in 2.4.7. The description of the OTP Window field now provides an accurate explanation of the setting and the default value has been changed from 1 to 29.",
+                "B2B version compatibility\u2014For compatibility with Commerce version 2.4.7-p1, merchants that have the Adobe Commerce B2B extension must upgrade to B2B version 1.4.2-p1."
+            ],
+            "vulnerabilities": [
+                {
+                    "category": "Server-Side Request Forgery (SSRF) (CWE-918)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Restriction of XML External Entity Reference ('XXE') (CWE-611)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Authentication (CWE-287)",
+                    "impacts": [
+                        "Privilege escalation",
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Unrestricted Upload of File with Dangerous Type (CWE-434)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Access Control (CWE-284)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Important"
+                    ]
+                }
+            ]
+        }
+    },
+    "support": {
+        "regular_end": "2027-04-09",
+        "extended_end": null
+    }
+}
