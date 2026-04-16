@@ -471,7 +471,7 @@ How to fix: Use a factory, builder, or interface instead. This automatic scan ma
                     'name' => $config['name'],
                     'shortDescription' => $config['shortDescription'],
                     'longDescription' => $config['longDescription'],
-                    'files' => $this->resultsByCategory[$category],
+                    'files' => $this->consolidateResults($this->resultsByCategory[$category]),
                 ];
             }
         }

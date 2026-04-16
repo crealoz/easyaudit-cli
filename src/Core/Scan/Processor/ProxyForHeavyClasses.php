@@ -6,6 +6,7 @@ use EasyAudit\Core\Scan\Util\Classes;
 use EasyAudit\Core\Scan\Util\Content;
 use EasyAudit\Core\Scan\Util\Formater;
 use EasyAudit\Core\Scan\Util\Modules;
+use EasyAudit\Core\Scan\Util\Types;
 use EasyAudit\Core\Scan\Util\Xml;
 use EasyAudit\Service\ClassToProxy;
 
@@ -24,7 +25,6 @@ class ProxyForHeavyClasses extends AbstractProcessor
      */
     private array $heavyClassPatterns = [
         'Session',
-        'Collection',
     ];
 
     private ClassToProxy $classToProxy;
@@ -65,7 +65,7 @@ class ProxyForHeavyClasses extends AbstractProcessor
                     . 'memory and initialization time is substantial and entirely avoidable.' . "\n"
                     . 'How to fix: Add proxy configuration in di.xml: <argument name="paramName" '
                     . 'xsi:type="object">Heavy\Class\Proxy</argument>.',
-                'files' => $this->results,
+                'files' => $this->consolidateResults($this->results),
             ];
         }
 
@@ -165,8 +165,11 @@ class ProxyForHeavyClasses extends AbstractProcessor
      */
     private function isHeavyClass(string $className): bool
     {
-        // Skip factories and interfaces
+        // Skip factories, interfaces, and collections (collections should use Factory, not Proxy)
         if (str_ends_with($className, 'Factory') || str_ends_with($className, 'Interface')) {
+            return false;
+        }
+        if (Types::isCollectionType($className)) {
             return false;
         }
 

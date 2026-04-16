@@ -36,8 +36,10 @@ class HtmlReporter implements ReporterInterface
                     $rawPath = ltrim(substr($rawPath, strlen($scanPath)), '/');
                 }
                 $filePath = htmlspecialchars($rawPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-                $line = (int)($file['startLine'] ?? $file['line'] ?? 1);
-                $message = htmlspecialchars($file['message'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                $startLine = (int)($file['startLine'] ?? $file['line'] ?? 1);
+                $endLine = (int)($file['endLine'] ?? $startLine);
+                $line = $endLine > $startLine ? "$startLine-$endLine" : (string)$startLine;
+                $message = nl2br(htmlspecialchars($file['message'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
                 $fileSev = $file['severity'] ?? 'medium';
                 $sevBadge = $this->severityBadge($fileSev);
 

@@ -238,9 +238,8 @@ class InlineStylesTest extends TestCase
         $report = $processor->getReport();
         $entries = $report[0]['files'];
 
-        // First style attribute is on line 4
+        // Lines 4 and 5 are consecutive, so they're consolidated into one entry
         $this->assertEquals(4, $entries[0]['startLine']);
-        // Second style attribute is on line 5
-        $this->assertEquals(5, $entries[1]['startLine']);
+        $this->assertEquals(5, $entries[0]['endLine']);
     }
 }

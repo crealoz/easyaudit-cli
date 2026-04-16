@@ -4,6 +4,7 @@ namespace EasyAudit\Core\Scan;
 
 use EasyAudit\Service\Api;
 use EasyAudit\Service\CliWriter;
+use EasyAudit\Service\PayloadPreparers\PreparerInterface;
 use EasyAudit\Service\Paths;
 
 class Scanner
@@ -152,7 +153,8 @@ class Scanner
                             $fileCount = count($report['files'] ?? []);
                             $toolSuggestions[$ruleId] = ($toolSuggestions[$ruleId] ?? 0) + $fileCount;
                         } else {
-                            if (!$fixerReady || isset($fixableTypes[$ruleId])) {
+                            $fixableKey = PreparerInterface::MAPPED_RULES[$ruleId] ?? $ruleId;
+                        if (!$fixerReady || isset($fixableTypes[$fixableKey])) {
                                 $findings[] = $report;
                             }
                         }

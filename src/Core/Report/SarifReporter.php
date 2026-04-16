@@ -43,9 +43,12 @@ class SarifReporter implements ReporterInterface
                                     'uri' => $uri ?? '',
                                     "uriBaseId" => "SRCROOT"
                                 ],
-                                'region' => [
-                                    'startLine' => $location['startLine'] ?? $location['line'] ?? 1
-                                ]
+                                'region' => array_filter([
+                                    'startLine' => $location['startLine'] ?? $location['line'] ?? 1,
+                                    'endLine' => ($location['endLine'] ?? null) !== ($location['startLine'] ?? null)
+                                        ? ($location['endLine'] ?? null)
+                                        : null,
+                                ], fn($v) => $v !== null)
                             ]
                         ]
                     ]

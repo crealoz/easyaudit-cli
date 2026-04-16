@@ -283,7 +283,7 @@ How to fix: Use collection join() methods or addFieldToFilter() with proper tabl
                     'name' => $config['name'],
                     'shortDescription' => $config['shortDescription'],
                     'longDescription' => $config['longDescription'],
-                    'files' => $this->resultsByType[$sqlType],
+                    'files' => $this->consolidateResults($this->resultsByType[$sqlType]),
                 ];
             }
         }

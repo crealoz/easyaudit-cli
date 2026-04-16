@@ -57,7 +57,7 @@ class AroundPlugins extends AbstractProcessor
                     . 'the developer\'s intent explicit.' . "\n"
                     . 'How to fix: Convert to a before plugin. Move the logic to a '
                     . 'beforeMethodName() method and remove the $proceed call.',
-                'files' => $this->beforePlugins,
+                'files' => $this->consolidateResults($this->beforePlugins),
             ];
         }
         if (!empty($this->afterPlugins)) {
@@ -76,7 +76,7 @@ class AroundPlugins extends AbstractProcessor
                     . 'the developer\'s intent explicit.' . "\n"
                     . 'How to fix: Convert to an after plugin. Move the logic to an '
                     . 'afterMethodName() method that receives the result as a parameter.',
-                'files' => $this->afterPlugins
+                'files' => $this->consolidateResults($this->afterPlugins)
             ];
         }
         if (!empty($this->overrides)) {
@@ -96,7 +96,7 @@ class AroundPlugins extends AbstractProcessor
                     . 'They are explicit, have no interceptor overhead, and are visible in di.xml '
                     . 'configuration.' . "\n"
                     . 'How to fix: Replace with a preference in di.xml.',
-                'files' => $this->overrides,
+                'files' => $this->consolidateResults($this->overrides),
             ];
         }
         if (!empty($this->deepStacks)) {
@@ -116,7 +116,7 @@ class AroundPlugins extends AbstractProcessor
                     . 'all others.' . "\n"
                     . 'How to fix: Consolidate plugin logic into fewer plugins, or convert some to '
                     . 'before/after plugins which do not nest.',
-                'files' => $this->deepStacks,
+                'files' => $this->consolidateResults($this->deepStacks),
             ];
         }
 

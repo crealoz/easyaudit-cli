@@ -39,28 +39,34 @@ class DiPreparer extends AbstractPreparer
     private function processFiles(&$byDiFile, array $files): void
     {
         foreach ($files as $file) {
-            $metadata = $file['metadata'] ?? [];
-            $diFile = $metadata['diFile'] ?? null;
-            $type = $metadata['type'] ?? null;
-            $argument = $metadata['argument'] ?? null;
-            $proxy = $metadata['proxy'] ?? null;
+            $rawMetadata = $file['metadata'] ?? [];
 
-            if (!$diFile || !$type || !$argument || !$proxy) {
-                continue;
-            }
+            // Handle both consolidated (array of entries) and single entry formats
+            $metadataEntries = isset($rawMetadata[0]) ? $rawMetadata : [$rawMetadata];
 
-            if (!isset($byDiFile[$diFile])) {
-                $byDiFile[$diFile] = [];
-            }
+            foreach ($metadataEntries as $metadata) {
+                $diFile = $metadata['diFile'] ?? null;
+                $type = $metadata['type'] ?? null;
+                $argument = $metadata['argument'] ?? null;
+                $proxy = $metadata['proxy'] ?? null;
 
-            if (!isset($byDiFile[$diFile][$type])) {
-                $byDiFile[$diFile][$type] = [];
-            }
+                if (!$diFile || !$type || !$argument || !$proxy) {
+                    continue;
+                }
 
-            // Avoid duplicates
-            $entry = ['argument' => $argument, 'proxy' => $proxy];
-            if (!in_array($entry, $byDiFile[$diFile][$type], true)) {
-                $byDiFile[$diFile][$type][] = $entry;
+                if (!isset($byDiFile[$diFile])) {
+                    $byDiFile[$diFile] = [];
+                }
+
+                if (!isset($byDiFile[$diFile][$type])) {
+                    $byDiFile[$diFile][$type] = [];
+                }
+
+                // Avoid duplicates
+                $entry = ['argument' => $argument, 'proxy' => $proxy];
+                if (!in_array($entry, $byDiFile[$diFile][$type], true)) {
+                    $byDiFile[$diFile][$type][] = $entry;
+                }
             }
         }
     }

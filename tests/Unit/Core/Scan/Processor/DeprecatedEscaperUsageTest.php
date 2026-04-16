@@ -131,10 +131,9 @@ class DeprecatedEscaperUsageTest extends TestCase
         $report = $processor->getReport();
         $entries = $report[0]['files'];
 
-        // First match is on line 6 ($block->escapeHtml)
+        // Lines 6 and 7 are consecutive, so they're consolidated into one entry
         $this->assertEquals(6, $entries[0]['startLine']);
-        // Second match is on line 7 ($block->escapeUrl)
-        $this->assertEquals(7, $entries[1]['startLine']);
+        $this->assertEquals(7, $entries[0]['endLine']);
     }
 
     public function testReportStructure(): void

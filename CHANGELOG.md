@@ -5,6 +5,23 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] 2026-04-16
+
+### Fixed
+- **Fix-apply: proxy patches not generated**: Rule ID mapping mismatch between Scanner and FixApply prevented proxy findings (`noProxyUsedInCommands`, `noProxyUsedForHeavyClasses`) from reaching the fixer. Scanner checked fixable types using the processor's ruleId (e.g., `noProxyUsedInCommands`) while the API returns the mapped name (`proxyConfiguration`). Both Scanner and FixApply now resolve mapped rule names via `PreparerInterface::MAPPED_RULES` before checking fixable types — consistent with what `AbstractPreparer::isRuleFixable()` already does
+- **ProxyForHeavyClasses no longer recommends Proxy for Collections**: Collections are stateful and need a fresh instance per use — the correct pattern is `CollectionFactory`, not `\Proxy`. `SpecificClassInjection` already flags this correctly with `collectionMustUseFactory`. Removed `'Collection'` from heavy class patterns and added an explicit `Types::isCollectionType()` guard in `isHeavyClass()`
+
+### Added
+- **Result consolidation**: All processors now merge consecutive-line findings for the same file into a single entry (e.g., two proxy issues on lines 15-16 become one entry with `startLine: 15`, `endLine: 16`). Non-consecutive findings remain separate. Messages are joined with line breaks, metadata entries are collected into arrays, and severity takes the highest value. Consolidation logic lives in `AbstractProcessor::consolidateResults()` and is applied in all 13 processors that can produce per-file duplicates
+- **SARIF `endLine` support**: Region objects now include `endLine` when it differs from `startLine`, per the SARIF 2.1.0 spec
+- **HTML line ranges**: The Line column now displays ranges (e.g., `15-16`) for consolidated findings, and messages render with `<br>` separators
+
+### Changed
+- **DiPreparer**: `processFiles()` now handles both consolidated metadata (array of entries) and single-entry metadata, ensuring fix-apply works correctly with consolidated reports
+- **FixApply `selectRules()`**: Interactive rule selection and credit cost lookup now use mapped rule names, fixing proxy rules not appearing in the `--fix-by-rule` menu
+
+---
+
 ## [1.0.8] 2026-04-13
 
 ### Added

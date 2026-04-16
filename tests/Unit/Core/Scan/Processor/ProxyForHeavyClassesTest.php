@@ -232,7 +232,8 @@ PHP;
         $report = $processor->getReport();
         ob_end_clean();
 
-        $this->assertGreaterThan(0, $processor->getFoundCount(), 'Should detect Collection without proxy');
+        // Collections should NOT be flagged here — they need Factory, not Proxy (handled by SpecificClassInjection)
+        $this->assertEquals(0, $processor->getFoundCount(), 'Collections should not be flagged for proxy');
 
         unlink($phpFile);
         unlink($diFile);

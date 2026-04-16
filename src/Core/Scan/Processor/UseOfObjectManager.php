@@ -370,7 +370,7 @@ class UseOfObjectManager extends AbstractProcessor
                     . 'statically.' . "\n"
                     . 'How to fix: Inject dependencies through the constructor. Factory classes are '
                     . 'the only accepted exception.',
-                'files' => $this->objectManagerUsages,
+                'files' => $this->consolidateResults($this->objectManagerUsages),
             ];
         }
 
@@ -386,7 +386,7 @@ class UseOfObjectManager extends AbstractProcessor
                     . 'Why change: Unused imports are a code smell and can mask the fact that a '
                     . 'previous ObjectManager usage was removed but the import was left behind.' . "\n"
                     . 'How to fix: Remove the unused import statement.',
-                'files' => $this->uselessImports,
+                'files' => $this->consolidateResults($this->uselessImports),
             ];
         }
 

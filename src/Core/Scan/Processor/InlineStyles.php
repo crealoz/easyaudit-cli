@@ -161,7 +161,7 @@ How to fix: Move styles to dedicated CSS/LESS files and load them via layout XML
                     'name' => $config['name'],
                     'shortDescription' => $config['shortDescription'],
                     'longDescription' => $config['longDescription'],
-                    'files' => $this->resultsByType[$type],
+                    'files' => $this->consolidateResults($this->resultsByType[$type]),
                 ];
             }
         }

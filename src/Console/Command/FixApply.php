@@ -435,7 +435,8 @@ HELP;
         $ruleCounts = [];
         foreach ($errors as $finding) {
             $ruleId = $finding['ruleId'] ?? null;
-            if ($ruleId && isset($fixables[$ruleId])) {
+            $fixableKey = PreparerInterface::MAPPED_RULES[$ruleId] ?? $ruleId;
+            if ($ruleId && isset($fixables[$fixableKey])) {
                 $fileCount = count($finding['files'] ?? []);
                 $ruleCounts[$ruleId] = ($ruleCounts[$ruleId] ?? 0) + $fileCount;
             }
@@ -451,7 +452,8 @@ HELP;
         $ruleMap = [];
         foreach ($ruleCounts as $ruleId => $count) {
             $ruleMap[$index] = $ruleId;
-            $cost = $fixables[$ruleId] ?? 1;
+            $fixableKey = PreparerInterface::MAPPED_RULES[$ruleId] ?? $ruleId;
+            $cost = $fixables[$fixableKey] ?? 1;
             $creditPlural = $cost > 1 ? 's' : '';
             CliWriter::menuItem($index, $ruleId, $count, "$cost credit$creditPlural each");
             $index++;

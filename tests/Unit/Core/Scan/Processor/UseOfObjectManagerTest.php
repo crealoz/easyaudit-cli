@@ -326,8 +326,12 @@ PHP;
         // Collect all injections from error entries
         $injections = [];
         foreach ($report[0]['files'] as $entry) {
-            foreach ($entry['metadata']['injections'] as $className => $info) {
-                $injections[$className] = $info;
+            // Handle both consolidated (array of metadata) and single metadata formats
+            $metadataEntries = isset($entry['metadata'][0]) ? $entry['metadata'] : [$entry['metadata']];
+            foreach ($metadataEntries as $metadata) {
+                foreach ($metadata['injections'] as $className => $info) {
+                    $injections[$className] = $info;
+                }
             }
         }
 
@@ -377,8 +381,12 @@ PHP;
 
         $injections = [];
         foreach ($report[0]['files'] as $entry) {
-            foreach ($entry['metadata']['injections'] as $className => $info) {
-                $injections[$className] = $info;
+            // Handle both consolidated (array of metadata) and single metadata formats
+            $metadataEntries = isset($entry['metadata'][0]) ? $entry['metadata'] : [$entry['metadata']];
+            foreach ($metadataEntries as $metadata) {
+                foreach ($metadata['injections'] as $className => $info) {
+                    $injections[$className] = $info;
+                }
             }
         }
 
