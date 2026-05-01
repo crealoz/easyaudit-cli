@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <group id="default">
+        <job name="vendor_module_existing_bad_method"
+             instance="Vendor\Module\Cron\ExistingHandler"
+             method="nonExistentMethod">
+            <schedule>0 * * * *</schedule>
+        </job>
+        <job name="vendor_module_typo_job"
+             instance="Vendor\Module\Cron\ExistingHandler"
+             method="excute">
+            <schedule>*/5 * * * *</schedule>
+        </job>
+    </group>
+</config>

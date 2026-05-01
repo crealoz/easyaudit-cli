@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <group id="vendor_module_nightly">
+        <job name="vendor_module_ok_job"
+             instance="Vendor\Module\Cron\Handler"
+             method="execute">
+            <schedule>0 2 * * *</schedule>
+        </job>
+    </group>
+    <group id="default">
+        <job name="vendor_module_hourly_job"
+             instance="Vendor\Module\Cron\Handler"
+             method="execute">
+            <schedule>30 * * * *</schedule>
+        </job>
+    </group>
+</config>

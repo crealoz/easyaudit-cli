@@ -131,8 +131,6 @@ class UseOfObjectManager extends AbstractProcessor
             return;
         }
 
-        // Find the import and its line number once
-        $lineNumber = 0;
         $hasImport = Classes::hasImportedClasses([self::OM_INTERFACE, self::OM_CLASS], $fileContent);
 
         $constructorParameters = Classes::parseConstructorParameters($fileContent);
@@ -180,11 +178,21 @@ class UseOfObjectManager extends AbstractProcessor
             && (str_contains($fileContent, 'Magento\Framework\Config\Data')
                 || str_contains($fileContent, 'Config\Data'));
 
-        $hasUsage = $this->trackUsage($directUsage, $omProperty, $localProperty, $isConfigContext) > 0;
+        $this->trackUsage($directUsage, $omProperty, $localProperty, $isConfigContext);
 
-        // If imported but not used, it's a useless import
-        if ($hasImport && !$hasUsage) {
-            $this->addUselessImport($file, $lineNumber);
+        $importActuallyReferenced = Classes::isImportUsed(self::OM_INTERFACE, $fileContent, true)
+            || Classes::isImportUsed(self::OM_CLASS, $fileContent, true);
+
+        // Imported but not referenced anywhere in the body — useless import.
+        // Parent-passthrough constructor params are treated as non-usage: a
+        // sub-class that only forwards the dependency to parent::__construct()
+        // doesn't need the import for its own sake.
+        if ($hasImport && !$importActuallyReferenced) {
+            $line = Content::getLineNumber($fileContent, 'use ' . self::OM_INTERFACE);
+            if ($line < 1) {
+                $line = Content::getLineNumber($fileContent, 'use ' . self::OM_CLASS);
+            }
+            $this->addUselessImport($file, $line);
         }
     }
 

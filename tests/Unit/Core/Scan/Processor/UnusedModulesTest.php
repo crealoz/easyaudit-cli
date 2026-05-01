@@ -43,58 +43,60 @@ class UnusedModulesTest extends TestCase
         $this->assertStringContainsString('config.php', $description);
     }
 
-    public function testGetReportReturnsCorrectFormat(): void
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testProcessFlagsDisabledModuleAndPopulatesReport(): void
     {
-        // Create temp structure with config.php and disabled module
-        $tempDir = sys_get_temp_dir() . '/easyaudit_unused_test_' . uniqid();
-        mkdir($tempDir . '/app/etc', 0777, true);
-        mkdir($tempDir . '/app/code/Vendor/DisabledModule/etc', 0777, true);
+        define('EA_SCAN_PATH', $this->fixturesPath);
 
-        // config.php with disabled module
-        $configContent = <<<'PHP'
-<?php
-return [
-    'modules' => [
-        'Vendor_DisabledModule' => 0,
-        'Vendor_EnabledModule' => 1,
-    ]
-];
-PHP;
-        file_put_contents($tempDir . '/app/etc/config.php', $configContent);
-
-        // module.xml for disabled module
-        $moduleXml = <<<'XML'
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <module name="Vendor_DisabledModule" setup_version="1.0.0"/>
-</config>
-XML;
-        file_put_contents($tempDir . '/app/code/Vendor/DisabledModule/etc/module.xml', $moduleXml);
-
-        // Define constant for the processor
-        if (!defined('EA_SCAN_PATH')) {
-            define('EA_SCAN_PATH', $tempDir);
-        }
+        $files = [
+            'xml' => [
+                $this->fixturesPath . '/app/code/Vendor/DisabledModule/etc/module.xml',
+                $this->fixturesPath . '/app/code/Vendor/ActiveModule/etc/module.xml',
+                $this->fixturesPath . '/app/code/Vendor/AnotherActive/etc/module.xml',
+            ],
+        ];
 
         $processor = new UnusedModules();
-        $files = ['xml' => [$tempDir . '/app/code/Vendor/DisabledModule/etc/module.xml']];
+
+        $this->expectOutputRegex('/Disabled modules:.*1/');
+        $processor->process($files);
+        $report = $processor->getReport();
+
+        $this->assertEquals(1, $processor->getFoundCount());
+        $this->assertCount(1, $report);
+        $this->assertEquals('unusedModules', $report[0]['ruleId']);
+        $this->assertEquals('Unused Modules', $report[0]['name']);
+        $this->assertCount(1, $report[0]['files']);
+        $this->assertEquals('Vendor_DisabledModule', $report[0]['files'][0]['module']);
+        $this->assertEquals('low', $report[0]['files'][0]['level']);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testProcessIgnoresEnabledModules(): void
+    {
+        define('EA_SCAN_PATH', $this->fixturesPath);
+
+        $files = [
+            'xml' => [
+                $this->fixturesPath . '/app/code/Vendor/ActiveModule/etc/module.xml',
+                $this->fixturesPath . '/app/code/Vendor/AnotherActive/etc/module.xml',
+            ],
+        ];
+
+        $processor = new UnusedModules();
 
         ob_start();
         $processor->process($files);
-        $report = $processor->getReport();
         ob_end_clean();
 
-        $this->assertIsArray($report);
-        // Cleanup (tests may not reach here if constant is already defined)
-        @unlink($tempDir . '/app/code/Vendor/DisabledModule/etc/module.xml');
-        @unlink($tempDir . '/app/etc/config.php');
-        @rmdir($tempDir . '/app/code/Vendor/DisabledModule/etc');
-        @rmdir($tempDir . '/app/code/Vendor/DisabledModule');
-        @rmdir($tempDir . '/app/code/Vendor');
-        @rmdir($tempDir . '/app/code');
-        @rmdir($tempDir . '/app/etc');
-        @rmdir($tempDir . '/app');
-        @rmdir($tempDir);
+        $this->assertEquals(0, $processor->getFoundCount());
+        $this->assertEmpty($processor->getReport());
     }
 
     public function testProcessSkipsNonModuleXmlFiles(): void
@@ -102,7 +104,6 @@ XML;
         $tempDir = sys_get_temp_dir() . '/easyaudit_unused_test_' . uniqid();
         mkdir($tempDir, 0777, true);
 
-        // Create a di.xml file (not module.xml)
         $diXml = <<<'XML'
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -118,7 +119,6 @@ XML;
         $processor->process($files);
         ob_end_clean();
 
-        // Should not process di.xml files
         $this->assertEquals(0, $processor->getFoundCount());
 
         unlink($tempDir . '/di.xml');
@@ -131,7 +131,6 @@ XML;
 
         ob_start();
         $this->processor->process($files);
-        $report = $this->processor->getReport();
         ob_end_clean();
 
         $this->assertEquals(0, $this->processor->getFoundCount());
@@ -143,20 +142,25 @@ XML;
 
         ob_start();
         $this->processor->process($files);
-        $report = $this->processor->getReport();
         ob_end_clean();
 
         $this->assertEquals(0, $this->processor->getFoundCount());
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testProcessHandlesMalformedModuleXml(): void
     {
         $tempDir = sys_get_temp_dir() . '/easyaudit_unused_test_' . uniqid();
-        mkdir($tempDir, 0777, true);
+        mkdir($tempDir . '/app/etc', 0777, true);
+        file_put_contents($tempDir . '/app/etc/config.php', "<?php\nreturn ['modules' => []];\n");
 
-        // Malformed module.xml
         $malformedXml = '<?xml version="1.0"?><config><module name="Test"';
         file_put_contents($tempDir . '/module.xml', $malformedXml);
+
+        define('EA_SCAN_PATH', $tempDir);
 
         $processor = new UnusedModules();
         $files = ['xml' => [$tempDir . '/module.xml']];
@@ -165,11 +169,12 @@ XML;
         $processor->process($files);
         ob_end_clean();
 
-        // Should gracefully skip malformed XML
-        // Foundcount should still be 0 (no config.php found)
         $this->assertEquals(0, $processor->getFoundCount());
 
         unlink($tempDir . '/module.xml');
+        unlink($tempDir . '/app/etc/config.php');
+        rmdir($tempDir . '/app/etc');
+        rmdir($tempDir . '/app');
         rmdir($tempDir);
     }
 
@@ -178,7 +183,6 @@ XML;
         $processor = new UnusedModules();
         $report = $processor->getReport();
 
-        // When no issues, report should be empty
         $this->assertEmpty($report);
     }
 
@@ -187,7 +191,6 @@ XML;
         $tempDir = sys_get_temp_dir() . '/easyaudit_unused_test_' . uniqid();
         mkdir($tempDir, 0777, true);
 
-        // module.xml without config.php
         $moduleXml = <<<'XML'
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -203,10 +206,114 @@ XML;
         $processor->process($files);
         $output = ob_get_clean();
 
-        // Should print warning when config.php not found
         $this->assertStringContainsString('Warning', $output);
 
         unlink($tempDir . '/module.xml');
+        rmdir($tempDir);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testLoadMagentoConfigHandlesMissingModulesKey(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_unused_test_' . uniqid();
+        mkdir($tempDir . '/app/etc', 0777, true);
+        file_put_contents(
+            $tempDir . '/app/etc/config.php',
+            "<?php\nreturn ['something_else' => []];\n"
+        );
+
+        $moduleXml = '<?xml version="1.0"?><config><module name="X_Y"/></config>';
+        file_put_contents($tempDir . '/module.xml', $moduleXml);
+
+        define('EA_SCAN_PATH', $tempDir);
+
+        $processor = new UnusedModules();
+        $files = ['xml' => [$tempDir . '/module.xml']];
+
+        ob_start();
+        $processor->process($files);
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Warning', $output);
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($tempDir . '/module.xml');
+        unlink($tempDir . '/app/etc/config.php');
+        rmdir($tempDir . '/app/etc');
+        rmdir($tempDir . '/app');
+        rmdir($tempDir);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testLoadMagentoConfigHandlesException(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_unused_test_' . uniqid();
+        mkdir($tempDir . '/app/etc', 0777, true);
+        file_put_contents(
+            $tempDir . '/app/etc/config.php',
+            "<?php\nthrow new \\RuntimeException('boom');\n"
+        );
+
+        $moduleXml = '<?xml version="1.0"?><config><module name="X_Y"/></config>';
+        file_put_contents($tempDir . '/module.xml', $moduleXml);
+
+        define('EA_SCAN_PATH', $tempDir);
+
+        $processor = new UnusedModules();
+        $files = ['xml' => [$tempDir . '/module.xml']];
+
+        ob_start();
+        $processor->process($files);
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Error reading config.php', $output);
+        $this->assertStringContainsString('boom', $output);
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($tempDir . '/module.xml');
+        unlink($tempDir . '/app/etc/config.php');
+        rmdir($tempDir . '/app/etc');
+        rmdir($tempDir . '/app');
+        rmdir($tempDir);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testExtractModuleNameReturnsNullWhenNameAttributeMissing(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_unused_test_' . uniqid();
+        mkdir($tempDir . '/app/etc', 0777, true);
+        file_put_contents(
+            $tempDir . '/app/etc/config.php',
+            "<?php\nreturn ['modules' => ['Some_Module' => 0]];\n"
+        );
+
+        $moduleXml = '<?xml version="1.0"?><config><module setup_version="1.0.0"/></config>';
+        file_put_contents($tempDir . '/module.xml', $moduleXml);
+
+        define('EA_SCAN_PATH', $tempDir);
+
+        $processor = new UnusedModules();
+        $files = ['xml' => [$tempDir . '/module.xml']];
+
+        ob_start();
+        $processor->process($files);
+        ob_end_clean();
+
+        $this->assertEquals(0, $processor->getFoundCount());
+
+        unlink($tempDir . '/module.xml');
+        unlink($tempDir . '/app/etc/config.php');
+        rmdir($tempDir . '/app/etc');
+        rmdir($tempDir . '/app');
         rmdir($tempDir);
     }
 }

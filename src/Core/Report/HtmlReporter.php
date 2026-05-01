@@ -4,6 +4,8 @@ namespace EasyAudit\Core\Report;
 
 class HtmlReporter implements ReporterInterface
 {
+    private static ?string $css = null;
+
     public function generate(array $findings): string
     {
         $scanPath = $findings['metadata']['scan_path'] ?? 'Unknown';
@@ -92,7 +94,15 @@ RULE;
             $rulesHtml = '<div class="no-issues">No issues found.</div>';
         }
 
-        $css = file_get_contents(__DIR__ . '/../../assets/report.css');
+        if (self::$css === null) {
+            $cssPath = __DIR__ . '/../../assets/report.css';
+            $content = @file_get_contents($cssPath);
+            if ($content === false) {
+                throw new \RuntimeException("report.css missing at $cssPath");
+            }
+            self::$css = $content;
+        }
+        $css = self::$css;
 
         return <<<HTML
 <!DOCTYPE html>

@@ -4,7 +4,6 @@ namespace EasyAudit\Core\Scan\Util;
 
 use EasyAudit\Exception\Scanner\InstantiationNotFoundException;
 use EasyAudit\Exception\Scanner\NoChildrenException;
-use EasyAudit\Service\CliWriter;
 
 class Classes
 {
@@ -49,6 +48,126 @@ class Classes
     {
         foreach ($classes as $class) {
             if (self::hasImportedClass($class, $fileContent)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check whether an imported FQCN is actually referenced in the file body.
+     *
+     * Returns true iff the FQCN is declared in a `use` statement AND the short
+     * name (or alias) it binds to is referenced somewhere outside that statement —
+     * type hint, instanceof, static call, extends/implements, docblock, etc.
+     *
+     * Also matches direct FQCN references (`\Magento\…\Foo`) even when the class
+     * is not imported through a use statement.
+     *
+     * When $ignoreParentPassthrough is true, a reference that appears only as a
+     * constructor parameter type hint whose variable is forwarded untouched to
+     * parent::__construct() does not count as usage. Useful for detecting
+     * sub-classes that keep an import alive solely for the type hint while not
+     * actually using the dependency themselves.
+     *
+     * Known limitations:
+     * - Grouped `use Foo\{A, B};` is not understood (same as parseImportedClasses).
+     * - Occurrences inside string literals / heredocs count as usage.
+     */
+    public static function isImportUsed(
+        string $fqcn,
+        string $fileContent,
+        bool $ignoreParentPassthrough = false
+    ): bool {
+        $normalizedFqcn = ltrim($fqcn, '\\');
+        $imports = self::parseImportedClasses($fileContent);
+
+        $shortName = null;
+        foreach ($imports as $alias => $imported) {
+            if (ltrim($imported, '\\') === $normalizedFqcn) {
+                $shortName = $alias;
+                break;
+            }
+        }
+        if ($shortName === null) {
+            return false;
+        }
+
+        $stripped = preg_replace('/^\s*use\s+[^;]+;\s*$/m', '', $fileContent) ?? $fileContent;
+
+        if ($ignoreParentPassthrough) {
+            $stripped = self::stripPassthroughConstructorParams($stripped, $shortName, $normalizedFqcn, $fileContent);
+        }
+
+        $shortPattern = '/\b' . preg_quote($shortName, '/') . '\b/';
+        if (preg_match($shortPattern, $stripped) === 1) {
+            return true;
+        }
+
+        $fqcnPattern = '/\\\\?\b' . preg_quote($normalizedFqcn, '/') . '\b/';
+        return preg_match($fqcnPattern, $stripped) === 1;
+    }
+
+    /**
+     * Remove from $stripped any constructor parameter occurrences whose variable
+     * is forwarded untouched to parent::__construct(). Only parameters whose
+     * type token matches $shortName or $fqcn are targeted.
+     */
+    private static function stripPassthroughConstructorParams(
+        string $stripped,
+        string $shortName,
+        string $fqcn,
+        string $fileContent
+    ): string {
+        $parentParams = self::getParentConstructorParams($fileContent);
+        if (empty($parentParams)) {
+            return $stripped;
+        }
+
+        $constructorParams = self::parseConstructorParameters($fileContent);
+        foreach ($constructorParams as $rawParam) {
+            if (!preg_match('/\$(\w+)\b/', $rawParam, $nameMatch)) {
+                continue;
+            }
+            $paramName = $nameMatch[1];
+            if (!in_array($paramName, $parentParams, true)) {
+                continue;
+            }
+            if (!self::paramTypeMatches($rawParam, $shortName, $fqcn)) {
+                continue;
+            }
+            // Only treat the type hint as a phantom reference when the variable
+            // isn't used anywhere else in the body — i.e. it's a pure parent
+            // forward. If $paramName shows up again outside the constructor
+            // signature and parent::__construct() call, the dependency is
+            // genuinely in use.
+            if (self::paramUsedOutsideParentCall($paramName, $fileContent)) {
+                continue;
+            }
+            $quoted = preg_quote($rawParam, '/');
+            $stripped = preg_replace('/' . $quoted . '/', '', $stripped, 1) ?? $stripped;
+        }
+
+        return $stripped;
+    }
+
+    private static function paramUsedOutsideParentCall(string $paramName, string $fileContent): bool
+    {
+        $content = preg_replace('/parent\s*::\s*__construct\s*\([^)]*\)/s', '', $fileContent) ?? $fileContent;
+        $content = preg_replace('/function\s+__construct\s*\([^)]*\)/s', '', $content) ?? $content;
+        return preg_match('/\$' . preg_quote($paramName, '/') . '\b/', $content) === 1;
+    }
+
+    private static function paramTypeMatches(string $rawParam, string $shortName, string $fqcn): bool
+    {
+        $tokens = preg_split('/\s+/', trim($rawParam)) ?: [];
+        foreach ($tokens as $token) {
+            $token = ltrim($token, '?\\');
+            if ($token === '' || str_starts_with($token, '$')) {
+                continue;
+            }
+            $tokenFqcn = ltrim($token, '\\');
+            if ($token === $shortName || $tokenFqcn === $fqcn) {
                 return true;
             }
         }

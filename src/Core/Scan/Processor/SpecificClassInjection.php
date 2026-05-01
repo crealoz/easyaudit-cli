@@ -150,6 +150,8 @@ How to fix: Use a factory, builder, or interface instead. This automatic scan ma
      */
     private array $resultsByCategory = [];
 
+    private array $classContentCache = [];
+
     public function getIdentifier(): string
     {
         return 'specificClassInjection';
@@ -359,8 +361,12 @@ How to fix: Use a factory, builder, or interface instead. This automatic scan ma
         if (!$handled && defined('EA_SCAN_PATH')) {
             $classFile = Classes::resolveClassToFile(ltrim($paramClass, '\\'));
             if ($classFile !== null) {
-                $classContent = @file_get_contents($classFile);
-                if ($classContent !== false && (
+                if (!array_key_exists($classFile, $this->classContentCache)) {
+                    $read = @file_get_contents($classFile);
+                    $this->classContentCache[$classFile] = $read === false ? null : $read;
+                }
+                $classContent = $this->classContentCache[$classFile];
+                if ($classContent !== null && (
                     Classes::extendsClass($classContent, 'Magento\Framework\Model\AbstractModel')
                     || Classes::extendsClass($classContent, 'Magento\Framework\Model\AbstractExtensibleModel')
                 )) {

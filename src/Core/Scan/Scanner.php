@@ -143,7 +143,7 @@ class Scanner
                             unset($report['shortDescription']);
                             unset($report['longDescription']);
                             // let's remove "message" entry from file as well
-                            foreach (array_keys($report['files']) as $key) {
+                            foreach ($report['files'] as $key => $_) {
                                 unset($report['files'][$key]['message']);
                             }
                         }

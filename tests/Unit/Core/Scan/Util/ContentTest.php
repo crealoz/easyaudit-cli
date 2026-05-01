@@ -25,15 +25,15 @@ class ContentTest extends TestCase
         $this->assertEquals(3, Content::getLineNumber($content, 'third'));
     }
 
-    public function testGetLineNumberReturnsNegativeOneWhenNotFound(): void
+    public function testGetLineNumberReturnsZeroWhenNotFound(): void
     {
         $content = "first line\nsecond line\nthird line";
-        $this->assertEquals(-1, Content::getLineNumber($content, 'missing'));
+        $this->assertEquals(0, Content::getLineNumber($content, 'missing'));
     }
 
     public function testGetLineNumberWithEmptyContent(): void
     {
-        $this->assertEquals(-1, Content::getLineNumber('', 'anything'));
+        $this->assertEquals(0, Content::getLineNumber('', 'anything'));
     }
 
     public function testGetLineNumberWithAfterLineSkipsEarlierMatches(): void
@@ -45,10 +45,10 @@ class ContentTest extends TestCase
         $this->assertEquals(3, Content::getLineNumber($content, 'MyClass', 2));
     }
 
-    public function testGetLineNumberWithAfterLineReturnsNegativeOneWhenNoLaterMatch(): void
+    public function testGetLineNumberWithAfterLineReturnsZeroWhenNoLaterMatch(): void
     {
         $content = "first line\nsecond line\nthird line";
-        $this->assertEquals(-1, Content::getLineNumber($content, 'first', 1));
+        $this->assertEquals(0, Content::getLineNumber($content, 'first', 1));
     }
 
     public function testGetLineNumberWithAfterLineZeroBehavesLikeDefault(): void

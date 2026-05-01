@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <indexer id="vendor_b_index" view_id="vendor_b_view" class="Vendor\B\Indexer">
+        <title translate="true">Vendor B Index</title>
+        <description translate="true">B index</description>
+        <dependencies>
+            <indexer id="vendor_a_index"/>
+        </dependencies>
+    </indexer>
+</config>

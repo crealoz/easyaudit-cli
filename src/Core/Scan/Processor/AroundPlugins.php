@@ -420,7 +420,7 @@ class AroundPlugins extends AbstractProcessor
                     $plugins = PluginRegistry::getPluginsForTarget($firstTarget ?? $targetClass);
                     $diFile = !empty($plugins) ? $plugins[0]['diFile'] : 'unknown';
 
-                    $this->deepStacks[] = Formater::formatError($diFile, 1, $msg, 'medium');
+                    $this->deepStacks[] = Formater::formatError($diFile, 1, $msg, 'high');
                     $this->foundCount++;
                 }
             }

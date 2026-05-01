@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <route url="/V1/products/:sku" method="GET">
+        <service class="Vendor\Module\Api\ProductRepositoryInterface" method="saveProduct"/>
+        <resources>
+            <resource ref="Vendor_Module::products"/>
+        </resources>
+    </route>
+    <route url="/V1/products/:sku/delete" method="GET">
+        <service class="Vendor\Module\Api\ProductRepositoryInterface" method="deleteById"/>
+        <resources>
+            <resource ref="Vendor_Module::products"/>
+        </resources>
+    </route>
+    <route url="/V1/orders/:orderId" method="DELETE">
+        <service class="Vendor\Module\Api\OrderRepositoryInterface" method="getOrder"/>
+        <resources>
+            <resource ref="Vendor_Module::orders"/>
+        </resources>
+    </route>
+    <route url="/V1/carts/:cartId" method="PUT">
+        <service class="Vendor\Module\Api\CartRepositoryInterface" method="fetchCart"/>
+        <resources>
+            <resource ref="self"/>
+        </resources>
+    </route>
+</routes>

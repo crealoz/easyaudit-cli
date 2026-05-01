@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <route url="/V1/public/no-auth" method="GET">
+        <service class="Vendor\Module\Api\PublicInterface" method="get"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/debug/dump" method="POST">
+        <service class="Vendor\Module\Api\DebugInterface" method="dump"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+</routes>

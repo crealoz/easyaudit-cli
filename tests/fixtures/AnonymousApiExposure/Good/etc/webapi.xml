@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <!-- Storefront catalog browse — public by design -->
+    <route url="/V1/catalog/browse" method="GET">
+        <service class="Vendor\Module\Api\CatalogInterface" method="browse"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <!-- Guest checkout requires unauthenticated access until the order is placed -->
+    <route url="/V1/guest-checkout/cart" method="POST">
+        <service class="Vendor\Module\Api\GuestCartInterface" method="create"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+    <route url="/V1/admin/orders" method="GET">
+        <service class="Vendor\Module\Api\OrderInterface" method="list"/>
+        <resources>
+            <resource ref="Vendor_Module::orders"/>
+        </resources>
+    </route>
+</routes>

@@ -96,6 +96,188 @@ PHP;
         ], $content));
     }
 
+    // --- isImportUsed() ---
+
+    public function testIsImportUsedReturnsFalseWhenImportMissing(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Catalog\Model\Product;
+
+class Foo
+{
+    public function run(): void
+    {
+        $p = new Product();
+    }
+}
+PHP;
+        $this->assertFalse(Classes::isImportUsed('Magento\Framework\Registry', $content));
+    }
+
+    public function testIsImportUsedReturnsFalseWhenShortNameOnlyOnUseLine(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Framework\Registry;
+
+class Foo
+{
+    public function run(): void
+    {
+    }
+}
+PHP;
+        $this->assertFalse(Classes::isImportUsed('Magento\Framework\Registry', $content));
+    }
+
+    public function testIsImportUsedDetectsTypeHint(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Framework\ObjectManagerInterface;
+
+class Foo
+{
+    public function run(ObjectManagerInterface $om): void
+    {
+    }
+}
+PHP;
+        $this->assertTrue(Classes::isImportUsed('Magento\Framework\ObjectManagerInterface', $content));
+    }
+
+    public function testIsImportUsedDetectsStaticCall(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Framework\App\ObjectManager;
+
+class Foo
+{
+    public function run(): void
+    {
+        $x = ObjectManager::getInstance();
+    }
+}
+PHP;
+        $this->assertTrue(Classes::isImportUsed('Magento\Framework\App\ObjectManager', $content));
+    }
+
+    public function testIsImportUsedRespectsAlias(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Framework\App\ObjectManager as Om;
+
+class Foo
+{
+    public function run(): void
+    {
+        $x = Om::getInstance();
+    }
+}
+PHP;
+        $this->assertTrue(Classes::isImportUsed('Magento\Framework\App\ObjectManager', $content));
+    }
+
+    public function testIsImportUsedDetectsLeadingBackslashFqcnWhenImported(): void
+    {
+        // Import is present; the body uses the FQCN form with a leading backslash.
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Framework\App\ObjectManager;
+
+class Foo
+{
+    public function run(): void
+    {
+        $x = \Magento\Framework\App\ObjectManager::getInstance();
+    }
+}
+PHP;
+        $this->assertTrue(Classes::isImportUsed('Magento\Framework\App\ObjectManager', $content));
+    }
+
+    public function testIsImportUsedIgnoresOccurrencesInStrippedUseBlock(): void
+    {
+        // Two use lines that both mention the short name 'ObjectManager' — the
+        // target is imported, but the only short-name occurrences are on use
+        // lines, so the import is not used.
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Framework\App\ObjectManager;
+use Some\Other\Namespace\ObjectManager as AliasedSameName;
+
+class Foo
+{
+}
+PHP;
+        $this->assertFalse(Classes::isImportUsed('Magento\Framework\App\ObjectManager', $content));
+    }
+
+    public function testIsImportUsedWithPassthroughFlagIgnoresParentForwardedCtorParam(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Framework\ObjectManagerInterface;
+
+class Foo extends ParentClass
+{
+    public function __construct(ObjectManagerInterface $om)
+    {
+        parent::__construct($om);
+    }
+}
+PHP;
+        // Default: the type hint is a reference → used.
+        $this->assertTrue(Classes::isImportUsed('Magento\Framework\ObjectManagerInterface', $content));
+        // With passthrough flag: the only usage is a parent-passthrough param → not used.
+        $this->assertFalse(
+            Classes::isImportUsed('Magento\Framework\ObjectManagerInterface', $content, true)
+        );
+    }
+
+    public function testIsImportUsedWithPassthroughFlagStillTrueWhenParamUsedInBody(): void
+    {
+        $content = <<<'PHP'
+<?php
+namespace Vendor\Module;
+
+use Magento\Framework\ObjectManagerInterface;
+
+class Foo extends ParentClass
+{
+    private $om;
+
+    public function __construct(ObjectManagerInterface $om)
+    {
+        parent::__construct($om);
+        $this->om = $om;
+    }
+}
+PHP;
+        $this->assertTrue(
+            Classes::isImportUsed('Magento\Framework\ObjectManagerInterface', $content, true)
+        );
+    }
+
     // --- parseConstructorParameters() ---
 
     public function testParseConstructorParametersWithConstructor(): void

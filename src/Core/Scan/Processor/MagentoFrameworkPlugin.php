@@ -13,11 +13,6 @@ class MagentoFrameworkPlugin extends AbstractProcessor
         return 'magentoFrameworkPlugin';
     }
 
-    public function getFoundCount(): int
-    {
-        return 0;
-    }
-
     public function process(array $files): void
     {
         if (empty($files['di'])) {

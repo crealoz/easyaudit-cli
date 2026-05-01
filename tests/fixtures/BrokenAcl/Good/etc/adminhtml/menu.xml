@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <menu>
+        <add id="Vendor_Module::orders"
+             title="Orders"
+             module="Vendor_Module"
+             sortOrder="10"
+             resource="Vendor_Module::orders"
+             parent="Magento_Backend::admin"
+             action="module/orders/index"/>
+        <add id="Vendor_Module::customers"
+             title="Customers"
+             module="Vendor_Module"
+             sortOrder="20"
+             resource="Vendor_Module::customers"
+             parent="Magento_Backend::admin"
+             action="module/customers/index"/>
+    </menu>
+</config>

@@ -41,7 +41,6 @@
         <UndefinedConstant>
             <errorLevel type="suppress">
                 <file name="src/Service/Env.php" />
-                <file name="src/Service/Api.php" />
                 <file name="src/Core/Scan/Scanner.php" />
                 <file name="src/Core/Scan/Util/Classes.php" />
             </errorLevel>

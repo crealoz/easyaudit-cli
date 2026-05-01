@@ -86,8 +86,13 @@ HELP;
             return 0;
         }
 
+        if (count($rest) > 1) {
+            CliWriter::errorToStderr("Error: Only one report argument is supported.");
+            return 1;
+        }
+
         $options = $this->parseOptions($opts);
-        $errors = $this->loadReport($rest, $options['patchOut']);
+        $errors = $this->loadReport($rest[0] ?? null, $options['patchOut']);
         $metaData = $errors['metadata'];
         $scanPath = $this->resolveScanPath($options['scanPath'], $metaData);
         unset($errors['metadata']);

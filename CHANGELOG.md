@@ -5,6 +5,41 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] 2026-05-01
+
+### Added
+
+- **6 new XML-integrity processors** (27 total):
+  - **AnonymousApiExposure** — flags `webapi.xml` routes exposed to anonymous callers without a justifying XML comment
+  - **BrokenAcl** — detects admin menu entries that reference ACL resources not defined in any `acl.xml`
+  - **CronIntegrity** — detects `crontab.xml` jobs whose instance class or method does not exist
+  - **GetWriteAntipattern** — flags `webapi.xml` routes where the HTTP verb does not match the semantics of the target service method (e.g. `GET` on a `save*()` method)
+  - **IndexerCircular** — detects circular dependencies declared between indexers across `indexer.xml` files
+  - **OrphanedCronGroup** — detects `crontab.xml` jobs placed in a group that no `cron_groups.xml` defines
+- **`Graph` utility** (`src/Core/Scan/Util/Graph.php`) — cycle detection on directed adjacency lists via iterative 3-color DFS, with canonicalized output. Used by `IndexerCircular` and reusable for any future dependency-graph processor
+- **`Classes::isImportUsed()`** — detects whether an imported FQCN is actually referenced in the file body (type hint, instanceof, static call, extends/implements, docblock, direct FQCN reference). Optional `$ignoreParentPassthrough` flag treats constructor parameters that are forwarded untouched to `parent::__construct()` as non-usage, enabling sub-class-aware detection
+- **Multi-arg rejection in CLI**: `scan` and `fix-apply` now error out when given more than one positional argument instead of silently using the last one. `Args::parse()` return type changed: `rest` is now `array<int, string>` instead of `string`
+
+### Changed
+
+- **UseOfObjectManager — useless-import detection rewritten**: replaces the previous "imported but no usage tracked" heuristic with `Classes::isImportUsed(..., ignoreParentPassthrough: true)`. A subclass that imports `ObjectManagerInterface` only to type-hint a parameter forwarded to `parent::__construct()` is now correctly flagged as a useless import — previously masked by the parent passthrough
+- **AroundPlugins — `deepPluginStack` severity** raised from `medium` to `high`. Deep around-plugin chains are a real performance and debugging hazard, not a stylistic concern
+- **CountOnCollection — constructor parsing hoisted**: `analyzeFile()` and `mapCollectionReturningMethods()` no longer each re-parse the same constructor; parsing happens once in `process()` and is passed in. Minor speedup on large files where both code paths run
+- **SpecificClassInjection — class-file cache**: repeated reads of the same target class file (during `extendsClass()` checks for `AbstractModel` / `AbstractExtensibleModel`) are now cached per-scan, avoiding redundant disk I/O when the same parent class is inspected for many injection sites
+- **HtmlReporter — CSS cached statically**: `report.css` is loaded once per process and now throws `RuntimeException` if missing instead of silently producing an unstyled report
+- **Api — replaces `echo` with `CliWriter::info()`** for the "calling API" log line
+
+### Fixed
+
+- **`Content::getLineNumber()` not-found return**: changed from `-1` to `0` for consistency with caller expectations across the codebase. Callers that need to detect "not found" should now check `=== 0`
+
+### Removed
+
+- **`AbstractPreparer::getMappedRule()`** — unused
+- **`MagentoFrameworkPlugin::getFoundCount()`** override — redundant; `AbstractProcessor`'s default is now used
+
+---
+
 ## [1.0.9] 2026-04-16
 
 ### Fixed

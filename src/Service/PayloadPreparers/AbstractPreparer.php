@@ -21,11 +21,6 @@ abstract class AbstractPreparer implements PreparerInterface
         return isset(self::SPECIFIC_RULES[$ruleId]);
     }
 
-    protected function getMappedRule(string $ruleId): string
-    {
-        return self::MAPPED_RULES[$ruleId];
-    }
-
     protected function isRuleFixable(string $ruleId, array $fixables, ?array $selectedRules = null): bool
     {
         $rule = $ruleId;

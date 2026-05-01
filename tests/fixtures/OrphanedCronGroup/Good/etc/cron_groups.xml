@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <group id="vendor_module_nightly">
+        <schedule_generate_every>60</schedule_generate_every>
+        <schedule_ahead_for>240</schedule_ahead_for>
+        <schedule_lifetime>60</schedule_lifetime>
+        <history_cleanup_every>180</history_cleanup_every>
+        <history_success_lifetime>10080</history_success_lifetime>
+        <history_failure_lifetime>10080</history_failure_lifetime>
+        <use_separate_process>1</use_separate_process>
+    </group>
+</config>

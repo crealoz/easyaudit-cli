@@ -43,7 +43,14 @@ class ArgsTest extends TestCase
     public function testParsePositionalArgument(): void
     {
         [$opts, $rest] = Args::parse(['/path/to/scan']);
-        $this->assertEquals('/path/to/scan', $rest);
+        $this->assertEquals(['/path/to/scan'], $rest);
+    }
+
+    public function testParseMultiplePositionalsArePreserved(): void
+    {
+        [$opts, $rest] = Args::parse(['a', 'b']);
+        $this->assertEmpty($opts);
+        $this->assertEquals(['a', 'b'], $rest);
     }
 
     public function testParseRepeatedOptionCreatesArray(): void
@@ -58,14 +65,14 @@ class ArgsTest extends TestCase
         [$opts, $rest] = Args::parse(['--format=sarif', '-v', '/path/to/scan']);
         $this->assertEquals('sarif', $opts['format']);
         $this->assertTrue($opts['verbose']);
-        $this->assertEquals('/path/to/scan', $rest);
+        $this->assertEquals(['/path/to/scan'], $rest);
     }
 
     public function testParseEmptyArray(): void
     {
         [$opts, $rest] = Args::parse([]);
         $this->assertEmpty($opts);
-        $this->assertEquals('', $rest);
+        $this->assertEquals([], $rest);
     }
 
     public function testParseUnknownShortFlag(): void

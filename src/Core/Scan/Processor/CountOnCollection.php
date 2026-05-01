@@ -66,8 +66,15 @@ class CountOnCollection extends AbstractProcessor
                     continue;
                 }
 
-                $this->analyzeFile($file, $fileContent);
-                $this->mapCollectionReturningMethods($fileContent);
+                $constructorParams = Classes::parseConstructorParameters($fileContent);
+                if (empty($constructorParams)) {
+                    continue;
+                }
+                $importedClasses = Classes::parseImportedClasses($fileContent);
+                $consolidated = Classes::consolidateParameters($constructorParams, $importedClasses);
+
+                $this->analyzeFile($file, $fileContent, $constructorParams, $consolidated);
+                $this->mapCollectionReturningMethods($fileContent, $constructorParams, $consolidated);
             }
         }
 
@@ -83,16 +90,8 @@ class CountOnCollection extends AbstractProcessor
         }
     }
 
-    private function analyzeFile(string $file, string $fileContent): void
+    private function analyzeFile(string $file, string $fileContent, array $constructorParams, array $consolidated): void
     {
-        $constructorParams = Classes::parseConstructorParameters($fileContent);
-        if (empty($constructorParams)) {
-            return;
-        }
-
-        $importedClasses = Classes::parseImportedClasses($fileContent);
-        $consolidated = Classes::consolidateParameters($constructorParams, $importedClasses);
-
         foreach ($consolidated as $paramName => $paramClass) {
             $isDirect = Types::isCollectionType($paramClass);
             $isFactory = Types::isCollectionFactoryType($paramClass);
@@ -170,16 +169,8 @@ class CountOnCollection extends AbstractProcessor
     /**
      * Build a map of methods that return collections created from CollectionFactory.
      */
-    private function mapCollectionReturningMethods(string $fileContent): void
+    private function mapCollectionReturningMethods(string $fileContent, array $constructorParams, array $consolidated): void
     {
-        $constructorParams = Classes::parseConstructorParameters($fileContent);
-        if (empty($constructorParams)) {
-            return;
-        }
-
-        $importedClasses = Classes::parseImportedClasses($fileContent);
-        $consolidated = Classes::consolidateParameters($constructorParams, $importedClasses);
-
         // Find factory properties
         $factoryProperties = [];
         foreach ($consolidated as $paramName => $paramClass) {

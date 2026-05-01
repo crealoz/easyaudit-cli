@@ -15,7 +15,7 @@ class Content
                 return $lineNumber + 1; // Line numbers start at 1
             }
         }
-        return -1; // Not found
+        return 0; // Not found
     }
 
     public static function extractContent(string $fileContent, int $startLine, int $endLine): string

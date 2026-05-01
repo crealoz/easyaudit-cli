@@ -56,13 +56,18 @@ HELP;
 
     public function run(array $argv): int
     {
-        // if option is help, show help
-        if (Args::optBool(Args::parse($argv)[0], 'help')) {
+        [$opts, $rest] = Args::parse($argv);
+
+        if (Args::optBool($opts, 'help')) {
             fwrite(STDOUT, $this->getHelp() . "\n");
             return 0;
         }
 
-        [$opts, $rest] = Args::parse($argv);
+        if (count($rest) > 1) {
+            CliWriter::errorToStderr("Error: Only one path argument is supported.");
+            return 1;
+        }
+
         $format      = strtolower(Args::optStr($opts, 'format', 'html')) ?? 'html';
 
         $allowedFormats = ['json', 'sarif', 'html'];
@@ -75,7 +80,7 @@ HELP;
         $output      = Args::optStr($opts, 'output');
         $excludedExt = Args::optArr($opts, 'exclude-ext');
         $projectName = Args::optStr($opts, 'project-name');
-        $path        = $rest ?: '.';
+        $path        = $rest[0] ?? '.';
         define('EA_SCAN_PATH', $path);
 
         $result   = $this->scanner->run($exclude, $excludedExt, $format);

@@ -8,6 +8,7 @@ use EasyAudit\Exception\GitHubAuthException;
 use EasyAudit\Exception\RateLimitedException;
 use EasyAudit\Exception\UpgradeRequiredException;
 use EasyAudit\Version;
+use EasyAudit\Service\CliWriter;
 use RuntimeException;
 
 /**
@@ -135,7 +136,7 @@ class Api
 
         $ch = $this->initCurl($entryPoint);
 
-        echo BLUE . "calling API at " . Env::getApiUrl() . $entryPoint . RESET . "\n";
+        CliWriter::info("calling API at " . Env::getApiUrl() . $entryPoint);
 
         $data = $this->manageResponse($ch);
         $types = $data['types'] ?? null;

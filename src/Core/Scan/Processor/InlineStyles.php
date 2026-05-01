@@ -82,10 +82,7 @@ How to fix: Move styles to dedicated CSS/LESS files and load them via layout XML
             return;
         }
 
-        $allTemplates = $files['phtml'];
-        if (!empty($files['html'])) {
-            $allTemplates = array_merge($allTemplates, $files['html']);
-        }
+        $allTemplates = array_merge((array)$files['phtml'], (array)($files['html'] ?? []));
 
         foreach ($allTemplates as $file) {
             if (Modules::isEmailTemplate($file) || Modules::isPdfTemplate($file)) {

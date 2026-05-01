@@ -21,12 +21,12 @@ final class Args
      * Positional arguments are collected in the second array.
      *
      * @param  array $argv
-     * @return array{0: array, 1: string}
+     * @return array{0: array, 1: array<int, string>}
      */
     public static function parse(array $argv): array
     {
         $opts = [];
-        $rest = '';
+        $rest = [];
 
         foreach ($argv as $a) {
             if (str_starts_with($a, '--')) {
@@ -37,7 +37,7 @@ final class Args
                 self::parseShortFlags($a, $opts);
                 continue;
             }
-            $rest = $a;
+            $rest[] = $a;
         }
 
         return [$opts, $rest];

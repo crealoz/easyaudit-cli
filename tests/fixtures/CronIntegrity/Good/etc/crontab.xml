@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <group id="default">
+        <job name="vendor_module_execute"
+             instance="Vendor\Module\Cron\ExistingHandler"
+             method="execute">
+            <schedule>0 * * * *</schedule>
+        </job>
+        <job name="vendor_module_cleanup"
+             instance="Vendor\Module\Cron\ExistingHandler"
+             method="cleanup">
+            <schedule>30 1 * * *</schedule>
+        </job>
+    </group>
+</config>
