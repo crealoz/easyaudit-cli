@@ -12,7 +12,8 @@ final class Config
      *     reporters: array<string, class-string<ReporterInterface>>,
      *     defaultFormat: string,
      *     commands?: array<string, class-string<CommandInterface>>,
-     *     fixer?: class-string<FixerInterface>
+     *     fixer?: class-string<FixerInterface>,
+     *     processorDirs?: array<string, string>
      * }|null
      */
     private static ?array $cache = null;
@@ -23,7 +24,8 @@ final class Config
      *     reporters: array<string, class-string<ReporterInterface>>,
      *     defaultFormat: string,
      *     commands?: array<string, class-string<CommandInterface>>,
-     *     fixer?: class-string<FixerInterface>
+     *     fixer?: class-string<FixerInterface>,
+     *     processorDirs?: array<string, string>
      * }
      */
     public static function load(): array
@@ -40,7 +42,8 @@ final class Config
      *     reporters: array<string, class-string<ReporterInterface>>,
      *     defaultFormat: string,
      *     commands?: array<string, class-string<CommandInterface>>,
-     *     fixer?: class-string<FixerInterface>
+     *     fixer?: class-string<FixerInterface>,
+     *     processorDirs?: array<string, string>
      * }
      */
     public static function loadFrom(string $path): array
@@ -57,12 +60,14 @@ final class Config
             throw new \RuntimeException("EasyAudit config file is not valid JSON: {$path}");
         }
         self::validate($data, $path);
+        self::normalize($data, $path);
         /**
          * @var array{
          *     reporters: array<string, class-string<ReporterInterface>>,
          *     defaultFormat: string,
          *     commands?: array<string, class-string<CommandInterface>>,
-         *     fixer?: class-string<FixerInterface>
+         *     fixer?: class-string<FixerInterface>,
+         *     processorDirs?: array<string, string>
          * } $data
          */
         return $data;
@@ -147,5 +152,51 @@ final class Config
                 );
             }
         }
+        if (isset($data['processorDirs'])) {
+            if (!is_array($data['processorDirs'])) {
+                throw new \RuntimeException("EasyAudit config 'processorDirs' must be a map: {$path}");
+            }
+            foreach ($data['processorDirs'] as $namespace => $directory) {
+                if (!is_string($namespace) || $namespace === '') {
+                    throw new \RuntimeException(
+                        "EasyAudit config 'processorDirs' keys must be non-empty namespace strings: {$path}"
+                    );
+                }
+                if (!is_string($directory) || $directory === '') {
+                    throw new \RuntimeException(
+                        "EasyAudit config 'processorDirs' value for '{$namespace}' must be a non-empty path: {$path}"
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Resolve every relative path under `processorDirs` against the config file's directory so that the cached
+     * config always carries absolute paths. Absolute paths and stream wrappers (e.g. `phar://`) are passed through.
+     */
+    private static function normalize(array &$data, string $path): void
+    {
+        if (!isset($data['processorDirs']) || !is_array($data['processorDirs'])) {
+            return;
+        }
+        $configDir = dirname($path);
+        $resolved = [];
+        foreach ($data['processorDirs'] as $namespace => $directory) {
+            $resolved[$namespace] = self::resolveDirectory($directory, $configDir);
+        }
+        $data['processorDirs'] = $resolved;
+    }
+
+    private static function resolveDirectory(string $directory, string $configDir): string
+    {
+        // Stream wrappers (phar://, file://, etc.) and absolute paths are kept as-is.
+        if (preg_match('#^[a-z][a-z0-9+.\-]*://#i', $directory) === 1) {
+            return $directory;
+        }
+        if (str_starts_with($directory, '/') || preg_match('#^[A-Za-z]:[\\\\/]#', $directory) === 1) {
+            return $directory;
+        }
+        return $configDir . DIRECTORY_SEPARATOR . $directory;
     }
 }

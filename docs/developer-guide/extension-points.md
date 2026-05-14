@@ -7,6 +7,7 @@ EasyAudit CLI is intentionally extensible without forking the core entry point. 
 - [Glossary concept annotations](#glossary-concept-annotations)
 - [Fixer backend (`FixerInterface`)](#fixer-backend-fixerinterface)
 - [Command and fixer registry](#command-and-fixer-registry)
+- [Processor directories](#processor-directories)
 
 All extension points are wired through `EasyAudit\Service\Config` (`src/Service/Config.php`), which loads a single JSON file (`config/easyaudit.json` in the free repo). Sponsor builds point `EA_CONFIG` at an overlay to register extras without editing core files.
 
@@ -260,6 +261,46 @@ To register an additional command or swap the fixer, point `EA_CONFIG` at an ove
 ```
 
 Custom commands must implement `EasyAudit\Console\CommandInterface`. The entry point auto-injects dependencies for the built-in `Scan` and `FixApply` classes (and any subclass thereof); custom commands receive no arguments and should resolve their own dependencies inside the constructor.
+
+---
+
+## Processor directories
+
+**File:** `config/easyaudit.json`, key `processorDirs`
+
+Tells `Scanner::getProcessors()` which `namespace → directory` pairs to scan for processor classes. Sponsors can register additional processor namespaces — or replace the built-in set entirely — without subclassing `Scanner`.
+
+```json
+{
+  "processorDirs": {
+    "EasyAudit\\Core\\Scan\\Processor":             "../src/Core/Scan/Processor",
+    "Vendor\\EasyAuditExtras\\Processor":           "../sponsor/Processor"
+  }
+}
+```
+
+### Semantics
+
+- **Replace, not extend.** When `processorDirs` is present and non-empty, it fully replaces the built-in default. A sponsor overlay that wants to keep the core processors must list the `EasyAudit\\Core\\Scan\\Processor` entry explicitly (as above).
+- **Empty map falls back to default.** The shipped `config/easyaudit.json` ships with `"processorDirs": {}` as a discoverability placeholder; the in-code default (`EasyAudit\Core\Scan\Processor` → the built-in directory) is what runs until the map is populated. An entirely absent key behaves the same way.
+- **Path resolution.** Absolute paths and stream-wrapped paths (`phar://`, `file://`) are kept verbatim. Relative paths resolve against the directory containing the loaded config file (i.e. `dirname($configPath)`), so sponsor overlays can use paths relative to their own location.
+- **Validation is shape-only.** `Service\Config` rejects non-string keys/values and empty strings, but does **not** check that the directory exists on disk — sponsor overlays may list paths that only exist in some build flavors. `Scanner` silently skips a missing directory at scan time.
+
+### Class discovery
+
+For each entry, `Scanner` does a flat `scandir()` on the directory and constructs class names as `rtrim($namespace, '\\') . '\\' . pathinfo($file, PATHINFO_FILENAME)`. The class must be reachable via Composer's autoloader (or any registered SPL autoloader) — `Scanner` calls `class_exists()` and uses whatever loader can resolve the name. There is no recursive descent and no glob support; one namespace per flat directory.
+
+Sponsor processor classes must:
+1. Implement `EasyAudit\Core\Scan\ProcessorInterface` (typically by extending `AbstractProcessor`).
+2. Be autoloadable — add a `psr-4` entry to your `composer.json`, e.g.:
+   ```json
+   "autoload": {
+     "psr-4": {
+       "Vendor\\EasyAuditExtras\\": "src/"
+     }
+   }
+   ```
+3. Be instantiable with no constructor arguments. Classes that throw during construction are silently skipped (same tolerance as the built-in directory).
 
 ---
 

@@ -153,6 +153,107 @@ class ConfigTest extends TestCase
         $this->assertCount(1, $config['reporters']);
     }
 
+    public function testProcessorDirsAcceptedAndRoundTripped(): void
+    {
+        $absolute = $this->tmpDir;
+        $path = $this->writeConfig([
+            'reporters' => ['json' => JsonReporter::class],
+            'defaultFormat' => 'json',
+            'processorDirs' => [
+                'Vendor\\Pack\\Processor' => $absolute,
+            ],
+        ]);
+
+        $config = Config::loadFrom($path);
+
+        $this->assertArrayHasKey('processorDirs', $config);
+        $this->assertSame(['Vendor\\Pack\\Processor' => $absolute], $config['processorDirs']);
+    }
+
+    public function testProcessorDirsRelativePathsResolvedAgainstConfigDir(): void
+    {
+        mkdir($this->tmpDir . '/subdir', 0775);
+        $path = $this->writeConfig([
+            'reporters' => ['json' => JsonReporter::class],
+            'defaultFormat' => 'json',
+            'processorDirs' => [
+                'Vendor\\Pack\\Processor' => 'subdir',
+            ],
+        ]);
+
+        $config = Config::loadFrom($path);
+
+        $expected = $this->tmpDir . DIRECTORY_SEPARATOR . 'subdir';
+        $this->assertSame($expected, $config['processorDirs']['Vendor\\Pack\\Processor']);
+    }
+
+    public function testProcessorDirsAcceptsNonExistentDirectoryAtLoadTime(): void
+    {
+        // Sponsor overlays may list paths that only exist in some build flavors — load must not fail here;
+        // Scanner skips missing directories at scan time instead.
+        $path = $this->writeConfig([
+            'reporters' => ['json' => JsonReporter::class],
+            'defaultFormat' => 'json',
+            'processorDirs' => [
+                'Vendor\\Pack\\Processor' => '/path/that/does/not/exist/anywhere',
+            ],
+        ]);
+
+        $config = Config::loadFrom($path);
+        $this->assertSame('/path/that/does/not/exist/anywhere', $config['processorDirs']['Vendor\\Pack\\Processor']);
+    }
+
+    public function testProcessorDirsNonArrayThrows(): void
+    {
+        $path = $this->writeConfig([
+            'reporters' => ['json' => JsonReporter::class],
+            'defaultFormat' => 'json',
+            'processorDirs' => 'not-a-map',
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches("/'processorDirs' must be a map/");
+        Config::loadFrom($path);
+    }
+
+    public function testProcessorDirsEmptyNamespaceThrows(): void
+    {
+        $path = $this->writeConfig([
+            'reporters' => ['json' => JsonReporter::class],
+            'defaultFormat' => 'json',
+            'processorDirs' => ['' => '/tmp'],
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/non-empty namespace strings/');
+        Config::loadFrom($path);
+    }
+
+    public function testProcessorDirsEmptyDirectoryThrows(): void
+    {
+        $path = $this->writeConfig([
+            'reporters' => ['json' => JsonReporter::class],
+            'defaultFormat' => 'json',
+            'processorDirs' => ['Vendor\\Pack\\Processor' => ''],
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/must be a non-empty path/');
+        Config::loadFrom($path);
+    }
+
+    public function testProcessorDirsEmptyMapIsAllowed(): void
+    {
+        $path = $this->writeConfig([
+            'reporters' => ['json' => JsonReporter::class],
+            'defaultFormat' => 'json',
+            'processorDirs' => new \stdClass(), // json_encode → {}
+        ]);
+
+        $config = Config::loadFrom($path);
+        $this->assertSame([], $config['processorDirs']);
+    }
+
     private function writeConfig(array $data): string
     {
         $path = $this->tmpDir . '/config.json';

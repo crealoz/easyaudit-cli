@@ -11,5 +11,6 @@
     "fix-apply": "EasyAudit\\Console\\Command\\FixApply",
     "activate-self-signed": "EasyAudit\\Console\\Command\\ActivateSelfSigned"
   },
-  "fixer": "EasyAudit\\Service\\Api"
+  "fixer": "EasyAudit\\Service\\Api",
+  "processorDirs": {}
 }

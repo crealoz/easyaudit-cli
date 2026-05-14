@@ -3,6 +3,7 @@
 namespace EasyAudit\Tests\Core\Scan;
 
 use EasyAudit\Core\Scan\Scanner;
+use EasyAudit\Service\Config;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -299,5 +300,69 @@ PHTML;
         ob_end_clean();
 
         $this->assertArrayHasKey('findings', $result);
+    }
+
+    public function testProcessorDirsConfigContributesExternalProcessor(): void
+    {
+        $repoRoot = dirname(__DIR__, 4);
+        $fixtureDir = $repoRoot . '/tests/fixtures/Scanner/ExtraProcessors';
+        $namespace = 'EasyAudit\\Tests\\Fixtures\\Scanner\\ExtraProcessors';
+
+        // Composer autoload does not map this test namespace, so seed the class manually.
+        require_once $fixtureDir . '/StubProcessor.php';
+
+        $configPath = $this->scanDir . '/overlay.json';
+        file_put_contents($configPath, json_encode([
+            'reporters' => ['html' => \EasyAudit\Core\Report\HtmlReporter::class],
+            'defaultFormat' => 'html',
+            'processorDirs' => [
+                'EasyAudit\\Core\\Scan\\Processor' => $repoRoot . '/src/Core/Scan/Processor',
+                $namespace => $fixtureDir,
+            ],
+        ]));
+        Config::setPathOverride($configPath);
+
+        try {
+            $scanner = new class extends Scanner {
+                /** @return \EasyAudit\Core\Scan\ProcessorInterface[] */
+                public function exposedProcessors(): array
+                {
+                    return $this->getProcessors();
+                }
+            };
+            $processors = $scanner->exposedProcessors();
+        } finally {
+            Config::reset();
+        }
+
+        $names = array_map(fn($p) => $p->getIdentifier(), $processors);
+        $this->assertContains('stubProcessor', $names, 'Stub processor from fixture directory was not picked up.');
+        $this->assertGreaterThan(1, count($processors), 'Built-in processors should still load alongside the stub.');
+    }
+
+    public function testProcessorDirsEmptyMapFallsBackToBuiltInDefault(): void
+    {
+        $configPath = $this->scanDir . '/overlay.json';
+        file_put_contents($configPath, json_encode([
+            'reporters' => ['html' => \EasyAudit\Core\Report\HtmlReporter::class],
+            'defaultFormat' => 'html',
+            'processorDirs' => new \stdClass(), // {}
+        ]));
+        Config::setPathOverride($configPath);
+
+        try {
+            $scanner = new class extends Scanner {
+                /** @return \EasyAudit\Core\Scan\ProcessorInterface[] */
+                public function exposedProcessors(): array
+                {
+                    return $this->getProcessors();
+                }
+            };
+            $processors = $scanner->exposedProcessors();
+        } finally {
+            Config::reset();
+        }
+
+        $this->assertGreaterThan(10, count($processors), 'Built-in default directory should still produce processors.');
     }
 }

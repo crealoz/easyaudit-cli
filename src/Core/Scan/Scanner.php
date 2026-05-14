@@ -4,11 +4,15 @@ namespace EasyAudit\Core\Scan;
 
 use EasyAudit\Service\Api;
 use EasyAudit\Service\CliWriter;
+use EasyAudit\Service\Config;
 use EasyAudit\Service\PayloadPreparers\PreparerInterface;
 use EasyAudit\Service\Paths;
 
 class Scanner
 {
+    /** Built-in processor namespace, used when `processorDirs` is absent or empty in config. */
+    private const DEFAULT_PROCESSOR_NAMESPACE = 'EasyAudit\\Core\\Scan\\Processor';
+
     private static ?string $generatedPath = null;
 
     /**
@@ -125,7 +129,6 @@ class Scanner
             $findings[] = "No files found to scan.";
         } else {
             $processors = $this->getProcessors();
-            /** @var ProcessorInterface $processor */
             foreach ($processors as $processor) {
 
                 if (!isset($files[$processor->getFileType()])) {
@@ -313,30 +316,65 @@ class Scanner
     }
 
     /**
-     * Get the list of processors to run on the files. Processors implement ProcessorInterface and are located in the
-     * EasyAudit\Core\Scan\Processors namespace.
+     * Get the list of processors to run on the files. Processors implement ProcessorInterface.
      *
-     * @return array
+     * The set of directories scanned is driven by `processorDirs` in `config/easyaudit.json`:
+     *   - present and non-empty: every `namespace => directory` entry contributes processors.
+     *   - absent or `{}`: falls back to the built-in `EasyAudit\Core\Scan\Processor` directory.
+     *
+     * Non-existent directories are skipped silently so sponsor overlays can list paths that only exist in some
+     * build flavors.
+     *
+     * @return ProcessorInterface[]
      */
-    private function getProcessors(): array
+    protected function getProcessors(): array
     {
+        $configured = Config::load()['processorDirs'] ?? [];
+        $dirs = $configured !== []
+            ? $configured
+            : [self::DEFAULT_PROCESSOR_NAMESPACE => __DIR__ . '/Processor'];
+
         $processors = [];
-        $processorDir = __DIR__ . '/Processor';
-        $files = scandir($processorDir);
+        foreach ($dirs as $namespace => $directory) {
+            foreach ($this->discoverProcessorsIn($namespace, $directory) as $processor) {
+                $processors[] = $processor;
+            }
+        }
+        return $processors;
+    }
+
+    /**
+     * Scan a single directory for processor classes under the given namespace prefix and instantiate them.
+     * Returns an empty array if the directory does not exist or contains no instantiable processors.
+     *
+     * @return ProcessorInterface[]
+     */
+    private function discoverProcessorsIn(string $namespace, string $directory): array
+    {
+        if (!is_dir($directory)) {
+            return [];
+        }
+        $files = scandir($directory);
+        if ($files === false) {
+            return [];
+        }
+        $prefix = rtrim($namespace, '\\') . '\\';
+        $processors = [];
         foreach ($files as $file) {
-            if (str_ends_with($file, '.php')) {
-                $className = 'EasyAudit\\Core\\Scan\\Processor\\' . pathinfo($file, PATHINFO_FILENAME);
-                if (class_exists($className)) {
-                    try {
-                        $processor = new $className();
-                        if ($processor instanceof ProcessorInterface) {
-                            $processors[] = $processor;
-                        }
-                    } catch (\Error | \Exception $e) {
-                        // Skip classes that cannot be instantiated
-                        continue;
-                    }
-                }
+            if (!str_ends_with($file, '.php')) {
+                continue;
+            }
+            $className = $prefix . pathinfo($file, PATHINFO_FILENAME);
+            if (!class_exists($className)) {
+                continue;
+            }
+            try {
+                $processor = new $className();
+            } catch (\Error | \Exception) {
+                continue;
+            }
+            if ($processor instanceof ProcessorInterface) {
+                $processors[] = $processor;
             }
         }
         return $processors;

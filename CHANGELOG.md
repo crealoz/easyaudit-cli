@@ -5,6 +5,12 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] 2026-05-14
+
+### Added
+
+- **Config-driven processor directories** (`processorDirs` key in `config/easyaudit.json`): map of `namespace → directory` consumed by `Scanner::getProcessors()`. Lets sponsor overlays register additional processor namespaces — or replace the built-in set entirely — without subclassing `Scanner`. A present, non-empty map replaces the built-in default (`EasyAudit\Core\Scan\Processor` → `src/Core/Scan/Processor`); an empty map (`{}`, shipped as a placeholder in the default config) or an absent key falls back to it. Relative paths resolve against the directory of the config file; missing directories are skipped silently at scan time. `getProcessors()` is also promoted from `private` to `protected` so subclassing remains a fallback extension path.
+
 ## [1.3.0] 2026-05-14
 
 ### Added
