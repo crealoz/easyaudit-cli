@@ -8,7 +8,7 @@ namespace EasyAudit\Core\Scan\Util;
  */
 class PluginRegistry
 {
-    /** @var array<string, array<array{class: string, name: string, disabled: bool, diFile: string}>> */
+    /** @var array<string, array<array{class: string, name: string, disabled: bool, diFile: string, line: int}>> */
     private static array $pluginsByTarget = [];
 
     /** @var array<string, string> pluginClass => targetClass */
@@ -28,11 +28,11 @@ class PluginRegistry
         }
 
         foreach ($diFiles as $file) {
-            $xml = DiScope::loadXml($file);
-            if ($xml === false) {
+            $dom = self::loadDom($file);
+            if ($dom === null) {
                 continue;
             }
-            self::parsePlugins($xml, $file);
+            self::parsePlugins($dom, $file);
         }
 
         self::$built = true;
@@ -59,7 +59,7 @@ class PluginRegistry
     /**
      * Get all active (non-disabled) plugins for a given target class.
      *
-     * @return array<array{class: string, name: string, disabled: bool, diFile: string}>
+     * @return array<array{class: string, name: string, disabled: bool, diFile: string, line: int}>
      */
     public static function getPluginsForTarget(string $targetClass): array
     {
@@ -81,23 +81,52 @@ class PluginRegistry
         return self::$built;
     }
 
-    private static function parsePlugins(\SimpleXMLElement $xml, string $diFile): void
+    /**
+     * Load a di.xml file into a DOMDocument. Uses DOM rather than SimpleXMLElement
+     * so each <plugin> node's source line can be recovered via getLineNo().
+     */
+    private static function loadDom(string $file): ?\DOMDocument
     {
-        $typeNodes = $xml->xpath('//type[plugin]');
+        $previousUseErrors = libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $loaded = $dom->load($file, LIBXML_NOWARNING | LIBXML_NOERROR);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousUseErrors);
+
+        return $loaded ? $dom : null;
+    }
+
+    private static function parsePlugins(\DOMDocument $dom, string $diFile): void
+    {
+        $xpath = new \DOMXPath($dom);
+        $typeNodes = $xpath->query('//type[plugin]');
+        if ($typeNodes === false) {
+            return;
+        }
 
         foreach ($typeNodes as $typeNode) {
-            $targetClass = (string) $typeNode['name'];
-            if (empty($targetClass)) {
+            if (!$typeNode instanceof \DOMElement) {
+                continue;
+            }
+            $targetClass = $typeNode->getAttribute('name');
+            if ($targetClass === '') {
                 continue;
             }
 
-            $pluginNodes = $typeNode->xpath('plugin');
-            foreach ($pluginNodes as $pluginNode) {
-                $pluginClass = (string) $pluginNode['type'];
-                $pluginName = (string) $pluginNode['name'];
-                $disabled = ((string) ($pluginNode['disabled'] ?? 'false')) === 'true';
+            foreach ($typeNode->getElementsByTagName('plugin') as $pluginNode) {
+                // Only direct <plugin> children of this <type>.
+                if ($pluginNode->parentNode !== $typeNode) {
+                    continue;
+                }
 
-                if (empty($pluginClass)) {
+                $pluginClass = $pluginNode->getAttribute('type');
+                $pluginName = $pluginNode->getAttribute('name');
+                $disabledAttr = $pluginNode->hasAttribute('disabled')
+                    ? $pluginNode->getAttribute('disabled')
+                    : 'false';
+                $disabled = $disabledAttr === 'true';
+
+                if ($pluginClass === '') {
                     continue;
                 }
 
@@ -106,6 +135,7 @@ class PluginRegistry
                     'name' => $pluginName,
                     'disabled' => $disabled,
                     'diFile' => $diFile,
+                    'line' => $pluginNode->getLineNo(),
                 ];
 
                 self::$pluginsByTarget[$targetClass][] = $entry;

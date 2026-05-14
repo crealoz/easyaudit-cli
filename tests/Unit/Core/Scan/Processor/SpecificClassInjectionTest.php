@@ -412,6 +412,7 @@ PHP;
             'modelUseApiInterface',
             'noResourceModelInjection',
             'statefulModelInjection',
+            'statefulBuilderInjection',
             'specificClassInjection',
         ];
 
@@ -765,7 +766,7 @@ PHP;
 
             // Rule ID should follow the pattern from RULE_CONFIGS
             $this->assertMatchesRegularExpression(
-                '/^(collectionMustUseFactory|repositoryMustUseInterface|modelUseApiInterface|noResourceModelInjection|statefulModelInjection|specificClassInjection)$/',
+                '/^(collectionMustUseFactory|repositoryMustUseInterface|modelUseApiInterface|noResourceModelInjection|statefulModelInjection|statefulBuilderInjection|specificClassInjection)$/',
                 $entry['ruleId'],
                 "Rule ID should be from RULE_CONFIGS"
             );
@@ -2213,6 +2214,180 @@ PHP;
         $this->assertContains('specificClassInjection', $ruleIds);
 
         unlink($serviceFile);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDetectsStatefulBuilderInjection(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Service;
+
+use Magento\Framework\Api\FilterBuilder;
+
+class FilterService
+{
+    public function __construct(
+        private FilterBuilder $filterBuilder
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/FilterService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertGreaterThan(0, $processor->getFoundCount(), 'Should detect FilterBuilder injection');
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertContains('statefulBuilderInjection', $ruleIds);
+        $this->assertNotContains('specificClassInjection', $ruleIds, 'Should not also fire generic rule');
+
+        foreach ($report as $entry) {
+            if ($entry['ruleId'] === 'statefulBuilderInjection') {
+                $this->assertStringContainsString('FilterBuilderFactory', $entry['files'][0]['message']);
+            }
+        }
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDoesNotFlagBuilderFactory(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Service;
+
+use Magento\Framework\Api\FilterBuilderFactory;
+
+class FilterService
+{
+    public function __construct(
+        private FilterBuilderFactory $filterBuilderFactory
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/FilterService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertNotContains('statefulBuilderInjection', $ruleIds, 'BuilderFactory must not be flagged');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessDoesNotFlagSearchCriteriaBuilder(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Service;
+
+use Magento\Framework\Api\SearchCriteriaBuilder;
+
+class SearchService
+{
+    public function __construct(
+        private SearchCriteriaBuilder $searchCriteriaBuilder
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SearchService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $ruleIds = array_column($report, 'ruleId');
+        $this->assertNotContains('statefulBuilderInjection', $ruleIds,
+            'SearchCriteriaBuilder is intentionally excluded from the closed list');
+
+        unlink($file);
+        rmdir($tempDir);
+    }
+
+    public function testProcessConsolidatesConsecutiveStatefulBuilders(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/easyaudit_injection_test_' . uniqid();
+        mkdir($tempDir, 0777, true);
+
+        $content = <<<'PHP'
+<?php
+namespace Test\Module\Service;
+
+use Magento\Framework\Api\FilterBuilder;
+use Magento\Framework\Api\SortOrderBuilder;
+
+class SearchService
+{
+    public function __construct(
+        private FilterBuilder $filterBuilder,
+        private SortOrderBuilder $sortOrderBuilder
+    ) {
+    }
+}
+PHP;
+        $file = $tempDir . '/SearchService.php';
+        file_put_contents($file, $content);
+
+        $processor = new SpecificClassInjection();
+        $files = ['php' => [$file]];
+
+        ob_start();
+        $processor->process($files);
+        $report = $processor->getReport();
+        ob_end_clean();
+
+        $this->assertEquals(2, $processor->getFoundCount(), 'Should record two violations');
+
+        $statefulEntry = null;
+        foreach ($report as $entry) {
+            if ($entry['ruleId'] === 'statefulBuilderInjection') {
+                $statefulEntry = $entry;
+                break;
+            }
+        }
+
+        $this->assertNotNull($statefulEntry, 'statefulBuilderInjection rule must appear');
+        $this->assertCount(1, $statefulEntry['files'],
+            'Two consecutive-line violations must consolidate into one file entry');
+
+        $metadata = $statefulEntry['files'][0]['metadata'];
+        $this->assertIsArray($metadata, 'Consolidated metadata is an array of payloads');
+        $this->assertCount(2, $metadata, 'Both builder payloads must be present');
+
+        unlink($file);
         rmdir($tempDir);
     }
 }

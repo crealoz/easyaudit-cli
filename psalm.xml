@@ -17,10 +17,13 @@
 
     <issueHandlers>
         <!-- Processors and commands are auto-discovered at runtime via directory scan -->
+        <!-- Reporters are referenced as FQCN strings in config/easyaudit.json and instantiated dynamically -->
         <UnusedClass>
             <errorLevel type="suppress">
                 <directory name="src/Core/Scan/Processor/" />
                 <directory name="src/Console/Command/" />
+                <directory name="src/Core/Report/" />
+                <directory name="src/Core/Glossary/" />
             </errorLevel>
         </UnusedClass>
 
@@ -29,11 +32,14 @@
             <errorLevel type="suppress">
                 <directory name="src/Console/" />
                 <directory name="src/Core/Scan/" />
+                <directory name="src/Core/Report/" />
                 <directory name="src/Exception/" />
                 <file name="src/Version.php" />
+                <file name="src/Service/Config.php" />
                 <file name="src/Service/PayloadPreparers/AbstractPreparer.php" />
                 <file name="src/Service/CiEnvironmentDetector.php" />
                 <file name="src/Service/CliWriter.php" />
+                <file name="src/Service/Paths.php" />
             </errorLevel>
         </PossiblyUnusedMethod>
 

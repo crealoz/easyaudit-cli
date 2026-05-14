@@ -4,6 +4,7 @@ namespace Test\Fixtures\SpecificClassInjection;
 
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Api\FilterBuilderFactory;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Escaper;
@@ -23,7 +24,8 @@ class GoodInjections
         private readonly Context $context,                            // OK: Context (ignored)
         private readonly SerializerInterface $serializer,             // OK: Interface
         private readonly Escaper $escaper,                            // OK: Hardcoded ignored class
-        private readonly LoggerInterface $logger                      // OK: Interface
+        private readonly LoggerInterface $logger,                     // OK: Interface
+        private readonly FilterBuilderFactory $filterBuilderFactory   // OK: Factory for stateful builder
     ) {
     }
 

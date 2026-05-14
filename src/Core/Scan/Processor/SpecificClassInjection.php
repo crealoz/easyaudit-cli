@@ -41,6 +41,7 @@ Why change: The factory pattern exists specifically to control collection instan
 How to fix: Inject the CollectionFactory instead and call create() when the collection is actually needed.',
             'label' => 'Collections without factory',
             'severity' => 'high',
+            'concepts' => ['factory_pattern'],
         ],
         'repository' => [
             'ruleId' => 'repositoryMustUseInterface',
@@ -52,6 +53,7 @@ Why change: Repositories are designed to be consumed through their interface. Co
 How to fix: Type the constructor parameter to the repository interface (e.g., ProductRepositoryInterface).',
             'label' => 'Repositories without interface',
             'severity' => 'high',
+            'concepts' => ['repository_pattern', 'di_preference'],
         ],
         'modelWithInterface' => [
             'ruleId' => 'modelUseApiInterface',
@@ -63,6 +65,7 @@ Why change: API interfaces define the public data contract. Injecting the concre
 How to fix: Inject the API data interface instead of the concrete model class.',
             'label' => 'Models should use API interface',
             'severity' => 'high',
+            'concepts' => ['di_preference'],
         ],
         'resourceModel' => [
             'ruleId' => 'noResourceModelInjection',
@@ -74,6 +77,7 @@ Why change: The repository pattern provides a clean separation between business 
 How to fix: Use the repository pattern instead of direct resource model injection.',
             'label' => 'Resource models injected',
             'severity' => 'medium',
+            'concepts' => ['resource_model', 'repository_pattern'],
         ],
         'statefulModel' => [
             'ruleId' => 'statefulModelInjection',
@@ -85,6 +89,28 @@ Why change: Shared mutable state across a request leads to subtle bugs that are 
 How to fix: Inject a Factory and call create() to get fresh instances when needed.',
             'label' => 'Stateful models without factory',
             'severity' => 'medium',
+            'concepts' => ['stateful', 'di_preference', 'abstract_model'],
+        ],
+        'statefulBuilder' => [
+            'ruleId' => 'statefulBuilderInjection',
+            'name' => 'Stateful Builder Injection',
+            'shortDescription' => 'Stateful builders should be injected via their factory',
+            'longDescription' => 'Detects direct injection of stateful Magento builders (FilterBuilder, '
+                . 'FilterGroupBuilder, SortOrderBuilder) instead of their factory.' . "\n"
+                . 'Impact: the builder instance is shared by every method of the host service. While '
+                . 'Magento\'s Builder base class resets its internal data on create(), the shared instance '
+                . 'still couples unrelated operations through a mutable object. This makes the data flow '
+                . 'harder to trace, complicates reuse in long-running or concurrent contexts, and goes '
+                . 'against the framework convention.' . "\n"
+                . 'Why change: the factory is the API recommended by Magento for these classes. Using it '
+                . 'aligns the code with framework conventions and guarantees that no consumer depends on '
+                . 'a state shared with another caller.' . "\n"
+                . 'How to fix: replace the FooBuilder injection with FooBuilderFactory and call '
+                . '$this->fooBuilderFactory->create() at the start of each method that builds a filter, '
+                . 'a filter group, or a sort order.',
+            'label' => 'Stateful builders without factory',
+            'severity' => 'low',
+            'concepts' => ['stateful', 'factory_pattern', 'search_criteria'],
         ],
         'genericClass' => [
             'ruleId' => 'specificClassInjection',
@@ -143,6 +169,16 @@ How to fix: Use a factory, builder, or interface instead. This automatic scan ma
      * Suffixes that indicate a legitimate injection pattern
      */
     private const LEGITIMATE_SUFFIXES = ['Interface', 'Factory', 'Provider', 'Resolver', 'Pool', 'Logger', 'Config', 'Builder', 'Emulation', 'Reader', 'Service', 'Settings'];
+
+    /**
+     * Stateful framework builders that must be injected via their factory.
+     * Closed list — SearchCriteriaBuilder is intentionally excluded as the canonical public API.
+     */
+    private const STATEFUL_BUILDERS = [
+        'Magento\Framework\Api\FilterBuilder',
+        'Magento\Framework\Api\Search\FilterGroupBuilder',
+        'Magento\Framework\Api\SortOrderBuilder',
+    ];
 
 
     /**
@@ -267,7 +303,17 @@ How to fix: Use a factory, builder, or interface instead. This automatic scan ma
         string $paramClass,
         int $constructorLine = 0
     ): void {
-        if (in_array($paramClass, self::IGNORED_CLASSES, true) || $this->isArgumentIgnored($paramClass)) {
+        if (in_array($paramClass, self::IGNORED_CLASSES, true)) {
+            return;
+        }
+
+        if (in_array(ltrim($paramClass, '\\'), self::STATEFUL_BUILDERS, true)) {
+            $lineNumber = Content::getLineNumber($fileContent, $paramName, $constructorLine);
+            $this->addStatefulBuilderError($file, $lineNumber, $paramName, $paramClass);
+            return;
+        }
+
+        if ($this->isArgumentIgnored($paramClass)) {
             return;
         }
 
@@ -463,6 +509,32 @@ How to fix: Use a factory, builder, or interface instead. This automatic scan ma
         );
     }
 
+    private function addStatefulBuilderError(
+        string $file,
+        int $lineNumber,
+        string $paramName,
+        string $paramClass
+    ): void {
+        $factoryClass = $paramClass . 'Factory';
+        $factoryProperty = Classes::derivePropertyName($paramClass) . 'Factory';
+
+        $message = sprintf(
+            'Stateful builder "%s" injected as %s. Inject "%s" and call create() instead.',
+            $paramClass,
+            $paramName,
+            $factoryClass
+        );
+
+        $this->addViolation(
+            'statefulBuilder',
+            $file,
+            $lineNumber,
+            $message,
+            'low',
+            ['builders' => [$paramClass => ['factory' => $factoryClass, 'property' => $factoryProperty]]]
+        );
+    }
+
     /**
      * Generate report with separate entries for each violation type
      */
@@ -477,6 +549,7 @@ How to fix: Use a factory, builder, or interface instead. This automatic scan ma
                     'name' => $config['name'],
                     'shortDescription' => $config['shortDescription'],
                     'longDescription' => $config['longDescription'],
+                    'concepts' => $config['concepts'] ?? [],
                     'files' => $this->consolidateResults($this->resultsByCategory[$category]),
                 ];
             }

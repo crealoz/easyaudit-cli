@@ -23,31 +23,54 @@ set_error_handler(function ($severity, $message, $file, $line) {
     throw new ErrorException($message, 0, $severity, $file, $line);
 });
 
-spl_autoload_register(function ($class) {
-    $prefix = 'EasyAudit\\';
-    $baseDir = __DIR__ . '/../src/';
-
-    if (str_starts_with($class, $prefix)) {
-        $relative = substr($class, strlen($prefix));
-        $file = $baseDir . str_replace('\\', '/', $relative) . '.php';
-        if (file_exists($file)) {
-            require $file;
-        }
+// Prefer Composer's autoloader when running from a Composer install
+// (vendor/crealoz/easyaudit-cli/bin/easyaudit → vendor/autoload.php) or from the
+// source tree (./vendor/autoload.php). Fall back to the hand-rolled PSR-4 loader
+// for the PHAR build, where Composer's vendor/ is not bundled.
+$composerLoaded = false;
+foreach ([__DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php'] as $candidate) {
+    if (file_exists($candidate)) {
+        require $candidate;
+        $composerLoaded = true;
+        break;
     }
-});
+}
 
-// Command registry
-$commands = [
-        'scan' => fn() => new \EasyAudit\Console\Command\Scan(
-                new \EasyAudit\Core\Scan\Scanner()
-        ),
-        'auth' => fn() => new \EasyAudit\Console\Command\Auth(),
-        'fix-apply' => fn() => new \EasyAudit\Console\Command\FixApply(
-                new \EasyAudit\Service\Logger(),
-                new \EasyAudit\Service\Api()
-        ),
-        'activate-self-signed' => fn() => new \EasyAudit\Console\Command\ActivateSelfSigned(),
+if (!$composerLoaded) {
+    spl_autoload_register(function ($class) {
+        $prefix = 'EasyAudit\\';
+        $baseDir = __DIR__ . '/../src/';
+
+        if (str_starts_with($class, $prefix)) {
+            $relative = substr($class, strlen($prefix));
+            $file = $baseDir . str_replace('\\', '/', $relative) . '.php';
+            if (file_exists($file)) {
+                require $file;
+            }
+        }
+    });
+}
+
+// Load the runtime registry (commands + fixer choice). Sponsors point EA_CONFIG
+// at their overlay to register extra commands and swap the fixer.
+$config = \EasyAudit\Service\Config::load();
+$commandClasses = $config['commands'] ?? [
+    'scan'                 => \EasyAudit\Console\Command\Scan::class,
+    'auth'                 => \EasyAudit\Console\Command\Auth::class,
+    'fix-apply'            => \EasyAudit\Console\Command\FixApply::class,
+    'activate-self-signed' => \EasyAudit\Console\Command\ActivateSelfSigned::class,
 ];
+$fixerClass = $config['fixer'] ?? \EasyAudit\Service\Api::class;
+
+$build = function (string $class) use ($fixerClass): \EasyAudit\Console\CommandInterface {
+    if (is_a($class, \EasyAudit\Console\Command\Scan::class, true)) {
+        return new $class(new \EasyAudit\Core\Scan\Scanner());
+    }
+    if (is_a($class, \EasyAudit\Console\Command\FixApply::class, true)) {
+        return new $class(new \EasyAudit\Service\Logger(), new $fixerClass());
+    }
+    return new $class();
+};
 
 $cmdName = $argv[1] ?? null;
 
@@ -67,9 +90,8 @@ if ($cmdName === '-h' || $cmdName === '--help' || $cmdName === null) {
     fwrite(STDOUT, YELLOW . "Commands:" . RESET . "\n");
 
     // Get descriptions from each command
-    foreach ($commands as $name => $factory) {
-        /** @var \EasyAudit\Console\CommandInterface $cmd */
-        $cmd = $factory();
+    foreach ($commandClasses as $name => $class) {
+        $cmd = $build($class);
         $synopsis = $cmd->getSynopsis();
         $desc = $cmd->getDescription();
         fwrite(STDOUT, "  " . GREEN . str_pad($synopsis, 36) . RESET . " $desc\n");
@@ -85,12 +107,12 @@ if ($cmdName === '-h' || $cmdName === '--help' || $cmdName === null) {
     exit(0);
 }
 
-if (!isset($commands[$cmdName])) {
+if (!isset($commandClasses[$cmdName])) {
     fwrite(STDERR, RED . "Unknown command: $cmdName" . RESET . "\n");
     fwrite(STDERR, "Run 'easyaudit --help' to see available commands.\n");
     exit(64);
 }
 
-$command = $commands[$cmdName]();
+$command = $build($commandClasses[$cmdName]);
 $exitCode = $command->run(array_slice($argv, 2));
 exit($exitCode);

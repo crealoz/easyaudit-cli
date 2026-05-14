@@ -6,10 +6,8 @@ use EasyAudit\Console\CommandInterface;
 use EasyAudit\Console\Util\Args;
 use EasyAudit\Core\Scan\ExternalToolMapping;
 use EasyAudit\Core\Scan\Scanner;
-use EasyAudit\Core\Report\JsonReporter;
-use EasyAudit\Core\Report\SarifReporter;
-use EasyAudit\Core\Report\HtmlReporter;
 use EasyAudit\Service\CliWriter;
+use EasyAudit\Service\Config;
 use EasyAudit\Service\ProjectIdentifier;
 
 final class Scan implements CommandInterface
@@ -31,6 +29,9 @@ final class Scan implements CommandInterface
 
     public function getHelp(): string
     {
+        $config = Config::load();
+        $formats = implode(', ', array_keys($config['reporters']));
+        $defaultFormat = $config['defaultFormat'];
         return <<<HELP
 Usage: easyaudit scan [options] <path>
 
@@ -40,7 +41,7 @@ Arguments:
   <path>                       Path to scan (default: current directory)
 
 Options:
-  --format=<format>            Output format: json, sarif, html (default: json)
+  --format=<format>            Output format: {$formats} (default: {$defaultFormat})
   --exclude=<patterns>         Comma-separated list of glob patterns to exclude
   --exclude-ext=<exts>         Comma-separated list of file extensions to exclude (e.g. .log,.tmp)
   --output=<file>              Output file path. Default: report/easyaudit-report.<format>
@@ -68,9 +69,12 @@ HELP;
             return 1;
         }
 
-        $format      = strtolower(Args::optStr($opts, 'format', 'html')) ?? 'html';
+        $config = Config::load();
+        $reporters = $config['reporters'];
+        $defaultFormat = $config['defaultFormat'];
+        $format = strtolower(Args::optStr($opts, 'format', $defaultFormat)) ?? $defaultFormat;
 
-        $allowedFormats = ['json', 'sarif', 'html'];
+        $allowedFormats = array_keys($reporters);
         if (!in_array($format, $allowedFormats, true)) {
             CliWriter::errorToStderr("Error: Unknown format '$format'. Allowed formats: " . implode(', ', $allowedFormats));
             return 1;
@@ -97,11 +101,8 @@ HELP;
             $findings['metadata']['project_id'] = ProjectIdentifier::resolve($projectName, $scanPathResolved);
         }
 
-        $payload = match ($format) {
-            'sarif' => (new SarifReporter())->generate($findings),
-            'html' => (new HtmlReporter())->generate($findings),
-            'json' => (new JsonReporter())->generate($findings),
-        };
+        $reporterClass = $reporters[$format];
+        $payload = (new $reporterClass())->generate($findings);
 
         $defaultPath = "report/easyaudit-report.{$format}";
 

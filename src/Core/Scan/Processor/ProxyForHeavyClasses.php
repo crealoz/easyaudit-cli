@@ -20,6 +20,8 @@ use EasyAudit\Service\ClassToProxy;
  */
 class ProxyForHeavyClasses extends AbstractProcessor
 {
+    protected const CONCEPTS = ['proxy', 'di_preference'];
+
     /**
      * Classes that are considered "heavy" and should use proxies (pattern matching)
      */
@@ -65,6 +67,7 @@ class ProxyForHeavyClasses extends AbstractProcessor
                     . 'memory and initialization time is substantial and entirely avoidable.' . "\n"
                     . 'How to fix: Add proxy configuration in di.xml: <argument name="paramName" '
                     . 'xsi:type="object">Heavy\Class\Proxy</argument>.',
+                'concepts' => self::CONCEPTS,
                 'files' => $this->consolidateResults($this->results),
             ];
         }

@@ -690,8 +690,18 @@ XML;
 
         $this->assertNotNull($deepStackReport);
         $this->assertNotEmpty($deepStackReport['files']);
-        $this->assertStringContainsString('2 around plugins', $deepStackReport['files'][0]['message']);
-        $this->assertStringContainsString('save()', $deepStackReport['files'][0]['message']);
+        $entry = $deepStackReport['files'][0];
+        $this->assertStringContainsString('2 around plugins', $entry['message']);
+        $this->assertStringContainsString('save()', $entry['message']);
+        // Em dash replaced with a colon in the new message format.
+        $this->assertStringNotContainsString('—', $entry['message']);
+        $this->assertStringContainsString('. Plugins:', $entry['message']);
+
+        // File field embeds every offending plugin declaration as "path:line",
+        // joined with ", ". For this fixture both plugins live in the same di.xml.
+        $this->assertStringContainsString(', ', $entry['file']);
+        $this->assertSame(2, substr_count($entry['file'], $diFile . ':'));
+        $this->assertSame(0, $entry['startLine']);
     }
 
     public function testNoDeepStackWithoutGeneratedDir(): void

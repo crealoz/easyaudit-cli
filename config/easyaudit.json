@@ -1,0 +1,15 @@
+{
+  "reporters": {
+    "html": "EasyAudit\\Core\\Report\\HtmlReporter",
+    "sarif": "EasyAudit\\Core\\Report\\SarifReporter",
+    "json": "EasyAudit\\Core\\Report\\JsonReporter"
+  },
+  "defaultFormat": "html",
+  "commands": {
+    "scan": "EasyAudit\\Console\\Command\\Scan",
+    "auth": "EasyAudit\\Console\\Command\\Auth",
+    "fix-apply": "EasyAudit\\Console\\Command\\FixApply",
+    "activate-self-signed": "EasyAudit\\Console\\Command\\ActivateSelfSigned"
+  },
+  "fixer": "EasyAudit\\Service\\Api"
+}

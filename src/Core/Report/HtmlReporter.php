@@ -40,7 +40,14 @@ class HtmlReporter implements ReporterInterface
                 $filePath = htmlspecialchars($rawPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
                 $startLine = (int)($file['startLine'] ?? $file['line'] ?? 1);
                 $endLine = (int)($file['endLine'] ?? $startLine);
-                $line = $endLine > $startLine ? "$startLine-$endLine" : (string)$startLine;
+                // Multi-location findings (e.g. AroundPlugins::deepPluginStack) embed the line
+                // number per file inside the file field and pass startLine=0 — show a dash so
+                // the line column does not display a misleading "0".
+                if ($startLine === 0) {
+                    $line = '—';
+                } else {
+                    $line = $endLine > $startLine ? "$startLine-$endLine" : (string)$startLine;
+                }
                 $message = nl2br(htmlspecialchars($file['message'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
                 $fileSev = $file['severity'] ?? 'medium';
                 $sevBadge = $this->severityBadge($fileSev);
@@ -56,7 +63,7 @@ ROW;
             }
 
             $ruleName = htmlspecialchars($rule['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-            $ruleLongDesc = $this->formatDescription($rule['longDescription']);
+            $ruleLongDesc = $this->formatDescription($rule['longDescription'], $rule);
 
             $rulesHtml .= <<<RULE
             <details class="rule-card" data-severity="{$severity}" closed>
@@ -186,6 +193,7 @@ HTML;
             $ruleName = $finding['name'] ?? $ruleId;
             $shortDesc = $finding['shortDescription'] ?? '';
             $longDesc = $finding['longDescription'] ?? '';
+            $concepts = is_array($finding['concepts'] ?? null) ? $finding['concepts'] : [];
             $files = $finding['files'];
 
             $counts = array_count_values(array_map(fn($f) => $f['severity'] ?? 'medium', $files));
@@ -195,6 +203,7 @@ HTML;
                 'name' => $ruleName,
                 'shortDescription' => $shortDesc,
                 'longDescription' => $longDesc,
+                'concepts' => $concepts,
                 'files' => $files,
                 'highCount' => $counts['high'] ?? 0,
                 'mediumCount' => $counts['medium'] ?? 0,
@@ -213,7 +222,7 @@ HTML;
         };
     }
 
-    private function formatDescription(string $text): string
+    protected function formatDescription(string $text, array $rule = []): string
     {
         $labels = ['Impact:', 'Why change:', 'How to fix:'];
         $paragraphs = explode("\n", $text);
@@ -231,8 +240,21 @@ HTML;
                     break;
                 }
             }
+            $escaped = $this->renderLongDescription($escaped, $rule);
             $html .= '<p>' . $escaped . '</p>';
         }
         return $html;
+    }
+
+    /**
+     * Extension hook: subclasses (e.g. sponsor's GlossaryHtmlReporter) override this to inject
+     * additional markup into the already-escaped paragraph text — for example, autolinked
+     * concept tooltips. The default implementation returns the text unchanged.
+     *
+     * @psalm-suppress PossiblyUnusedParam
+     */
+    protected function renderLongDescription(string $escapedText, array $rule): string
+    {
+        return $escapedText;
     }
 }

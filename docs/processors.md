@@ -1,6 +1,6 @@
 # Available Processors
 
-EasyAudit includes **21 static analysis processors** detecting **37 rules** across Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
+EasyAudit includes **21 static analysis processors** detecting **38 rules** across Magento 2 codebases. Each processor outputs findings with appropriate severity levels (`error`, `warning`, or `note`) and provides actionable recommendations.
 
 ## Summary
 
@@ -13,7 +13,7 @@ EasyAudit includes **21 static analysis processors** detecting **37 rules** acro
 | [Preferences](#preferences) | DI | Error | 1 | Multiple preferences for the same interface |
 | [ProxyForHeavyClasses](#proxyforheavyclasses) | DI | Warning | 1 | Heavy classes injected without proxies |
 | [DiAreaScope](#diareascope) | DI | Note | 1 | Plugins/preferences in global di.xml for area-specific classes |
-| [SpecificClassInjection](#specificclassinjection) | DI | Error/Warning | 6 | Concrete class injection instead of interfaces/factories |
+| [SpecificClassInjection](#specificclassinjection) | DI | Error/Warning/Note | 7 | Concrete class injection instead of interfaces/factories |
 | [HardWrittenSQL](#hardwrittensql) | Code Quality | Error/Warning | 5 | Raw SQL queries in PHP code |
 | [UseOfObjectManager](#useofobjectmanager) | Code Quality | Error/Note | 2 | Direct ObjectManager usage |
 | [UseOfRegistry](#useofregistry) | Code Quality | Warning | 1 | Deprecated Registry usage |
@@ -40,7 +40,7 @@ Classifies around plugins and detects deep plugin stacks.
   - `aroundToBeforePlugin` — Around plugin where all logic precedes `$proceed`. Can be converted to a lighter before plugin.
   - `aroundToAfterPlugin` — Around plugin where all logic follows `$proceed`. Can be converted to a lighter after plugin.
   - `overrideNotPlugin` — Around plugin that never calls `$proceed`, completely replacing the method. Should be a preference instead.
-  - `deepPluginStack` — Multiple around plugins on the same method. Each wraps the next, multiplying overhead and making debugging difficult.
+  - `deepPluginStack` — Multiple around plugins on the same method. Each wraps the next, multiplying overhead and making debugging difficult. The finding lists every di.xml declaration that participates in the stack (across `global` / `frontend` / `adminhtml` scopes) with its source line; in SARIF the result is emitted with one `physicalLocation` per plugin declaration so each location can be inspected independently.
 - **Why it matters**: Around plugins wrap the entire call chain and add overhead on every invocation. Stacked around plugins compound this: benchmarks show wall-time increases over 13,000% and memory overhead exceeding 62,000% compared to equivalent before/after implementations.
 
 ### SameModulePlugins
@@ -86,13 +86,14 @@ Detects plugins and preferences in global `di.xml` that target area-specific cla
 ### SpecificClassInjection
 Detects concrete class injection where interfaces or factories should be used.
 
-- **Severity**: Error / Warning
+- **Severity**: Error / Warning / Note
 - **Rules**:
   - `collectionMustUseFactory` (Error) — Collection injected directly instead of through its Factory. Causes eager instantiation and prevents fresh queries.
   - `repositoryMustUseInterface` (Error) — Repository typed to concrete class instead of its interface. Breaks DI preferences and prevents mocking.
   - `modelUseApiInterface` (Error) — Model injected as concrete class when an API data interface is available. Bypasses the data contract abstraction.
   - `noResourceModelInjection` (Warning) — Resource model injected directly. Couples business logic to the persistence layer, bypassing the repository pattern.
   - `statefulModelInjection` (Warning) — Class extending AbstractModel injected directly. Shared mutable state causes stale data and side effects.
+  - `statefulBuilderInjection` (Note) — Stateful framework builder (`FilterBuilder`, `FilterGroupBuilder`, `SortOrderBuilder`) injected directly instead of through its factory. Couples unrelated operations through a shared mutable instance; framework convention is `*Factory` + `create()` per-method. `SearchCriteriaBuilder` is intentionally excluded.
   - `specificClassInjection` (Warning) — Generic concrete class injection where an interface or factory would be more appropriate. May have false positives — verify manually.
 - **Why it matters**: Concrete injection tightly couples dependent classes to specific implementations, reducing substitutability and making unit testing significantly harder. When concrete classes accumulate across a codebase, the cost of any refactoring increases.
 

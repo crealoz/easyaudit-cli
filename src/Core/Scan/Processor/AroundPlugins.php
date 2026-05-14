@@ -20,6 +20,13 @@ use EasyAudit\Core\Scan\Util\PluginRegistry;
  */
 class AroundPlugins extends AbstractProcessor
 {
+    private const RULE_CONCEPTS = [
+        'aroundToBeforePlugin' => ['around_plugin', 'interceptor'],
+        'aroundToAfterPlugin'  => ['around_plugin', 'interceptor'],
+        'overrideNotPlugin'    => ['around_plugin', 'di_preference', 'interceptor'],
+        'deepPluginStack'      => ['around_plugin', 'interceptor'],
+    ];
+
     private array $beforePlugins = [];
     private array $afterPlugins = [];
     private array $overrides = [];
@@ -57,6 +64,7 @@ class AroundPlugins extends AbstractProcessor
                     . 'the developer\'s intent explicit.' . "\n"
                     . 'How to fix: Convert to a before plugin. Move the logic to a '
                     . 'beforeMethodName() method and remove the $proceed call.',
+                'concepts' => self::RULE_CONCEPTS['aroundToBeforePlugin'],
                 'files' => $this->consolidateResults($this->beforePlugins),
             ];
         }
@@ -76,6 +84,7 @@ class AroundPlugins extends AbstractProcessor
                     . 'the developer\'s intent explicit.' . "\n"
                     . 'How to fix: Convert to an after plugin. Move the logic to an '
                     . 'afterMethodName() method that receives the result as a parameter.',
+                'concepts' => self::RULE_CONCEPTS['aroundToAfterPlugin'],
                 'files' => $this->consolidateResults($this->afterPlugins)
             ];
         }
@@ -96,6 +105,7 @@ class AroundPlugins extends AbstractProcessor
                     . 'They are explicit, have no interceptor overhead, and are visible in di.xml '
                     . 'configuration.' . "\n"
                     . 'How to fix: Replace with a preference in di.xml.',
+                'concepts' => self::RULE_CONCEPTS['overrideNotPlugin'],
                 'files' => $this->consolidateResults($this->overrides),
             ];
         }
@@ -116,6 +126,7 @@ class AroundPlugins extends AbstractProcessor
                     . 'all others.' . "\n"
                     . 'How to fix: Consolidate plugin logic into fewer plugins, or convert some to '
                     . 'before/after plugins which do not nest.',
+                'concepts' => self::RULE_CONCEPTS['deepPluginStack'],
                 'files' => $this->consolidateResults($this->deepStacks),
             ];
         }
@@ -403,24 +414,33 @@ class AroundPlugins extends AbstractProcessor
                 }
 
                 // Report if stack depth >= 2
-                $uniquePlugins = array_unique($stackMap[$targetClass][$originalMethod]);
+                $uniquePlugins = array_values(array_unique($stackMap[$targetClass][$originalMethod]));
                 $depth = count($uniquePlugins);
                 if ($depth >= 2) {
                     $pluginList = implode(', ', $uniquePlugins);
                     $msg = sprintf(
-                        '%d around plugins on %s::%s() — plugins: %s',
+                        '%d around plugins on %s::%s(). Plugins: %s',
                         $depth,
                         $targetClass,
                         $originalMethod,
                         $pluginList
                     );
-                    // Report against the first di.xml file where the target is configured
-                    $firstPlugin = $uniquePlugins[0];
-                    $firstTarget = PluginRegistry::getTargetClass($firstPlugin);
-                    $plugins = PluginRegistry::getPluginsForTarget($firstTarget ?? $targetClass);
-                    $diFile = !empty($plugins) ? $plugins[0]['diFile'] : 'unknown';
 
-                    $this->deepStacks[] = Formater::formatError($diFile, 1, $msg, 'high');
+                    // Build a list of every di.xml declaration that participates in this stack.
+                    // A plugin can be declared on the same target multiple times (global vs
+                    // frontend vs adminhtml), so we keep every declaration.
+                    $candidates = PluginRegistry::getPluginsForTarget($targetClass);
+                    $locations = [];
+                    foreach ($uniquePlugins as $pluginClass) {
+                        foreach ($candidates as $candidate) {
+                            if ($candidate['class'] === $pluginClass) {
+                                $locations[] = $candidate['diFile'] . ':' . $candidate['line'];
+                            }
+                        }
+                    }
+                    $fileField = !empty($locations) ? implode(', ', $locations) : 'unknown';
+
+                    $this->deepStacks[] = Formater::formatError($fileField, 0, $msg, 'high');
                     $this->foundCount++;
                 }
             }

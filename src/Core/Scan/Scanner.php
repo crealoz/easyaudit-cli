@@ -11,6 +11,13 @@ class Scanner
 {
     private static ?string $generatedPath = null;
 
+    /**
+     * Scan mode signal. Commands set this before calling Scanner::run() so processors can tune behavior for the
+     * active feature (e.g. a `checkout-audit` mode triggers severity amplification on checkout-critical files).
+     * Null means the default, general-purpose scan.
+     */
+    private static ?string $mode = null;
+
     private string $scanRoot = '';
 
     private array $excludePatterns = [];
@@ -191,6 +198,22 @@ class Scanner
     public static function setGeneratedPath(?string $path): void
     {
         self::$generatedPath = $path;
+    }
+
+    /**
+     * Return the active scan mode (e.g. 'checkout-audit') or null for a default scan.
+     */
+    public static function getMode(): ?string
+    {
+        return self::$mode;
+    }
+
+    /**
+     * Set the active scan mode. Commands should call this before invoking run() and reset it to null in tests.
+     */
+    public static function setMode(?string $mode): void
+    {
+        self::$mode = $mode;
     }
 
     /**

@@ -8,6 +8,7 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\Customer\Model\Customer;
 use Magento\Customer\Model\Session;
+use Magento\Framework\Api\FilterBuilder;
 
 /**
  * Examples of BAD class injections that should trigger errors/warnings
@@ -25,7 +26,8 @@ class BadInjections
         private readonly ProductRepository $productRepository,   // ERROR: Repository must use Interface
         private readonly ProductResource $productResource,       // ERROR: Resource Model should use Repository
         private readonly Product $product,                       // WARNING: Specific Model injection
-        private readonly Customer $customer                      // WARNING: Specific Model injection
+        private readonly Customer $customer,                     // WARNING: Specific Model injection
+        private readonly FilterBuilder $filterBuilder            // NOTE: Stateful builder must use Factory
     ) {
     }
 

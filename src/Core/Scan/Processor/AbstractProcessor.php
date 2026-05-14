@@ -6,6 +6,15 @@ use EasyAudit\Core\Scan\ProcessorInterface;
 
 abstract class AbstractProcessor implements ProcessorInterface
 {
+    /**
+     * Glossary concept slugs annotating this processor's rule. Slugs must exist in data/en/glossary.json.
+     * Single-rule processors override this constant. Multi-rule processors override getReport() and emit
+     * per-rule concepts there instead.
+     *
+     * @var string[]
+     */
+    protected const CONCEPTS = [];
+
     protected array $results = [];
 
     protected int $foundCount = 0;
@@ -22,6 +31,7 @@ abstract class AbstractProcessor implements ProcessorInterface
             'name' => $this->getName(),
             'shortDescription' => $this->getMessage(),
             'longDescription' => $this->getLongDescription(),
+            'concepts' => static::CONCEPTS,
             'files' => $this->consolidateResults($this->results),
         ]];
     }

@@ -24,9 +24,15 @@ class SarifReporter implements ReporterInterface
                 'help' => ['text' => $finding['longDescription'] ?? ''],
             ];
             foreach ($finding['files'] as $location) {
-                $abs = str_replace('\\', '/', $location['file'] ?? '');
-                $rel = ltrim(str_replace($root, '', $abs), '/');
-                $uri = $rel !== '' ? $rel : basename($abs);
+                $fileField = str_replace('\\', '/', $location['file'] ?? '');
+                $startLine = $location['startLine'] ?? $location['line'] ?? 0;
+                $endLine = $location['endLine'] ?? null;
+
+                $physicalLocations = $this->buildPhysicalLocations($fileField, (int)$startLine, $endLine, $root);
+                if (empty($physicalLocations)) {
+                    continue;
+                }
+
                 $results[] = [
                     'ruleId' => $finding['ruleId'] ?? 'EASYAUDIT',
                     'level' => match ($location['severity'] ?? 'medium') {
@@ -36,22 +42,7 @@ class SarifReporter implements ReporterInterface
                         default => 'warning',
                     },
                     'message' => ['text' => $location['message'] ?? $finding['message'] ?? ''],
-                    'locations' => [
-                        [
-                            'physicalLocation' => [
-                                'artifactLocation' => [
-                                    'uri' => $uri ?? '',
-                                    "uriBaseId" => "SRCROOT"
-                                ],
-                                'region' => array_filter([
-                                    'startLine' => $location['startLine'] ?? $location['line'] ?? 1,
-                                    'endLine' => ($location['endLine'] ?? null) !== ($location['startLine'] ?? null)
-                                        ? ($location['endLine'] ?? null)
-                                        : null,
-                                ], fn($v) => $v !== null)
-                            ]
-                        ]
-                    ]
+                    'locations' => $physicalLocations,
                 ];
             }
         }
@@ -73,5 +64,89 @@ class SarifReporter implements ReporterInterface
         ];
 
         return json_encode($sarif, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Build the `locations` array for a single SARIF result.
+     *
+     * The file field may either be a single path (legacy single-location finding)
+     * or a comma-separated list of "path:line" pairs emitted by multi-location
+     * findings such as AroundPlugins::deepPluginStack. In the latter case, the
+     * outer startLine is 0 since each path carries its own line.
+     *
+     * @return array<int, array{physicalLocation: array{artifactLocation: array{uri: string, uriBaseId: string}, region?: array<string, int>}}>
+     */
+    private function buildPhysicalLocations(string $fileField, int $startLine, ?int $endLine, string $root): array
+    {
+        if ($fileField === '') {
+            return [];
+        }
+
+        $segments = $this->splitMultiLocation($fileField);
+        $isMulti = count($segments) > 1;
+        $locations = [];
+
+        foreach ($segments as $segment) {
+            if ($isMulti) {
+                [$path, $segmentLine] = $this->splitPathAndLine($segment, 0);
+            } else {
+                $path = $segment;
+                $segmentLine = $startLine > 0 ? $startLine : 1;
+            }
+
+            $rel = ltrim(str_replace($root, '', $path), '/');
+            $uri = $rel !== '' ? $rel : basename($path);
+
+            $region = [];
+            if ($segmentLine > 0) {
+                $region['startLine'] = $segmentLine;
+                if (!$isMulti && $endLine !== null && $endLine !== $startLine) {
+                    $region['endLine'] = $endLine;
+                }
+            }
+
+            $physicalLocation = [
+                'artifactLocation' => [
+                    'uri' => $uri,
+                    'uriBaseId' => 'SRCROOT',
+                ],
+            ];
+            if (!empty($region)) {
+                $physicalLocation['region'] = $region;
+            }
+
+            $locations[] = ['physicalLocation' => $physicalLocation];
+        }
+
+        return $locations;
+    }
+
+    /**
+     * Split a multi-location file field on ", ". Only splits when the field actually
+     * contains comma-separated entries that look like "path:line"; otherwise treats
+     * the value as a single path.
+     *
+     * @return string[]
+     */
+    private function splitMultiLocation(string $fileField): array
+    {
+        if (!str_contains($fileField, ', ')) {
+            return [$fileField];
+        }
+        return array_values(array_filter(array_map('trim', explode(', ', $fileField)), 'strlen'));
+    }
+
+    /**
+     * Split a segment of the form "path:line" into its path and line components.
+     * Falls back to the supplied default line when the segment does not embed one.
+     *
+     * @return array{0: string, 1: int}
+     */
+    private function splitPathAndLine(string $segment, int $defaultLine): array
+    {
+        if (preg_match('/^(.*):(\d+)$/', $segment, $matches)) {
+            return [$matches[1], (int)$matches[2]];
+        }
+        return [$segment, $defaultLine];
     }
 }

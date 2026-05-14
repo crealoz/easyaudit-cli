@@ -24,6 +24,17 @@ chmod +x easyaudit.phar
 sudo mv easyaudit.phar /usr/local/bin/easyaudit
 ```
 
+### Using Composer
+
+EasyAudit CLI is published on Packagist under the MIT licence and can be installed as a project dependency:
+
+```bash
+composer require --dev crealoz/easyaudit-cli
+vendor/bin/easyaudit scan /path/to/magento
+```
+
+When installed via Composer, the entry point uses the Composer-generated autoloader (`vendor/autoload.php`) instead of the hand-rolled PSR-4 loader used by the PHAR build.
+
 ### Using Docker
 ```bash
 docker pull ghcr.io/crealoz/easyaudit:latest
@@ -33,6 +44,8 @@ docker pull ghcr.io/crealoz/easyaudit:latest
 ```bash
 git clone git@github.com:crealoz/easyaudit-cli.git
 cd easyaudit-cli
+composer install --no-dev   # optional — enables the Composer autoloader; without it the bundled PSR-4 loader is used
+php bin/easyaudit scan /path/to/magento
 ```
 
 ---

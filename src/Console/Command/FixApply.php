@@ -7,8 +7,8 @@ use EasyAudit\Console\Util\Confirm;
 use EasyAudit\Console\Util\Filenames;
 use EasyAudit\Exception\CliException;
 use EasyAudit\Exception\Fixer\RuleNotAppliedException;
-use EasyAudit\Service\Api;
 use EasyAudit\Service\CliWriter;
+use EasyAudit\Service\FixerInterface;
 use EasyAudit\Service\Logger;
 use EasyAudit\Service\PayloadPreparers\DiPreparer;
 use EasyAudit\Service\PayloadPreparers\GeneralPreparer;
@@ -21,13 +21,14 @@ final class FixApply implements \EasyAudit\Console\CommandInterface
     private int $currentFile = 0;
     private int $totalFiles = 0;
     private array $diffs = [];
-    private int $creditsRemaining = 0;
+    /** Null when the active fixer doesn't track credits (e.g. local fixer); int otherwise. */
+    private ?int $creditsRemaining = null;
     private string $projectId = '';
     private array $processErrors = [];
 
     public function __construct(
         private Logger $logger,
-        private Api $api,
+        private FixerInterface $api,
     ) {
     }
 
@@ -113,9 +114,9 @@ HELP;
             throw new CliException("No fixable issues found in the report.");
         }
 
-        $cost = $this->calculateCost($prepared['byFile'], $prepared['byDiFile'], $fixables);
         $this->totalFiles = count($prepared['byFile']) + count($prepared['byDiFile']);
 
+        $cost = $this->calculateCost($prepared['byFile'], $prepared['byDiFile'], $fixables);
         $startingCredits = $this->checkCreditsAndConfirm($cost, $options['confirm']);
         if ($startingCredits === false) {
             throw new CliException('Aborted by user');
@@ -200,7 +201,11 @@ HELP;
     private function reportProcessingResults(): void
     {
         CliWriter::clearLine();
-        CliWriter::line(CliWriter::green("Processed $this->totalFiles file(s)") . " | Credits remaining: " . CliWriter::green((string)$this->creditsRemaining));
+        $line = CliWriter::green("Processed $this->totalFiles file(s)");
+        if ($this->creditsRemaining !== null) {
+            $line .= " | Credits remaining: " . CliWriter::green((string)$this->creditsRemaining);
+        }
+        CliWriter::line($line);
 
         if (!empty($this->processErrors)) {
             $cnt = count($this->processErrors);
@@ -296,16 +301,19 @@ HELP;
     }
 
     /**
-     * Check credit balance and confirm with user.
-     *
-     * @return int|false Starting credits or false if cancelled
+     * Check credit balance and confirm with user. Returns starting credits, false if cancelled,
+     * or null if the active fixer doesn't track credits (no prompt, no balance display).
      */
-    private function checkCreditsAndConfirm(int $cost, bool $confirm): int|false
+    private function checkCreditsAndConfirm(int $cost, bool $confirm): int|false|null
     {
         $startingCredits = null;
 
         try {
             $creditInfo = $this->api->getRemainingCredits($this->projectId);
+            if ($creditInfo === null) {
+                // Local / free fixer — no credit accounting
+                return null;
+            }
             $startingCredits = $this->creditsRemaining = $creditInfo['credits'];
 
             if (isset($creditInfo['project_id'])) {
@@ -387,6 +395,10 @@ HELP;
     private function showSummary(int $savedCount, string $patchOut, ?int $startingCredits, int $cost): void
     {
         CliWriter::success("Saved $savedCount patch file(s) to $patchOut.");
+
+        if ($this->creditsRemaining === null) {
+            return;
+        }
 
         if ($startingCredits !== null && $startingCredits > 0) {
             $realCost = $startingCredits - $this->creditsRemaining;

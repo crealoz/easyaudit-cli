@@ -215,10 +215,43 @@ XML);
         $this->assertArrayHasKey('name', $plugin);
         $this->assertArrayHasKey('disabled', $plugin);
         $this->assertArrayHasKey('diFile', $plugin);
+        $this->assertArrayHasKey('line', $plugin);
         $this->assertEquals('Vendor\Module\Plugin\ProductPlugin', $plugin['class']);
         $this->assertEquals('my_plugin', $plugin['name']);
         $this->assertFalse($plugin['disabled']);
         $this->assertEquals($diXml, $plugin['diFile']);
+        // The <plugin> element sits on the 5th line of the XML document.
+        $this->assertSame(5, $plugin['line']);
+    }
+
+    public function testPluginEntryCapturesDistinctLineNumbers(): void
+    {
+        $diXml = $this->createDiXml(<<<'XML'
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Catalog\Model\Product">
+        <plugin name="plugin_a" type="Vendor\ModuleA\Plugin\ProductPlugin"/>
+        <plugin name="plugin_b" type="Vendor\ModuleB\Plugin\ProductPlugin"/>
+    </type>
+</config>
+XML);
+
+        PluginRegistry::build([$diXml]);
+
+        $plugins = PluginRegistry::getPluginsForTarget('Magento\Catalog\Model\Product');
+        $byClass = [];
+        foreach ($plugins as $plugin) {
+            $byClass[$plugin['class']] = $plugin;
+        }
+
+        $this->assertCount(2, $byClass);
+        $this->assertSame(5, $byClass['Vendor\ModuleA\Plugin\ProductPlugin']['line']);
+        $this->assertSame(6, $byClass['Vendor\ModuleB\Plugin\ProductPlugin']['line']);
+        $this->assertNotEquals(
+            $byClass['Vendor\ModuleA\Plugin\ProductPlugin']['line'],
+            $byClass['Vendor\ModuleB\Plugin\ProductPlugin']['line']
+        );
     }
 
     public function testSkipsInvalidXml(): void

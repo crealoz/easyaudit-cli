@@ -13,6 +13,23 @@ final class Paths
         return $base . '/easyaudit';
     }
 
+    /**
+     * Return the XDG_CACHE_HOME-aware cache directory for easyaudit.
+     * Optional subdirectory is created on first use.
+     */
+    public static function cacheDir(string $subdir = ''): string
+    {
+        $base = getenv('XDG_CACHE_HOME') ?: rtrim(getenv('HOME') ?: sys_get_temp_dir(), '/') . '/.cache';
+        $dir = $base . '/easyaudit';
+        if ($subdir !== '') {
+            $dir .= '/' . trim($subdir, '/');
+        }
+        if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
+            throw new \RuntimeException('Failed to create cache directory: ' . $dir);
+        }
+        return $dir;
+    }
+
     public static function configFile(): string
     {
         $localConfig = self::configDir() . '/config.json.local';

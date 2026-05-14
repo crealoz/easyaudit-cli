@@ -223,6 +223,61 @@ The `file` path is resolved to an absolute path via `Paths::getAbsolutePath()`.
 
 **Always use `Formater::formatError()`** for all results to ensure consistent SARIF output.
 
+### Multi-location findings
+
+A single finding can point at multiple source locations by encoding them into the `file` field as comma-separated `path:line` segments and passing `startLine = 0`:
+
+```php
+$locations = [];
+foreach ($plugins as $plugin) {
+    $locations[] = $plugin['diFile'] . ':' . $plugin['line'];
+}
+$this->results[] = Formater::formatError(implode(', ', $locations), 0, $message, 'high');
+```
+
+`SarifReporter` splits this back into one SARIF `physicalLocation` per segment. `HtmlReporter` renders the Line column as `—` when `startLine` is `0`. `AroundPlugins::deepPluginStack` uses this convention to surface every di.xml declaration that participates in a stack.
+
+## PluginRegistry
+
+**File:** `src/Core/Scan/Util/PluginRegistry.php`
+
+Global index of all `<plugin>` declarations across every `di.xml` in the scan tree. Built once per scan from `DOMDocument` so each entry retains its source line.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `build` | `(array $diFiles): void` | Parse the given `di.xml` files and populate the registry. Subsequent calls are no-ops until `reset()` is called. |
+| `isBuilt` | `(): bool` | True once `build()` has run. |
+| `reset` | `(): void` | Clear the index (used in tests). |
+| `getTargetClass` | `(string $pluginClass): ?string` | Reverse-lookup: return the target class for a given plugin class, or `null` if unknown. |
+| `getPluginsForTarget` | `(string $targetClass): array` | Return every active (non-disabled) `<plugin>` declared against a target class. |
+
+Plugin entry shape:
+
+```php
+[
+    'class'    => 'Vendor\\Module\\Plugin\\FooPlugin',
+    'name'     => 'foo_plugin',
+    'disabled' => false,
+    'diFile'   => '/abs/path/etc/di.xml',
+    'line'     => 17,   // line of the <plugin> node inside diFile
+]
+```
+
+The `line` field is populated via `DOMNode::getLineNo()`. Only direct `<plugin>` children of a `<type>` are collected — nested `<plugin>` nodes inside `<arguments>` are skipped.
+
+## Paths
+
+**File:** `src/Service/Paths.php`
+
+Filesystem path helpers, XDG-aware.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `configDir` | `(): string` | Resolves to `$XDG_CONFIG_HOME/easyaudit` (falling back to `$HOME/.config/easyaudit`). |
+| `configFile` | `(): string` | Path to the active config file (`config.json.local` if present, otherwise `config.json`). |
+| `cacheDir` | `(string $subdir = ''): string` | Resolves to `$XDG_CACHE_HOME/easyaudit` (falling back to `$HOME/.cache/easyaudit`, then the system temp dir). Creates the directory and the optional sub-directory on first use with mode `0700`. Throws `RuntimeException` on failure. |
+| `getAbsolutePath` | `(string $path): string` | Resolve a possibly-relative path against `EA_SCAN_PATH`. Used by `Formater::formatError()`. |
+
 ## Console Output (CliWriter)
 
 **File:** `src/Service/CliWriter.php`
@@ -262,3 +317,16 @@ Call this at the end of your `process()` method to report findings to the consol
 | `labelValue($label, $value, $color)` | `Label: Value` with colored value |
 
 In processors, you typically only need `resultLine()`. The Scanner handles `processorHeader()` calls automatically.
+
+## Scanner mode signal
+
+**File:** `src/Core/Scan/Scanner.php`
+
+`Scanner` exposes a process-wide scan-mode signal so commands can tell processors which feature is driving the current run. Processors read the mode to tune behavior — for example, amplifying severity on checkout-critical files in a `checkout-audit` run.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `Scanner::getMode` | `(): ?string` | Active scan mode, or `null` for a default general-purpose scan. |
+| `Scanner::setMode` | `(?string $mode): void` | Set the active mode. Commands call this before `Scanner::run()`. Tests should reset it to `null` afterwards. |
+
+The free repo does not set a mode in the default `scan` command; the hook exists so sponsor commands (e.g. `checkout-audit`) can opt in without forking the scanner.

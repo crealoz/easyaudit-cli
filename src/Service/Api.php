@@ -16,7 +16,7 @@ use RuntimeException;
  *
  * @package EasyAudit\Service
  */
-class Api
+class Api implements FixerInterface
 {
     private bool $selfSigned = false;
     private ?string $authHeader = null;
@@ -33,7 +33,7 @@ class Api
      * @param  string $content   File content
      * @param  array  $rules     Object of {ruleId: metadata}
      * @param  string $projectId Project identifier for grouping requests
-     * @return array Response including 'diff' (string), 'status', 'credits_remaining'
+     * @return array{diff: string, status?: string, credits_remaining?: int|null}
      * @throws CurlResponseException
      * @throws GitHubAuthException
      */
@@ -90,11 +90,11 @@ class Api
      * Also validates the project_id with middleware.
      *
      * @param  string $projectId Project identifier for validation
-     * @return array {credits: int, credit_expiration_date: string, licence_expiration_date: string, project_id: string}
+     * @return array{credits: int, credit_expiration_date: ?string, licence_expiration_date: ?string, project_id: string}
      * @throws RuntimeException
      * @throws GitHubAuthException
      */
-    public function getRemainingCredits(string $projectId): array
+    public function getRemainingCredits(string $projectId): ?array
     {
         $this->authHeader = Env::getAuthHeader();
 
@@ -124,7 +124,7 @@ class Api
     /**
      * Fetch the allowed types from the API.
      *
-     * @return array
+     * @return array<string, int|true>
      * @throws CurlResponseException
      * @throws GitHubAuthException
      */

@@ -21,6 +21,8 @@ use EasyAudit\Service\CliWriter;
  */
 class CountOnCollection extends AbstractProcessor
 {
+    protected const CONCEPTS = ['repository_pattern', 'search_criteria'];
+
     private array $collectionReturningMethods = [];
 
     public function getIdentifier(): string

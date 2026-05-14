@@ -1,0 +1,70 @@
+{
+  "version": "1.0",
+  "concepts": {
+    "stateful": {
+      "term": "Stateful",
+      "shortDefinition": "A class is stateful when it holds data between method calls that can change its behavior. In Magento DI, stateful classes are problematic when injected directly into long-lived objects: their state persists across requests in CLI commands or message consumers, leading to stale data, side effects across handlers, and bugs that cannot be reproduced in isolation. AbstractModel-based classes are the classic example.",
+      "links": []
+    },
+    "proxy": {
+      "term": "Proxy",
+      "shortDefinition": "A proxy is a generated wrapper class that defers instantiation of an injected dependency until the first method call on it. Magento auto-generates proxies for any class declared with the \\Proxy suffix in di.xml. Useful for heavy classes (sessions, resource models, configuration readers) injected into widely-instantiated parents — the construction cost is paid only when the dependency is actually accessed.",
+      "links": []
+    },
+    "around_plugin": {
+      "term": "Around Plugin",
+      "shortDefinition": "An around plugin wraps the original method, receiving a $proceed callable that invokes the original implementation. Around plugins multiply call-chain overhead and create deep nested stacks when several target the same method. Most around plugins are misused: if all logic precedes $proceed, a before plugin suffices; if all logic follows it, an after plugin is lighter and more explicit.",
+      "links": []
+    },
+    "factory_pattern": {
+      "term": "Factory Pattern",
+      "shortDefinition": "Magento's factory pattern provides on-demand instantiation of stateful or per-call-fresh objects. Auto-generated XxxFactory classes expose a create() method that returns a new instance of Xxx on every call. Used for AbstractModel descendants, collection objects, and any class that must not share state across callers in the same request. Inject the factory, never the concrete class.",
+      "links": []
+    },
+    "repository_pattern": {
+      "term": "Repository Pattern",
+      "shortDefinition": "Magento's repository pattern abstracts persistence behind an interface, for example ProductRepositoryInterface. Repositories provide CRUD operations using SearchCriteria and dispatch lifecycle events. Inject the interface, never the concrete implementation, so DI preferences and test doubles can substitute it. Resource models are the persistence layer underneath; repositories are the supported public contract.",
+      "links": []
+    },
+    "view_model": {
+      "term": "View Model",
+      "shortDefinition": "A view model is a presentation-layer class injected into a block via the data argument to expose helper methods to phtml templates. View models replace logic-heavy block subclasses, decouple presentation from block hierarchies, and are easy to test. Prefer view models over helpers and over extending blocks when only template-side data preparation is needed.",
+      "links": []
+    },
+    "resource_model": {
+      "term": "Resource Model",
+      "shortDefinition": "A resource model is the SQL-aware persistence layer behind a model in the original Magento ORM. It handles _construct() table mappings, load/save/delete operations, and direct adapter access. Inject resource models only inside repository implementations; consumers should depend on the repository interface and let the repository delegate to the resource model.",
+      "links": []
+    },
+    "abstract_model": {
+      "term": "Abstract Model",
+      "shortDefinition": "Magento\\Framework\\Model\\AbstractModel is the base class for entities backed by a resource model. Instances are stateful: each holds the loaded row and dirty-flag state. Direct injection is unsafe because the same instance is shared across all callers, propagating stale data and setData mutations. Inject a Factory instead and call create() for fresh instances when needed.",
+      "links": []
+    },
+    "di_preference": {
+      "term": "DI Preference",
+      "shortDefinition": "A DI preference declared in di.xml tells Magento's object manager to instantiate a substitute class whenever a given type is requested. Preferences are how interface-driven extensibility works; injecting a concrete class instead of its interface bypasses preferences entirely, breaking module overrides and making test doubles harder to substitute. Always inject the abstract type when one exists.",
+      "links": []
+    },
+    "fpc": {
+      "term": "Full Page Cache",
+      "shortDefinition": "Full Page Cache (FPC) caches the rendered HTML of a page for repeat requests. Blocks declared cacheable=false in layout XML disable FPC for the entire page they appear on, eliminating cache hits sitewide. Use the cache_lifetime and getIdentities() mechanism to make blocks cacheable; fall back to ESI or hole-punching only when truly per-user content is required.",
+      "links": []
+    },
+    "search_criteria": {
+      "term": "Search Criteria",
+      "shortDefinition": "SearchCriteria is the structured query API used by Magento repositories. It expresses filters, sort orders, and pagination as objects via SearchCriteriaBuilder, then passes them to RepositoryInterface::getList(). Replaces direct collection manipulation with a versioned, interface-stable contract that survives schema changes and supports the REST and SOAP surfaces uniformly.",
+      "links": []
+    },
+    "area_scope": {
+      "term": "Area Scope",
+      "shortDefinition": "Magento's area scope (global, frontend, adminhtml, crontab, webapi_rest, etc.) determines which di.xml configuration is loaded and which controllers respond. Type-binding declarations in the wrong area can cause classes to be configured differently in admin vs frontend, or never configured at all in CLI commands. Cross-area DI mistakes are silent until runtime.",
+      "links": []
+    },
+    "interceptor": {
+      "term": "Interceptor",
+      "shortDefinition": "Magento auto-generates an Interceptor subclass for every class that has plugins registered against it. The interceptor extends the target and routes method calls through the plugin chain (before, around, after). Plugins on final classes or final methods cannot be intercepted and will be silently ignored. Interceptors live in the generated/code/ directory after compilation.",
+      "links": []
+    }
+  }
+}

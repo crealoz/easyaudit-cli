@@ -1,8 +1,9 @@
 {
   "name": "crealoz/easyaudit-cli",
   "description": "Standalone static analysis tool for Magento 2 codebases",
-  "type": "project",
-  "license": "proprietary",
+  "type": "library",
+  "license": "MIT",
+  "bin": ["bin/easyaudit"],
   "require": {
     "php": ">=8.1",
     "ext-curl": "*",
