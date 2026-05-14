@@ -1,8 +1,88 @@
 {
-    "generated_at": "2026-04-03T12:01:21Z",
+    "generated_at": "2026-05-14T10:12:46Z",
     "release_line": "2.4.8",
-    "latest_patch": "2.4.8-p4",
+    "latest_patch": "2.4.8-p5",
     "patches": {
+        "2.4.8-p5": {
+            "apsb": "APSB26-49",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb26-49.html",
+            "vulnerabilities": [
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Server-Side Request Forgery (SSRF) (CWE-918)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Uncontrolled Resource Consumption (CWE-400)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Dependency on Vulnerable Third-Party Component (CWE-1395)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Arbitrary file system write"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "important"
+                    ]
+                },
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
         "2.4.8-p4": {
             "apsb": "APSB26-05",
             "url": "https://helpx.adobe.com/security/products/magento/apsb26-05.html",
@@ -217,7 +297,7 @@
         }
     },
     "support": {
-        "regular_end": "2028-04-11",
-        "extended_end": null
+        "regular_end": "2028-05-31",
+        "extended_end": ""
     }
 }

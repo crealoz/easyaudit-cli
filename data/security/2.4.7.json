@@ -1,8 +1,88 @@
 {
-    "generated_at": "2026-04-03T12:01:23Z",
+    "generated_at": "2026-05-14T10:12:48Z",
     "release_line": "2.4.7",
-    "latest_patch": "2.4.7-p9",
+    "latest_patch": "2.4.7-p10",
     "patches": {
+        "2.4.7-p10": {
+            "apsb": "APSB26-49",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb26-49.html",
+            "vulnerabilities": [
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Server-Side Request Forgery (SSRF) (CWE-918)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Uncontrolled Resource Consumption (CWE-400)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Dependency on Vulnerable Third-Party Component (CWE-1395)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Arbitrary file system write"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "important"
+                    ]
+                },
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
         "2.4.7-p9": {
             "apsb": "APSB26-05",
             "url": "https://helpx.adobe.com/security/products/magento/apsb26-05.html",
@@ -462,7 +542,7 @@
                 "Two-Factor Authentication lockout time (seconds)",
                 "Encryption key rotation\u2014A new CLI command is now available for changing your encryption key. See the Troubleshooting Encryption Key Rotation: CVE-2024-34102 Knowledge Base article for details.",
                 "Fix for CVE-2020-27511\u2014Resolves a Prototype.js security vulnerability.",
-                "Fix for CVE-2024-39397\u2014Resolves a remote code execution security vulnerability. This vulnerability affects merchants using the Apache web server for on-premises or self-hosted deployments. This fix is also available as an isolated patch. See the Security update available for Adobe Commerce - APSB24-61 Knowledge Base article for details."
+                "Fix for CVE-2024-39397\u2014Resolves a remote code execution security vulnerability. This vulnerability affects merchants using the Apache web server for on-premises or self-hosted deployments. This fix is also available as an isolated patch. See the Security\u202fupdate\u202favailable\u202ffor\u202fAdobe Commerce\u202f-\u202fAPSB24-61 Knowledge Base article for details."
             ],
             "vulnerabilities": [
                 {
@@ -644,7 +724,7 @@
         }
     },
     "support": {
-        "regular_end": "2027-04-09",
-        "extended_end": null
+        "regular_end": "2027-05-31",
+        "extended_end": ""
     }
 }

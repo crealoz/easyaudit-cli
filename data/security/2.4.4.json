@@ -1,8 +1,88 @@
 {
-    "generated_at": "2026-04-03T12:01:25Z",
+    "generated_at": "2026-05-14T10:12:52Z",
     "release_line": "2.4.4",
-    "latest_patch": "2.4.4-p17",
+    "latest_patch": "2.4.4-p18",
     "patches": {
+        "2.4.4-p18": {
+            "apsb": "APSB26-49",
+            "url": "https://helpx.adobe.com/security/products/magento/apsb26-49.html",
+            "vulnerabilities": [
+                {
+                    "category": "Incorrect Authorization (CWE-863)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Server-Side Request Forgery (SSRF) (CWE-918)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Uncontrolled Resource Consumption (CWE-400)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Dependency on Vulnerable Third-Party Component (CWE-1395)",
+                    "impacts": [
+                        "Application denial-of-service"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Cross-site Scripting (Stored XSS) (CWE-79)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Critical",
+                        "Important"
+                    ]
+                },
+                {
+                    "category": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (CWE-22)",
+                    "impacts": [
+                        "Arbitrary file system write"
+                    ],
+                    "severities": [
+                        "Critical"
+                    ]
+                },
+                {
+                    "category": "Improper Authorization (CWE-285)",
+                    "impacts": [
+                        "Security feature bypass"
+                    ],
+                    "severities": [
+                        "important"
+                    ]
+                },
+                {
+                    "category": "Improper Input Validation (CWE-20)",
+                    "impacts": [
+                        "Arbitrary code execution"
+                    ],
+                    "severities": [
+                        "Moderate"
+                    ]
+                }
+            ]
+        },
         "2.4.4-p17": {
             "apsb": "APSB26-05",
             "url": "https://helpx.adobe.com/security/products/magento/apsb26-05.html",
@@ -459,7 +539,7 @@
                 "Two-Factor Authentication lockout time (seconds)",
                 "Encryption key rotation\u2014A new CLI command is now available for changing your encryption key. See the Troubleshooting Encryption Key Rotation: CVE-2024-34102 Knowledge Base article for details.",
                 "Fix for CVE-2020-27511\u2014Resolves a Prototype.js security vulnerability.",
-                "Fix for CVE-2024-39397\u2014Resolves a remote code execution security vulnerability. This vulnerability affects merchants using the Apache web server for on-premises or self-hosted deployments. This fix is also available as an isolated patch. See the Security update available for Adobe Commerce - APSB24-61 Knowledge Base article for details."
+                "Fix for CVE-2024-39397\u2014Resolves a remote code execution security vulnerability. This vulnerability affects merchants using the Apache web server for on-premises or self-hosted deployments. This fix is also available as an isolated patch. See the Security\u202fupdate\u202favailable\u202ffor\u202fAdobe Commerce\u202f-\u202fAPSB24-61 Knowledge Base article for details."
             ],
             "vulnerabilities": [
                 {
@@ -562,7 +642,7 @@
                 "Added Subresource Integrity (SRI) support to comply with PCI 4.0 requirements for verification of script integrity on payment pages. Subresource Integrity (SRI) support provides integrity hashes for all JavaScript assets residing in the local filesystem. The default SRI feature is implemented only on the payment pages for the Admin and storefront areas. However, merchants can extend the default configuration to other pages. See Subresource Integrity in the Commerce PHP Developer Guide.",
                 "Changes to Content Security Policy (CSP)\u2014Configuration updates and enhancements to Adobe Commerce Content Security Policies (CSPs) to comply with PCI 4.0 requirements. For details, see Content Security Policies in the Commerce PHP Developer Guide. The default CSP configuration for payment pages for Commerce Admin and storefront areas is now restrict mode. For all other pages, the default configuration is report-only mode. In releases prior to 2.4.7, CSP was configured in report-only mode for all pages.",
                 "Added a nonce provider to allow execution of inline scripts in a CSP. The nonce provider facilitates the generation of unique nonce strings for each request. The strings are then attached to the CSP header.",
-                "Added options to configure custom URIs to report CSP violations for the Create Order page in the Admin and the Checkout page in the storefront. You can add the configuration from the Admin or by adding the URI to the config.xml file. note note NOTE Updating the CSP configuration to restrict mode might block existing inline scripts on payment pages in the Admin and storefront, which causes the following browser error when a page loads: Refused to execute inline script because it violates the following Content Security Policy directive: \"script-src. Fix these errors by updating the whitelist configuration to allow required scripts. See Troubleshooting in the Commerce PHP Developer Guide."
+                "Added options to configure custom URIs to report CSP violations for the Create Order page in the Admin and the Checkout page in the storefront. You can add the configuration from the Admin or by adding the URI to the config.xml file. note NOTE Updating the CSP configuration to restrict mode might block existing inline scripts on payment pages in the Admin and storefront, which causes the following browser error when a page loads: Refused to execute inline script because it violates the following Content Security Policy directive: \"script-src. Fix these errors by updating the whitelist configuration to allow required scripts. See Troubleshooting in the Commerce PHP Developer Guide."
             ],
             "vulnerabilities": [
                 {

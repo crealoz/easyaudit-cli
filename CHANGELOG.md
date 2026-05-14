@@ -5,6 +5,13 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] 2026-05-14
+
+### Changed
+
+- **Security bulletins refreshed** (`data/security/*.json`): regenerated from upstream Adobe bulletins. New patch entries: `2.4.4-p18`, `2.4.5-p17`, `2.4.6-p15`, `2.4.7-p10`, `2.4.8-p5`. `2.4.3-p1` already current — timestamp only. Run `php tools/update-security-bulletins.php` to refresh between releases.
+- **Version security test fixtures** updated to match the refreshed bulletins: `latest-composer.lock` → `2.4.8-p5`, `latest-old-line-composer.lock` → `2.4.6-p15`, `eol-composer.lock` → `2.4.4-p18`. Test comments aligned. Tests verify the same scenarios (latest patch produces no findings, latest-of-old-line recommends a newer release line, EOL latest is high-severity) against the new bulletin data.
+
 ## [1.3.1] 2026-05-14
 
 ### Added

@@ -216,7 +216,7 @@ class MagentoVersionSecurityCheckTest extends TestCase
 
     public function testLatestPatchOnOldReleaseLineRecommendsUpgrade(): void
     {
-        // 2.4.6-p14 is the latest for 2.4.6, but 2.4.8 exists
+        // 2.4.6-p15 is the latest for 2.4.6, but 2.4.8 exists
         $scanPath = $this->createTempScanPath('latest-old-line-composer.lock');
 
         ob_start();
@@ -239,7 +239,7 @@ class MagentoVersionSecurityCheckTest extends TestCase
 
     public function testEolVersionGetsHighSeverity(): void
     {
-        // 2.4.4-p17 is the latest for 2.4.4, but 2.4.4 extended support ends April 2026
+        // 2.4.4-p18 is the latest for 2.4.4, but 2.4.4 extended support ends April 2026
         $scanPath = $this->createTempScanPath('eol-composer.lock');
 
         ob_start();

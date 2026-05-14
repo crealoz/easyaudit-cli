@@ -2,7 +2,7 @@
     "packages": [
         {
             "name": "magento/product-community-edition",
-            "version": "2.4.4-p17",
+            "version": "2.4.4-p18",
             "type": "metapackage"
         }
     ]
