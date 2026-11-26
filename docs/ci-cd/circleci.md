@@ -108,35 +108,6 @@ workflows:
       - easyaudit
 ```
 
-### JSON Artifact
-
-```yaml
-version: 2.1
-
-jobs:
-  easyaudit:
-    docker:
-      - image: ghcr.io/crealoz/easyaudit:latest
-    steps:
-      - checkout
-      - run:
-          name: Run EasyAudit
-          command: |
-            mkdir -p report
-            easyaudit scan \
-              --format=json \
-              --output=report/easyaudit.json \
-              "$PWD"
-      - store_artifacts:
-          path: report
-          destination: easyaudit-report
-
-workflows:
-  scan:
-    jobs:
-      - easyaudit
-```
-
 ### Scheduled Weekly Scan
 
 ```yaml
@@ -180,14 +151,8 @@ workflows:
 | Variable | Description |
 |----------|-------------|
 | `PWD` | Working directory / repository root |
-| `CIRCLECI` | Set to `true` in CircleCI (auto-detected) |
 | `CIRCLE_PROJECT_REPONAME` | Repository name |
 | `CIRCLE_WORKFLOW_ID` | Unique workflow ID |
-| `EASYAUDIT_AUTH` | API credentials for paid features (optional) |
-
-Set `EASYAUDIT_AUTH` in CircleCI:
-1. Go to **Project Settings > Environment Variables**
-2. Add `EASYAUDIT_AUTH` with your API key
 
 ---
 
@@ -203,7 +168,6 @@ Set `EASYAUDIT_AUTH` in CircleCI:
 
 ## See Also
 
-- [Automated PR (paid)](../request-pr.md) - Auto-fix issues via API
 - [CLI Usage](../cli-usage.md) - Local usage
 - [Processors](../processors.md) - Available checks
 

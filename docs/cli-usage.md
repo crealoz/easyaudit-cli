@@ -57,17 +57,11 @@ php bin/easyaudit scan /path/to/magento
 Run static analysis on a Magento codebase.
 
 ```bash
-# Basic scan (JSON output, default)
+# Basic scan (SARIF output, default)
 php bin/easyaudit scan /path/to/magento
 
-# Explicit JSON output
-php bin/easyaudit scan /path/to/magento --format=json
-
-# SARIF output (for GitHub Code Scanning)
+# Explicit SARIF output (for GitHub Code Scanning)
 php bin/easyaudit scan /path/to/magento --format=sarif
-
-# HTML report (visual dashboard, print-to-PDF friendly)
-php bin/easyaudit scan /path/to/magento --format=html
 
 # Custom output file
 php bin/easyaudit scan /path/to/magento --format=sarif --output=report/scan.sarif
@@ -83,11 +77,13 @@ php bin/easyaudit scan /path/to/magento --exclude-ext="js,css"
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--format` | Output format: `json`, `sarif`, `html` | `json` |
-| `--output` | Output file path | `report/easyaudit-report.(json\|sarif\|html)` |
+| `--format` | Output format: `sarif` | `sarif` |
+| `--output` | Output file path | `report/easyaudit-report.sarif` |
 | `--exclude` | Comma-separated directories to exclude | none |
 | `--exclude-ext` | Comma-separated file extensions to exclude | none |
+| `--project-name` | Explicit project identifier (slug) | none |
 
+Automatic fixing (`fix-apply`) and the HTML, Markdown and JSON reports are part of the [sponsors edition](https://github.com/sponsors/crealoz).
 
 ### Help
 
@@ -101,12 +97,12 @@ php bin/easyaudit scan --help
 
 ### Scan app/code only
 ```bash
-php bin/easyaudit scan /path/to/magento/app/code --format=json
+php bin/easyaudit scan /path/to/magento/app/code
 ```
 
 ### Scan a single module
 ```bash
-php bin/easyaudit scan /path/to/magento/app/code/Vendor/Module --format=json
+php bin/easyaudit scan /path/to/magento/app/code/Vendor/Module
 ```
 
 ### Scan a Magento root
@@ -121,21 +117,8 @@ Detection is based on Magento indicators (`bin/magento`, `nginx.conf.sample`, `a
 
 ### Quick check before commit
 ```bash
-php bin/easyaudit scan . --format=json
+php bin/easyaudit scan .
 ```
-
-### Scan and fix workflow
-```bash
-# 1. Scan and generate report
-php bin/easyaudit scan /path/to/magento --format=json --output=report.json
-
-# 2. Apply fixes (requires API credits)
-php bin/easyaudit fix-apply report.json
-```
-
-> **Note**: `fix-apply` requires API credentials stored in `~/.config/easyaudit/`. Use the PHAR directly or `bin/easyaudit` for fix-apply — Docker is not recommended for this command.
-
-Automated PR creation is available as a paid feature. See [Automated PR workflow](request-pr.md) for CI/CD integration.
 
 ---
 
@@ -146,19 +129,13 @@ Automated PR creation is available as a paid feature. See [Automated PR workflow
 ### Basic scan
 ```bash
 docker run --rm --user "$(id -u):$(id -g)" -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
-  scan /workspace --format=json
-```
-
-### Generate SARIF report
-```bash
-docker run --rm --user "$(id -u):$(id -g)" -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
-  scan /workspace --format=sarif
+  scan /workspace
 ```
 
 ### Scan a specific subdirectory
 ```bash
 docker run --rm --user "$(id -u):$(id -g)" -v $PWD:/workspace ghcr.io/crealoz/easyaudit:latest \
-  scan /workspace/app/code --format=json
+  scan /workspace/app/code
 ```
 
 ---
@@ -183,47 +160,7 @@ php bin/easyaudit scan /path/to/magento --format=sarif || exit 1
 
 ![cli-scanning.png](../images/cli-scanning.png)
 
-> **Auto-fix available**
-> Many issues can be fixed automatically. Run `easyaudit fix-apply` or [set up automated PRs](request-pr.md)
-
-![cli-fix-apply.png](../images/cli-fix-apply.png)
-
-### JSON
-```json
-[
-  {
-    "ruleId": "sameModulePlugins",
-    "message": "Plugin on same module class",
-    "files": [
-      {
-        "file": "app/code/Vendor/Module/Plugin/SomePlugin.php",
-        "line": 15
-      }
-    ]
-  }
-]
-```
-
-### HTML
-
-The HTML format produces a self-contained dashboard with:
-
-- **Summary cards** — color-coded counts for errors, warnings, and notes
-- **Collapsible rule sections** — one per processor, with a table of affected files, line numbers, and messages
-- **Print-to-PDF support** — `@media print` styles ensure clean output when printing from the browser
-
-```bash
-# Generate HTML report
-php bin/easyaudit scan /path/to/magento --format=html
-
-# Open in browser
-xdg-open report/easyaudit-report.html    # Linux
-open report/easyaudit-report.html         # macOS
-```
-
-The report is fully standalone (all CSS inline, no external dependencies) and can be shared as a single file or printed to PDF directly from the browser.
-
-![easyaudit-html-report.png](../images/easyaudit-html-report.png)
+The report is written as a SARIF file (`report/easyaudit-report.sarif` by default).
 
 ---
 

@@ -2,10 +2,8 @@
 
 namespace EasyAudit\Core\Scan;
 
-use EasyAudit\Service\Api;
 use EasyAudit\Service\CliWriter;
 use EasyAudit\Service\Config;
-use EasyAudit\Service\PayloadPreparers\PreparerInterface;
 use EasyAudit\Service\Paths;
 
 class Scanner
@@ -70,18 +68,12 @@ class Scanner
 
     public function run(
         string $exclude = '',
-        array $excludedExtensions = [],
-        string $format = 'html'
+        array $excludedExtensions = []
     ): array {
         if (empty(EA_SCAN_PATH)) {
             $path = getcwd();
         } else {
             $path = Paths::getAbsolutePath(EA_SCAN_PATH);
-        }
-
-        $fixerReady = false;
-        if ($format === 'json') {
-            $fixerReady = true;
         }
 
         if (!empty($excludedExtensions)) {
@@ -119,12 +111,6 @@ class Scanner
         $this->scanRoot = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $files = $this->scanPaths($path, $files);
 
-        $fixableTypes = [];
-        if ($fixerReady) {
-            $api = new Api();
-            $fixableTypes = $api->getAllowedType();
-        }
-
         if (empty($files)) {
             $findings[] = "No files found to scan.";
         } else {
@@ -145,28 +131,12 @@ class Scanner
                 if ($processor->getFoundCount() > 0) {
                     foreach ($processor->getReport() as $report) {
                         $ruleId = $report['ruleId'] ?? '';
-                        /** if the file needs to be ready for fixer, we need to remove useless information to improve
-                         * file process performances
-                         */
-                        if ($fixerReady) {
-                            unset($report['name']);
-                            unset($report['shortDescription']);
-                            unset($report['longDescription']);
-                            // let's remove "message" entry from file as well
-                            foreach ($report['files'] as $key => $_) {
-                                unset($report['files'][$key]['message']);
-                            }
-                        }
-
                         // Check if this issue can be fixed by an external tool (phpcs or something like that)
                         if (ExternalToolMapping::isExternallyFixable($ruleId)) {
                             $fileCount = count($report['files'] ?? []);
                             $toolSuggestions[$ruleId] = ($toolSuggestions[$ruleId] ?? 0) + $fileCount;
                         } else {
-                            $fixableKey = PreparerInterface::MAPPED_RULES[$ruleId] ?? $ruleId;
-                        if (!$fixerReady || isset($fixableTypes[$fixableKey])) {
-                                $findings[] = $report;
-                            }
+                            $findings[] = $report;
                         }
                     }
                 }

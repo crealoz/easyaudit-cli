@@ -113,33 +113,6 @@ steps:
     condition: always()
 ```
 
-### JSON Artifact
-
-```yaml
-trigger:
-  - main
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-container:
-  image: ghcr.io/crealoz/easyaudit:latest
-
-steps:
-  - checkout: self
-
-  - script: |
-      mkdir -p $(Build.ArtifactStagingDirectory)/report
-      easyaudit scan \
-        --format=json \
-        --output=$(Build.ArtifactStagingDirectory)/report/easyaudit.json \
-        "$(Build.SourcesDirectory)"
-    displayName: 'Run EasyAudit'
-
-  - publish: $(Build.ArtifactStagingDirectory)/report
-    artifact: easyaudit-report
-```
-
 ### Scheduled Weekly Scan
 
 ```yaml
@@ -183,10 +156,8 @@ steps:
 |----------|-------------|
 | `Build.SourcesDirectory` | Repository root (auto-set) |
 | `Build.ArtifactStagingDirectory` | Artifact staging path (auto-set) |
-| `TF_BUILD` | Set to `True` in Azure Pipelines (auto-detected) |
 | `BUILD_REPOSITORY_NAME` | Repository name |
 | `BUILD_BUILDID` | Unique build ID |
-| `EASYAUDIT_AUTH` | API credentials for paid features (optional) |
 
 ---
 
@@ -202,7 +173,6 @@ steps:
 
 ## See Also
 
-- [Automated PR (paid)](../request-pr.md) - Auto-fix issues via API
 - [CLI Usage](../cli-usage.md) - Local usage
 - [Processors](../processors.md) - Available checks
 

@@ -120,38 +120,6 @@ pipeline {
 }
 ```
 
-### JSON Artifact
-
-```groovy
-pipeline {
-    agent {
-        docker {
-            image 'ghcr.io/crealoz/easyaudit:latest'
-        }
-    }
-
-    stages {
-        stage('EasyAudit Scan') {
-            steps {
-                sh '''
-                    mkdir -p report
-                    easyaudit scan \
-                        --format=json \
-                        --output=report/easyaudit.json \
-                        "$WORKSPACE"
-                '''
-            }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: 'report/*', fingerprint: true
-        }
-    }
-}
-```
-
 ### Scheduled Weekly Scan
 
 ```groovy
@@ -196,49 +164,8 @@ pipeline {
 | Variable | Description |
 |----------|-------------|
 | `WORKSPACE` | Repository root (auto-set) |
-| `JENKINS_URL` | Jenkins server URL (auto-detected) |
 | `JOB_NAME` | Job name |
 | `BUILD_ID` | Unique build ID |
-| `EASYAUDIT_AUTH` | API credentials for paid features (optional) |
-
-Set `EASYAUDIT_AUTH` in Jenkins:
-1. Go to **Manage Jenkins > Credentials**
-2. Add a **Secret text** credential
-3. Reference it in your pipeline:
-
-```groovy
-pipeline {
-    agent {
-        docker {
-            image 'ghcr.io/crealoz/easyaudit:latest'
-        }
-    }
-
-    environment {
-        EASYAUDIT_AUTH = credentials('easyaudit-api-key')
-    }
-
-    stages {
-        stage('EasyAudit Scan') {
-            steps {
-                sh '''
-                    mkdir -p report
-                    easyaudit scan \
-                        --format=sarif \
-                        --output=report/easyaudit.sarif \
-                        "$WORKSPACE"
-                '''
-            }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: 'report/*', fingerprint: true
-        }
-    }
-}
-```
 
 ---
 
@@ -247,13 +174,12 @@ pipeline {
 1. Go to your Jenkins job
 2. Click on the completed build
 3. Click **Build Artifacts** in the sidebar
-4. Download `report/easyaudit.sarif` or `report/easyaudit.json`
+4. Download `report/easyaudit.sarif`
 
 ---
 
 ## See Also
 
-- [Automated PR (paid)](../request-pr.md) - Auto-fix issues via API
 - [CLI Usage](../cli-usage.md) - Local usage
 - [Processors](../processors.md) - Available checks
 

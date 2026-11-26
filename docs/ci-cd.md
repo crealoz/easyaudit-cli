@@ -38,17 +38,15 @@ jobs:
           sarif_file: report.sarif
 ```
 
-> **💡 Want automatic fixes?** See [Automated PR workflow](request-pr.md)
-
 ---
 
 ## Output Formats
 
 | Format | Use Case |
 |--------|----------|
-| `sarif` | GitHub Code Scanning, GitLab SAST |
-| `json` | Custom tooling, artifacts, fix-apply input |
-| `html` | Visual report, shareable dashboards, upload as artifact |
+| `sarif` | GitHub Code Scanning, GitLab SAST, artifacts |
+
+Automatic fixing (`fix-apply`) and the HTML, Markdown and JSON reports are part of the [sponsors edition](https://github.com/sponsors/crealoz).
 
 ---
 
@@ -70,25 +68,10 @@ When scanning a Magento installation root, EasyAudit automatically excludes nois
 
 ---
 
-## CI Environment Detection
-
-EasyAudit automatically detects CI environments and adds metadata to API requests. Supported detection:
-
-- `GITHUB_ACTIONS` → GitHub
-- `GITLAB_CI` → GitLab
-- `BITBUCKET_PIPELINE_UUID` → Bitbucket
-- `TF_BUILD` → Azure DevOps
-- `CIRCLECI` → CircleCI
-- `JENKINS_URL` → Jenkins
-- `TRAVIS` → Travis CI
-
----
-
 ## See Also
 
 - [CLI Usage](cli-usage.md) - Command-line options
 - [Processors](processors.md) - Available checks
-- [Automated PR (paid)](request-pr.md) - Auto-fix via API
 
 ---
 

@@ -23,9 +23,6 @@
         </include>
         <exclude>
             <directory>src/Exception</directory>
-            <file>src/Service/Api.php</file>
-            <file>src/Service/Env.php</file>
-            <file>src/Console/Command/Auth.php</file>
         </exclude>
     </source>
 </phpunit>

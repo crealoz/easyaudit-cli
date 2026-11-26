@@ -51,23 +51,16 @@ if (!$composerLoaded) {
     });
 }
 
-// Load the runtime registry (commands + fixer choice). Sponsors point EA_CONFIG
-// at their overlay to register extra commands and swap the fixer.
+// Load the runtime registry (commands). An overlay can point EA_CONFIG at its own
+// config file to register extra commands, reporters and processor directories.
 $config = \EasyAudit\Service\Config::load();
 $commandClasses = $config['commands'] ?? [
-    'scan'                 => \EasyAudit\Console\Command\Scan::class,
-    'auth'                 => \EasyAudit\Console\Command\Auth::class,
-    'fix-apply'            => \EasyAudit\Console\Command\FixApply::class,
-    'activate-self-signed' => \EasyAudit\Console\Command\ActivateSelfSigned::class,
+    'scan' => \EasyAudit\Console\Command\Scan::class,
 ];
-$fixerClass = $config['fixer'] ?? \EasyAudit\Service\Api::class;
 
-$build = function (string $class) use ($fixerClass): \EasyAudit\Console\CommandInterface {
+$build = function (string $class): \EasyAudit\Console\CommandInterface {
     if (is_a($class, \EasyAudit\Console\Command\Scan::class, true)) {
         return new $class(new \EasyAudit\Core\Scan\Scanner());
-    }
-    if (is_a($class, \EasyAudit\Console\Command\FixApply::class, true)) {
-        return new $class(new \EasyAudit\Service\Logger(), new $fixerClass());
     }
     return new $class();
 };
@@ -103,7 +96,6 @@ if ($cmdName === '-h' || $cmdName === '--help' || $cmdName === null) {
     fwrite(STDOUT, "\n" . YELLOW . "Examples:" . RESET . "\n");
     fwrite(STDOUT, "  easyaudit scan /path/to/magento\n");
     fwrite(STDOUT, "  easyaudit scan -h\n");
-    fwrite(STDOUT, "  easyaudit fix-apply report.json\n");
     exit(0);
 }
 

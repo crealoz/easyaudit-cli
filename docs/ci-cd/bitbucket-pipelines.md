@@ -76,25 +76,6 @@ pipelines:
           - report/easyaudit.sarif
 ```
 
-### JSON Artifact
-
-```yaml
-image: ghcr.io/crealoz/easyaudit:latest
-
-pipelines:
-  default:
-    - step:
-        name: EasyAudit Scan
-        script:
-          - mkdir -p report
-          - easyaudit scan
-              --format=json
-              --output=report/easyaudit.json
-              "$BITBUCKET_CLONE_DIR"
-        artifacts:
-          - report/easyaudit.json
-```
-
 ### Branch-Specific Scanning
 
 ```yaml
@@ -134,9 +115,7 @@ pipelines:
 | Variable | Description |
 |----------|-------------|
 | `BITBUCKET_CLONE_DIR` | Repository root (auto-set) |
-| `BITBUCKET_PIPELINE_UUID` | Unique pipeline identifier (auto-detected) |
 | `BITBUCKET_REPO_FULL_NAME` | Repository full name (workspace/repo) |
-| `EASYAUDIT_AUTH` | API credentials for paid features (optional) |
 
 ---
 
@@ -147,13 +126,12 @@ pipelines:
 3. Click on the completed pipeline
 4. Click on the step name
 5. Click **Artifacts** tab
-6. Download `report/easyaudit.sarif` or `report/easyaudit.json`
+6. Download `report/easyaudit.sarif`
 
 ---
 
 ## See Also
 
-- [Automated PR (paid)](../request-pr.md) - Auto-fix issues via API
 - [CLI Usage](../cli-usage.md) - Local usage
 - [Processors](../processors.md) - Available checks
 

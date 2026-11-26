@@ -1,6 +1,6 @@
 # Security & Privacy
 
-EasyAudit CLI is designed to run entirely offline. This page explains exactly when and how the tool communicates with external servers.
+EasyAudit CLI runs entirely offline. It never communicates with external servers.
 
 ## Scanning is 100% local
 
@@ -8,30 +8,9 @@ When you run `easyaudit scan`, **all analysis happens on your machine**. No sour
 
 - Reads files from disk
 - Runs all 20 processors locally
-- Writes reports (JSON, SARIF, HTML) to your local filesystem
+- Writes the SARIF report to your local filesystem
 
-There is **zero network activity** during a scan. You can verify this by running the tool with network access disabled.
-
-## When does the tool contact Crealoz servers?
-
-Only the **fix-apply** command (paid fixer) communicates with `api.crealoz.fr`. This is an explicit, opt-in action that:
-
-1. Requires authentication (`easyaudit auth` or `EASYAUDIT_AUTH` environment variable)
-2. Requires confirmation before sending data
-3. Sends only the specific file contents and rule identifiers needed to generate patches
-4. Uses HTTPS with strict certificate verification in CI environments
-5. **Source code is immediately deleted** from the server once the patch is returned (or on failure)
-
-No other command makes any network request.
-
-## Summary
-
-| Command            | Network activity          |
-|--------------------|---------------------------|
-| `scan`             | None                      |
-| `fix-apply`        | `api.crealoz.fr` (paid)   |
-| `auth`             | `api.crealoz.fr` (login)  |
-| All other commands | None                      |
+There is **zero network activity** during a scan, and `scan` is the only command. You can verify this by running the tool with network access disabled.
 
 ## PHAR integrity — Build attestation
 
@@ -44,10 +23,6 @@ gh attestation verify easyaudit.phar --owner crealoz
 ```
 
 This confirms the binary has not been tampered with after build.
-
-## TLS & Certificates
-
-See [Automated PR docs — TLS / self-signed certificates](request-pr.md#tls--self-signed-certificates) for details on certificate handling in CI vs local environments.
 
 ---
 

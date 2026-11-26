@@ -87,12 +87,12 @@ HELP;
         $path        = $rest[0] ?? '.';
         define('EA_SCAN_PATH', $path);
 
-        $result   = $this->scanner->run($exclude, $excludedExt, $format);
+        $result   = $this->scanner->run($exclude, $excludedExt);
 
         $findings = $result['findings'];
         $toolSuggestions = $result['toolSuggestions'];
 
-        // Add metadata for fix-apply to use
+        // Scan metadata, available to reporters
         $scanPathResolved = realpath($path) ?: $path;
         $findings['metadata'] = [
             'scan_path' => $scanPathResolved,

@@ -36,8 +36,6 @@
                 <directory name="src/Exception/" />
                 <file name="src/Version.php" />
                 <file name="src/Service/Config.php" />
-                <file name="src/Service/PayloadPreparers/AbstractPreparer.php" />
-                <file name="src/Service/CiEnvironmentDetector.php" />
                 <file name="src/Service/CliWriter.php" />
                 <file name="src/Service/Paths.php" />
             </errorLevel>
@@ -46,24 +44,15 @@
         <!-- Constants (RED, BLUE, RESET, EA_SCAN_PATH) are defined at runtime in bin/easyaudit -->
         <UndefinedConstant>
             <errorLevel type="suppress">
-                <file name="src/Service/Env.php" />
                 <file name="src/Core/Scan/Scanner.php" />
                 <file name="src/Core/Scan/Util/Classes.php" />
             </errorLevel>
         </UndefinedConstant>
 
-        <!-- Intentional shell_exec for terminal stty in interactive auth -->
-        <ForbiddenCode>
-            <errorLevel type="suppress">
-                <file name="src/Console/Command/Auth.php" />
-            </errorLevel>
-        </ForbiddenCode>
-
         <!-- Version constants are replaced during CI builds; dev-time values cause false positives -->
         <RedundantCondition>
             <errorLevel type="suppress">
                 <file name="src/Version.php" />
-                <file name="src/Service/PayloadPreparers/DiPreparer.php" />
             </errorLevel>
         </RedundantCondition>
         <InvalidCast>
@@ -71,13 +60,6 @@
                 <file name="src/Version.php" />
             </errorLevel>
         </InvalidCast>
-
-        <!-- curl_exec returns string|true; json_decode call is guarded by httpCode check -->
-        <InvalidScalarArgument>
-            <errorLevel type="suppress">
-                <file name="src/Service/Api.php" />
-            </errorLevel>
-        </InvalidScalarArgument>
 
         <!-- $lineNumber is the foreach loop variable; isset() guard is valid for empty arrays -->
         <TypeDoesNotContainNull>

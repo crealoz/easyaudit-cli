@@ -313,7 +313,7 @@ PHTML;
 
         $configPath = $this->scanDir . '/overlay.json';
         file_put_contents($configPath, json_encode([
-            'reporters' => ['html' => \EasyAudit\Core\Report\HtmlReporter::class],
+            'reporters' => ['html' => \EasyAudit\Core\Report\SarifReporter::class],
             'defaultFormat' => 'html',
             'processorDirs' => [
                 'EasyAudit\\Core\\Scan\\Processor' => $repoRoot . '/src/Core/Scan/Processor',
@@ -344,7 +344,7 @@ PHTML;
     {
         $configPath = $this->scanDir . '/overlay.json';
         file_put_contents($configPath, json_encode([
-            'reporters' => ['html' => \EasyAudit\Core\Report\HtmlReporter::class],
+            'reporters' => ['html' => \EasyAudit\Core\Report\SarifReporter::class],
             'defaultFormat' => 'html',
             'processorDirs' => new \stdClass(), // {}
         ]));

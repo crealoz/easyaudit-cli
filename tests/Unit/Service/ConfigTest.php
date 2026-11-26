@@ -2,8 +2,6 @@
 
 namespace EasyAudit\Tests\Unit\Service;
 
-use EasyAudit\Core\Report\HtmlReporter;
-use EasyAudit\Core\Report\JsonReporter;
 use EasyAudit\Core\Report\SarifReporter;
 use EasyAudit\Service\Config;
 use PHPUnit\Framework\TestCase;
@@ -37,10 +35,8 @@ class ConfigTest extends TestCase
 
         $this->assertArrayHasKey('reporters', $config);
         $this->assertArrayHasKey('defaultFormat', $config);
-        $this->assertSame(HtmlReporter::class, $config['reporters']['html']);
-        $this->assertSame(SarifReporter::class, $config['reporters']['sarif']);
-        $this->assertSame(JsonReporter::class, $config['reporters']['json']);
-        $this->assertSame('html', $config['defaultFormat']);
+        $this->assertSame(['sarif' => SarifReporter::class], $config['reporters']);
+        $this->assertSame('sarif', $config['defaultFormat']);
     }
 
     public function testLoadIsCached(): void
@@ -54,13 +50,13 @@ class ConfigTest extends TestCase
     {
         $path = $this->writeConfig([
             'reporters' => [
-                'json' => JsonReporter::class,
+                'json' => SarifReporter::class,
             ],
             'defaultFormat' => 'json',
         ]);
 
         $config = Config::loadFrom($path);
-        $this->assertSame(['json' => JsonReporter::class], $config['reporters']);
+        $this->assertSame(['json' => SarifReporter::class], $config['reporters']);
     }
 
     public function testMissingFileThrows(): void
@@ -119,7 +115,7 @@ class ConfigTest extends TestCase
     public function testDefaultFormatNotInReportersThrows(): void
     {
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'html',
         ]);
 
@@ -131,7 +127,7 @@ class ConfigTest extends TestCase
     public function testMissingDefaultFormatThrows(): void
     {
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
         ]);
 
         $this->expectException(\RuntimeException::class);
@@ -142,7 +138,7 @@ class ConfigTest extends TestCase
     public function testSetPathOverrideAffectsLoad(): void
     {
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'json',
         ]);
 
@@ -157,7 +153,7 @@ class ConfigTest extends TestCase
     {
         $absolute = $this->tmpDir;
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'json',
             'processorDirs' => [
                 'Vendor\\Pack\\Processor' => $absolute,
@@ -174,7 +170,7 @@ class ConfigTest extends TestCase
     {
         mkdir($this->tmpDir . '/subdir', 0775);
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'json',
             'processorDirs' => [
                 'Vendor\\Pack\\Processor' => 'subdir',
@@ -192,7 +188,7 @@ class ConfigTest extends TestCase
         // Sponsor overlays may list paths that only exist in some build flavors — load must not fail here;
         // Scanner skips missing directories at scan time instead.
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'json',
             'processorDirs' => [
                 'Vendor\\Pack\\Processor' => '/path/that/does/not/exist/anywhere',
@@ -206,7 +202,7 @@ class ConfigTest extends TestCase
     public function testProcessorDirsNonArrayThrows(): void
     {
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'json',
             'processorDirs' => 'not-a-map',
         ]);
@@ -219,7 +215,7 @@ class ConfigTest extends TestCase
     public function testProcessorDirsEmptyNamespaceThrows(): void
     {
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'json',
             'processorDirs' => ['' => '/tmp'],
         ]);
@@ -232,7 +228,7 @@ class ConfigTest extends TestCase
     public function testProcessorDirsEmptyDirectoryThrows(): void
     {
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'json',
             'processorDirs' => ['Vendor\\Pack\\Processor' => ''],
         ]);
@@ -245,7 +241,7 @@ class ConfigTest extends TestCase
     public function testProcessorDirsEmptyMapIsAllowed(): void
     {
         $path = $this->writeConfig([
-            'reporters' => ['json' => JsonReporter::class],
+            'reporters' => ['json' => SarifReporter::class],
             'defaultFormat' => 'json',
             'processorDirs' => new \stdClass(), // json_encode → {}
         ]);

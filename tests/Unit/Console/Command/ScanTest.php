@@ -28,7 +28,7 @@ class ScanTest extends TestCase
         @rmdir($this->tmpDir);
         @unlink('report/easyaudit-report.json');
         @unlink('report/easyaudit-report.sarif');
-        @unlink('report/easyaudit-report.html');
+        @unlink('report/easyaudit-report.sarif');
         @rmdir('report');
     }
 
@@ -214,31 +214,6 @@ class ScanTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testRunWithHtmlFormat(): void
-    {
-        $scanner = $this->createMock(Scanner::class);
-        $scanner->method('run')->willReturn([
-            'findings' => [
-                'summary' => ['high' => 0, 'medium' => 0],
-            ],
-            'toolSuggestions' => [],
-        ]);
-
-        $cmd = new Scan($scanner);
-        $outputFile = $this->tmpDir . '/test-report.html';
-
-        ob_start();
-        $result = $cmd->run(['--format=html', '--output=' . $outputFile, $this->tmpDir]);
-        ob_end_clean();
-
-        $this->assertSame(0, $result);
-        $this->assertFileExists($outputFile);
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
     public function testRunWithCustomOutputPath(): void
     {
         $scanner = $this->createMock(Scanner::class);
@@ -281,7 +256,7 @@ class ScanTest extends TestCase
         ob_end_clean();
 
         $this->assertSame(0, $result);
-        $this->assertFileExists('report/easyaudit-report.html');
+        $this->assertFileExists('report/easyaudit-report.sarif');
     }
 
     /**
@@ -326,12 +301,21 @@ class ScanTest extends TestCase
             'toolSuggestions' => [],
         ]);
 
+        // A reporter that echoes its input, so the metadata handed to reporters can be asserted.
+        $configPath = $this->tmpDir . '/echo-config.json';
+        file_put_contents($configPath, json_encode([
+            'reporters' => ['echo' => FindingsEchoReporter::class],
+            'defaultFormat' => 'echo',
+        ]));
+        \EasyAudit\Service\Config::setPathOverride($configPath);
+
         $cmd = new Scan($scanner);
         $outputFile = $this->tmpDir . '/test-report.json';
 
         ob_start();
-        $result = $cmd->run(['--project-name=my-project', '--format=json', '--output=' . $outputFile, $this->tmpDir]);
+        $result = $cmd->run(['--project-name=my-project', '--output=' . $outputFile, $this->tmpDir]);
         ob_end_clean();
+        \EasyAudit\Service\Config::setPathOverride(null);
 
         $this->assertSame(0, $result);
 
@@ -339,5 +323,13 @@ class ScanTest extends TestCase
         $data = json_decode($content, true);
         $this->assertArrayHasKey('metadata', $data);
         $this->assertStringContainsString('my-project', $data['metadata']['project_id']);
+    }
+}
+
+class FindingsEchoReporter implements \EasyAudit\Core\Report\ReporterInterface
+{
+    public function generate(array $findings): string
+    {
+        return (string) json_encode($findings);
     }
 }

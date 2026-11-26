@@ -85,28 +85,6 @@ script:
     fi
 ```
 
-### JSON Output
-
-```yaml
-language: minimal
-
-services:
-  - docker
-
-before_install:
-  - docker pull ghcr.io/crealoz/easyaudit:latest
-
-script:
-  - mkdir -p report
-  - docker run --rm -v "$TRAVIS_BUILD_DIR:/workspace" ghcr.io/crealoz/easyaudit:latest scan
-      --format=json
-      --output=/workspace/report/easyaudit.json
-      /workspace
-
-after_success:
-  - cat report/easyaudit.json
-```
-
 ### Deploy Report to GitHub Releases
 
 ```yaml
@@ -168,25 +146,8 @@ Configure cron in Travis CI settings:
 | Variable | Description |
 |----------|-------------|
 | `TRAVIS_BUILD_DIR` | Repository root (auto-set) |
-| `TRAVIS` | Set to `true` in Travis CI (auto-detected) |
 | `TRAVIS_REPO_SLUG` | Repository slug (owner/repo) |
 | `TRAVIS_BUILD_ID` | Unique build ID |
-| `EASYAUDIT_AUTH` | API credentials for paid features (optional) |
-
-Set `EASYAUDIT_AUTH` in Travis CI:
-1. Go to your repository settings in Travis CI
-2. Under **Environment Variables**, add `EASYAUDIT_AUTH`
-3. Keep **Display value in build log** OFF for security
-
-To use in Docker:
-
-```yaml
-script:
-  - docker run --rm -e EASYAUDIT_AUTH="$EASYAUDIT_AUTH" -v "$TRAVIS_BUILD_DIR:/workspace" ghcr.io/crealoz/easyaudit:latest scan
-      --format=sarif
-      --output=/workspace/report/easyaudit.sarif
-      /workspace
-```
 
 ---
 
@@ -210,7 +171,6 @@ after_success:
 
 ## See Also
 
-- [Automated PR (paid)](../request-pr.md) - Auto-fix issues via API
 - [CLI Usage](../cli-usage.md) - Local usage
 - [Processors](../processors.md) - Available checks
 

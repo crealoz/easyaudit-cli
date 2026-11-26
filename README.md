@@ -14,10 +14,7 @@ Static analysis tool for Magento 2 codebases. Detects anti-patterns, security ri
 - **Zero dependencies** - standalone PHAR (~455KB)
 - **CI/CD ready** - SARIF output for GitHub Code Scanning
 - **Docker image** available
-- **Auto-fix** - Automatic patch generation via API
-- **Privacy first** 
-  - No data sent to external servers during scans ([security details](docs/security.md))
-  - No source is stored on crealoz's server after patch is generated.
+- **Privacy first** - No data sent to external servers ([security details](docs/security.md))
 
 ![workflow-schema.png](../../../Shop-Crealoz/assets/images/workflow-schema.png)
 ## Quick Start
@@ -51,13 +48,13 @@ php bin/easyaudit scan /path/to/magento
 
 ## Output Formats
 
-| Format  | Use Case                          |
-|---------|-----------------------------------|
-| `json`  | Tooling and scripting (default)   |
-| `sarif` | GitHub Code Scanning              |
-| `html`  | Visual report, shareable via browser or PDF |
+| Format  | Use Case                                  |
+|---------|-------------------------------------------|
+| `sarif` | GitHub Code Scanning, tooling (default)   |
 
 Console output is always displayed during scan.
+
+Automatic fixing (`fix-apply`) and the HTML, Markdown and JSON reports are part of the [sponsors edition](https://github.com/sponsors/crealoz).
 
 ## GitHub Actions
 
@@ -87,23 +84,16 @@ jobs:
           sarif_file: report/easyaudit.sarif
 ```
 
-> **Private repos**: SARIF upload requires [GitHub Advanced Security](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security), which is a paid feature for private repositories. Use `--format=json` or `--format=html` with `upload-artifact` instead. See [GitHub Actions docs](docs/ci-cd/github-actions.md#private-repositories) for alternative workflows.
+> **Private repos**: SARIF upload requires [GitHub Advanced Security](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security), which is a paid feature for private repositories. Upload the SARIF file with `upload-artifact` instead. See [GitHub Actions docs](docs/ci-cd/github-actions.md#private-repositories) for alternative workflows.
 
 ![GitHub Code Scanning](images/scanning-alert-terrible-module.png)
 
-### Scan, fix & create PR (paid)
-
-One-click workflow: scan, call the paid API for fixes, and open a PR with the patches. Requires `EASYAUDIT_AUTH` secret.
-
-See [Automated PR docs](docs/request-pr.md) for the full workflow file and setup instructions.
-
 ## Documentation
 
-- [Security & Privacy](docs/security.md) - What data stays local, when servers are contacted
+- [Security & Privacy](docs/security.md) - What data stays local
 - [CLI Usage](docs/cli-usage.md) - Commands, options, examples
 - [Available Processors](docs/processors.md) - All 21 processors (40 rules)
 - [CI/CD Integration](docs/ci-cd.md) - GitHub, GitLab, Bitbucket, Azure, CircleCI, Jenkins, Travis
-- [Automated PR (paid)](docs/request-pr.md) - Auto-fix via API
 - Developer Guide: [Writing Processors](docs/developer-guide/processors.md) | [Utilities Reference](docs/developer-guide/utilities.md) | [Extension Points](docs/developer-guide/extension-points.md)
 
 ## Requirements

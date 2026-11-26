@@ -5,6 +5,26 @@ All notable changes to EasyAudit CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] Unreleased
+
+**Breaking release.** The paid fix service is discontinued and the free edition now outputs SARIF only.
+
+### Removed
+
+- **Paid fix service and its commands**: `fix-apply`, `auth` and `activate-self-signed` are gone, together with the API client (`api.crealoz.fr`), credits, `EASYAUDIT_AUTH` / bearer-token handling, self-signed certificate support and the release-workflow middleware steps. `scan` is the only command.
+- **HTML and JSON reports**: `--format=html` and `--format=json` no longer exist (`HtmlReporter`, `JsonReporter` removed).
+
+### Changed
+
+- **SARIF-only output**: the default `--format` is now `sarif` and the default output file is `report/easyaudit-report.sarif`.
+- **Moved to the sponsors edition**: `fix-apply` (now running locally) and the HTML / JSON reports are available in the [sponsors edition](https://github.com/sponsors/crealoz).
+- **`fixer` config key**: still accepted in `config/easyaudit.json`, but only validated as an existing class name.
+- Processors, rule IDs, exit codes, `--exclude`, `--exclude-ext`, `--output`, `--project-name`, the Docker image, the PHAR and the Magento version security check are unchanged.
+
+### Upgrade notes
+
+- Installed 1.x versions will fail on `fix-apply` and on `--format=json` scans once the service is switched off (JSON scans called the service to list fixable rule types).
+
 ## [1.3.2] 2026-05-14
 
 ### Changed

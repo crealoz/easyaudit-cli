@@ -235,7 +235,7 @@ foreach ($plugins as $plugin) {
 $this->results[] = Formater::formatError(implode(', ', $locations), 0, $message, 'high');
 ```
 
-`SarifReporter` splits this back into one SARIF `physicalLocation` per segment. `HtmlReporter` renders the Line column as `—` when `startLine` is `0`. `AroundPlugins::deepPluginStack` uses this convention to surface every di.xml declaration that participates in a stack.
+`SarifReporter` splits this back into one SARIF `physicalLocation` per segment. `AroundPlugins::deepPluginStack` uses this convention to surface every di.xml declaration that participates in a stack.
 
 ## PluginRegistry
 

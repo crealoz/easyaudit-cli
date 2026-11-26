@@ -93,27 +93,6 @@ easyaudit:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 ```
 
-### JSON Artifact
-
-```yaml
-stages:
-  - scan
-
-easyaudit:
-  stage: scan
-  image: ghcr.io/crealoz/easyaudit:latest
-  script:
-    - mkdir -p report
-    - easyaudit scan
-        --format=json
-        --output=report/easyaudit.json
-        "$CI_PROJECT_DIR"
-  artifacts:
-    paths:
-      - report/easyaudit.json
-    expire_in: 1 week
-```
-
 ---
 
 ## Environment Variables
@@ -121,11 +100,9 @@ easyaudit:
 | Variable | Description |
 |----------|-------------|
 | `CI_PROJECT_DIR` | Repository root (auto-set) |
-| `GITLAB_CI` | Set to `true` in GitLab CI (auto-detected) |
 | `CI_PROJECT_PATH` | Project path with namespace |
 | `CI_PIPELINE_ID` | Unique pipeline ID |
 | `CI_JOB_ID` | Unique job ID |
-| `EASYAUDIT_AUTH` | API credentials for paid features (optional) |
 
 ---
 
@@ -149,7 +126,6 @@ If you use the `reports: sast` artifact type, results appear in:
 
 ## See Also
 
-- [Automated PR (paid)](../request-pr.md) - Auto-fix issues via API
 - [CLI Usage](../cli-usage.md) - Local usage
 - [Processors](../processors.md) - Available checks
 

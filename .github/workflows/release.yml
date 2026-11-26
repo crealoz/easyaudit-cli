@@ -62,45 +62,6 @@ jobs:
           php easyaudit.phar --version
           echo "PHAR size: $(du -h easyaudit.phar | cut -f1)"
 
-      - name: Check middleware readiness
-        if: ${{ vars.DEPLOY_WEBHOOK_URL != '' }}
-        run: |
-          PAYLOAD='{"action":"status","version":"${{ steps.version.outputs.VERSION }}"}'
-          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha512 -hmac "${{ secrets.DEPLOY_SECRET }}" | cut -d' ' -f2)
-
-          RESPONSE=$(curl -s -X POST "${{ vars.DEPLOY_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -H "X-Deploy-Signature: sha512=$SIGNATURE" \
-            -d "$PAYLOAD" \
-            --max-time 30)
-
-          STATUS=$(echo "$RESPONSE" | jq -r '.status')
-
-          if [ "$STATUS" != "ready" ]; then
-            echo "::error::Middleware v${{ steps.version.outputs.VERSION }} not deployed. Deploy middleware first."
-            exit 1
-          fi
-
-      - name: Switch middleware and register CLI release
-        if: ${{ vars.DEPLOY_WEBHOOK_URL != '' }}
-        run: |
-          RELEASED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          PAYLOAD='{"action":"switch","version":"${{ steps.version.outputs.VERSION }}","hash":"${{ steps.hash.outputs.HASH }}","released_at":"'"$RELEASED_AT"'"}'
-          SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha512 -hmac "${{ secrets.DEPLOY_SECRET }}" | cut -d' ' -f2)
-
-          HTTP_CODE=$(curl -s -o /tmp/switch.json -w "%{http_code}" \
-            -X POST "${{ vars.DEPLOY_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -H "X-Deploy-Signature: sha512=$SIGNATURE" \
-            -d "$PAYLOAD" \
-            --max-time 60)
-
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "::error::Failed to switch middleware to v${{ steps.version.outputs.VERSION }}"
-            cat /tmp/switch.json
-            exit 1
-          fi
-
       - name: Attest PHAR provenance
         uses: actions/attest-build-provenance@v4
         with:

@@ -12,7 +12,7 @@ final class Config
      *     reporters: array<string, class-string<ReporterInterface>>,
      *     defaultFormat: string,
      *     commands?: array<string, class-string<CommandInterface>>,
-     *     fixer?: class-string<FixerInterface>,
+     *     fixer?: class-string,
      *     processorDirs?: array<string, string>
      * }|null
      */
@@ -24,7 +24,7 @@ final class Config
      *     reporters: array<string, class-string<ReporterInterface>>,
      *     defaultFormat: string,
      *     commands?: array<string, class-string<CommandInterface>>,
-     *     fixer?: class-string<FixerInterface>,
+     *     fixer?: class-string,
      *     processorDirs?: array<string, string>
      * }
      */
@@ -42,7 +42,7 @@ final class Config
      *     reporters: array<string, class-string<ReporterInterface>>,
      *     defaultFormat: string,
      *     commands?: array<string, class-string<CommandInterface>>,
-     *     fixer?: class-string<FixerInterface>,
+     *     fixer?: class-string,
      *     processorDirs?: array<string, string>
      * }
      */
@@ -66,7 +66,7 @@ final class Config
          *     reporters: array<string, class-string<ReporterInterface>>,
          *     defaultFormat: string,
          *     commands?: array<string, class-string<CommandInterface>>,
-         *     fixer?: class-string<FixerInterface>,
+         *     fixer?: class-string,
          *     processorDirs?: array<string, string>
          * } $data
          */
@@ -145,11 +145,6 @@ final class Config
             if (!is_string($data['fixer']) || !class_exists($data['fixer'])) {
                 $shown = is_string($data['fixer']) ? $data['fixer'] : '<non-string>';
                 throw new \RuntimeException("EasyAudit config 'fixer' class not found: {$shown}");
-            }
-            if (!is_subclass_of($data['fixer'], FixerInterface::class)) {
-                throw new \RuntimeException(
-                    "EasyAudit config 'fixer' '{$data['fixer']}' must implement " . FixerInterface::class
-                );
             }
         }
         if (isset($data['processorDirs'])) {
