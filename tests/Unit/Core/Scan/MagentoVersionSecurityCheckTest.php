@@ -229,10 +229,14 @@ class MagentoVersionSecurityCheckTest extends TestCase
         $finding = $findings[0];
         $this->assertEquals('magento-version-security', $finding['ruleId']);
         $this->assertStringContainsString('2.4.8', $finding['longDescription']);
-        $this->assertStringContainsString('newer release line', $finding['shortDescription']);
 
-        // Should be medium severity (patched but old line)
-        $this->assertEquals('medium', $finding['files'][0]['severity']);
+        // The wording and severity depend on today's date against the 2.4.6 support dates:
+        // active -> medium, extended support or end-of-life -> high.
+        $active = str_contains($finding['shortDescription'], 'newer release line');
+        if (!$active) {
+            $this->assertMatchesRegularExpression('/extended support|end-of-life/', $finding['shortDescription']);
+        }
+        $this->assertEquals($active ? 'medium' : 'high', $finding['files'][0]['severity']);
 
         $this->cleanupTempScanPath($scanPath);
     }
