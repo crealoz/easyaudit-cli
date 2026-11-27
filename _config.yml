@@ -1,7 +1,7 @@
 title: EasyAudit
 description: Static analysis tool for Magento 2 codebases
-url: https://shop.crealoz.fr
-baseurl: /documentation
+url: https://crealoz.github.io
+baseurl: /easyaudit-cli
 
 plugins:
   - jekyll-relative-links
